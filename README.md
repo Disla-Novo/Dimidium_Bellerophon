@@ -1,3 +1,7 @@
+
+<img width="1920" height="1080" alt="Screenshot 2026-06-11 19-19-17" src="https://github.com/user-attachments/assets/bea8d5c2-7f7d-42e5-8f4d-ba8d3aeaa7f8" />
+
+
 # Bellerophon – A Compiled DSL for 3D Printer Macros
 
 Bellerophon is a compiled domain-specific language (DSL) for 3D printer macros, with an IDE that compiles your code to Klipper or Marlin G-code. It lets you write structured, parametric programs and compile them into firmware-compatible G-code.
@@ -7,6 +11,7 @@ Note: The server runs locally on port 4567. No internet connection required afte
 ---
 
 ## Program Structure
+
 
 A Bellerophon program consists of one or more macros. Each macro starts with M.title and ends with M.end.
 
@@ -29,6 +34,7 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
     M.end
 
 ---
+<img width="1247" height="670" alt="newsttestbng" src="https://github.com/user-attachments/assets/1919befb-fc9b-4076-a43f-34ec8fd9ffd2" />
 
 ## Capabilities
 
@@ -64,9 +70,13 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
 
 ---
 
-## Full documentation
 
-See Official_Bellerophon_Language_Documentation.pdf for the complete command reference, examples, and limitations.
+## Full documentation
+<img width="595" height="493" alt="Screenshot 2026-04-12 163131" src="https://github.com/user-attachments/assets/4db23b1a-8f6c-4770-b37d-ebbde2541130" />
+
+
+See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/user-attachments/files/28858644/Official_Bellerophon.Language._.Documentation.pdf)
+ for the complete command reference, examples, and limitations.
 
 ---
 
