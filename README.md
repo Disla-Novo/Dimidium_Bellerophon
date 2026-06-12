@@ -81,4 +81,6 @@ See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/user-
 ---
 
 ## License
+Dimidium is free for personal, educational, and non-commercial use! You are completely free to download, modify, and share this software.
 
+Commercial use is strictly prohibited without explicit permission. If you are a company or individual wanting to use Dimidium for commercial or educational purposes, please contact me directly at dislaofficialt@gmail.com  to discuss a commercial license.
