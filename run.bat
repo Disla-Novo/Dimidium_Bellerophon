@@ -2,7 +2,7 @@
 title Dimidium - Web Server
 echo Starting Dimidium Web Server...
 echo.
-start "Dimidium Server" java -jar SyntaxN.jar
+start "Dimidium Server" .\jre\bin\java.exe -jar SyntaxN.jar
 timeout /t 3 /nobreak >nul
 start http://localhost:4567
 echo.
