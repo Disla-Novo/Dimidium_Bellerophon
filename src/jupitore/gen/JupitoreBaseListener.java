@@ -1,4 +1,4 @@
-// Generated from Jupitore.g4 by ANTLR 4.9.3
+// Generated from grammar/Jupitore.g4 by ANTLR 4.9.3
 package jupitore.gen;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -47,6 +47,18 @@ public class JupitoreBaseListener implements JupitoreListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStatement(JupitoreParser.StatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignment(JupitoreParser.AssignmentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignment(JupitoreParser.AssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -167,6 +179,18 @@ public class JupitoreBaseListener implements JupitoreListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIterator(JupitoreParser.IteratorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterVariable(JupitoreParser.VariableContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVariable(JupitoreParser.VariableContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

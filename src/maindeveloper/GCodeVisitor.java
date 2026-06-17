@@ -10,6 +10,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Stack;
+import java.util.HashMap;
+import java.util.Map;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -21,6 +25,8 @@ public class GCodeVisitor extends JupitoreBaseVisitor<String> {
 protected PrinterSettings settings = new PrinterSettings();
 protected boolean enablePaging = false;
 protected boolean autoExtrudeEnabled = false;
+// 6/17/26
+protected Map<String, Double> variables = new HashMap<>();
 // Temporary storage for a single move (used in visitCoordList)
 private double targetX = Double.NaN;
 private double targetY = Double.NaN;
@@ -58,6 +64,16 @@ public GCodeVisitor(PrinterProfile profile) {
     // 4/10/2026 adding paging support to the visitor! lets see if this actually works
     @Override
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
+
+    // DEBUG: print all children of the program node
+    System.out.println("=== visitProgram: " + ctx.getChildCount() + " children ===");
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+        ParseTree child = ctx.getChild(i);
+        System.out.println("  child " + i + ": " + child.getClass().getSimpleName() + " -> " + child.getText());
+    }
+
+
+        
      if (this.enablePaging) {
         try {
             // Create a temporary file to store long gcodes
@@ -139,7 +155,11 @@ public String visitMacro(JupitoreParser.MacroContext ctx) {
      */
     @Override
     public String visitStatement(JupitoreParser.StatementContext ctx) {
-
+// ---- 6/17/2026: handle assignments ----
+if (ctx.assignment() != null) {
+    System.out.println("DEBUG: Found assignment, calling visitAssignment");
+    return visit(ctx.assignment());
+}
         //System.out.println("DEBUG: Visiting statement: " + ctx.getText());
 
         if (ctx.HOME() != null) {
@@ -189,40 +209,38 @@ public String visitMacro(JupitoreParser.MacroContext ctx) {
 
         // SET_HEATER: set temperature and does not wait. REMEMEBR
         // added chamber
-        if (ctx.SET_HEATER() != null) {
-            if (ctx.TARGET() != null && ctx.NUMBER() != null) {
-                String target = ctx.TARGET().getText().toLowerCase();
-                String value = ctx.NUMBER().getText();
-
-                switch (target) {
-                    case "extruder":
-                        return "M104 S" + value + "\n";
-                    case "bed":
-                        return "M140 S" + value + "\n";
-                    case "chamber":
-                        return "M141 S" + value + "\n"; // Chamber heater
-
-                }
-            }
+      if (ctx.SET_HEATER() != null) {
+    if (ctx.TARGET() != null && ctx.expr() != null) {
+        String target = ctx.TARGET().getText().toLowerCase();
+        Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        double value = compute.visit(ctx.expr());
+        switch (target) {
+            case "extruder":
+                return "M104 S" + (int)value + "\n";
+            case "bed":
+                return "M140 S" + (int)value + "\n";
+            case "chamber":
+                return "M141 S" + (int)value + "\n";
         }
+    }
+}
 
         // HEAT: set temperature AND wait. ADDED CHAMBER
-        if (ctx.HEAT() != null) {
-            if (ctx.TARGET() != null && ctx.NUMBER() != null) {
-                String target = ctx.TARGET().getText().toLowerCase();
-                String value = ctx.NUMBER().getText();
-
-                switch (target) {
-                    case "extruder":
-                        return "M109 S" + value + "\n";
-                    case "bed":
-                        return "M190 S" + value + "\n";
-                    case "chamber":
-                        return "M141 S" + value + "\n"; // Chamber
-
-                }
-            }
+   if (ctx.HEAT() != null) {
+    if (ctx.TARGET() != null && ctx.expr() != null) {
+        String target = ctx.TARGET().getText().toLowerCase();
+        Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        double value = compute.visit(ctx.expr());
+        switch (target) {
+            case "extruder":
+                return "M109 S" + (int)value + "\n";
+            case "bed":
+                return "M190 S" + (int)value + "\n";
+            case "chamber":
+                return "M141 S" + (int)value + "\n";
         }
+    }
+}
 
         if (ctx.MOVEEX() != null) {
             if (ctx.coordList() != null) {
@@ -286,11 +304,11 @@ public String visitMacro(JupitoreParser.MacroContext ctx) {
         }
 
         // timeout
-        if (ctx.TIMEOUT_SET() != null && ctx.NUMBER() != null) {
-
-            return "SET_IDLE_TIMEOUT TIMEOUT=" + ctx.NUMBER().getText() + "\n";
-
-        }
+       if (ctx.TIMEOUT_SET() != null && ctx.expr() != null) {
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    return "SET_IDLE_TIMEOUT TIMEOUT=" + (int)value + "\n";
+}
 
         // RELATIVE EXTRUSION check documentation
         if (ctx.RELATIVEEXTRUSION() != null) {
@@ -337,73 +355,94 @@ public String visitMacro(JupitoreParser.MacroContext ctx) {
             }
         }
         // dwell
-        if (ctx.DWELL() != null && ctx.NUMBER() != null) {
-            double value = Double.parseDouble(ctx.NUMBER().getText());
-            String unit = "ms"; // default unit is milliseconds
+       if (ctx.DWELL() != null && ctx.expr() != null) {
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
 
-            if (ctx.getChildCount() > 2) {
-                String u = ctx.getChild(2).getText().toLowerCase();
-                if (u.equals("s")) {
-                    value *= 1000; // convert seconds to milliseconds
-                } else if (u.equals("ms")) {
-                    // already milliseconds, do nothing
-                } else {
-                    // unknown unit, fallback to milliseconds
-                }
+    // unit
+    String unit = "ms"; // default
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+        ParseTree child = ctx.getChild(i);
+        if (child instanceof TerminalNode) {
+            String text = child.getText();
+            if (text.equalsIgnoreCase("S") || text.equalsIgnoreCase("ms")) {
+                unit = text.toLowerCase();
+                break;
             }
-
-            return "G4 P" + ((int) value) + "\n";
         }
+    }
 
-        // set speed.
-        if (ctx.SET_SPEED() != null && ctx.NUMBER() != null) {
-            return "G1 F" + ctx.NUMBER().getText() + "\n";
-        }
+    if (unit.equals("s")) {
+        value *= 1000; // convert seconds to milliseconds
+    }
+
+    return "G4 P" + ((int) value) + "\n";
+}
+
+        // set speed. tested 6/17/26 with user defined variables
+       if (ctx.SET_SPEED() != null && ctx.expr() != null) {
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double speed = compute.visit(ctx.expr());
+    return "G1 F" + (int) speed + "\n";
+}
 
         if (ctx.PRINTFILE() != null && ctx.STRING() != null) {
             String file = ctx.STRING().getText().replace("\"", "");
             return "SDCARD_PRINT_FILE FILENAME=\"" + file + "\"\n";
         }
 
-        if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.NUMBER() != null) {
-            return "SET_PRESSURE_ADVANCE ADVANCE=" + ctx.NUMBER().getText() + "\n";
-        }
+        if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.expr() != null) {
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    return "SET_PRESSURE_ADVANCE ADVANCE=" + value + "\n";
+}
 
-        if (ctx.SET_FAN() != null && ctx.NUMBER() != null) {
-            return "SET_FAN SPEED=" + ctx.NUMBER().getText() + "\n";
-        }
+       if (ctx.SET_FAN() != null && ctx.expr() != null) {
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    return "SET_FAN SPEED=" + (int)value + "\n";
+}
 
 
 if (ctx.SET_NOZZLE() != null) {
-    double val = Double.parseDouble(ctx.NUMBER().getText());
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double val = compute.visit(ctx.expr());
     settings.setNozzleDiameter(val);
     return "";
 }
 if (ctx.SET_FILAMENT() != null) {
-    double val = Double.parseDouble(ctx.NUMBER().getText());
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double val = compute.visit(ctx.expr());
     settings.setFilamentDiameter(val);
-     System.out.println("DEBUG: Filament diameter set to " + val);
+    System.out.println("DEBUG: Filament diameter set to " + val);
     return "";
 }
 if (ctx.SET_LAYER_HEIGHT() != null) {
-    double val = Double.parseDouble(ctx.NUMBER().getText());
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double val = compute.visit(ctx.expr());
     settings.setLayerHeight(val);
      System.out.println("DEBUG: Layer height set to " + val);  
     return "";
 }
 if (ctx.SET_EXTRUSION_MULTIPLIER() != null) {
-    double val = Double.parseDouble(ctx.NUMBER().getText());
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double val = compute.visit(ctx.expr());
     settings.setExtrusionMultiplier(val);
-     System.out.println("DEBUG: Extrusion multiplier set to " + val);
+    System.out.println("DEBUG: Extrusion multiplier set to " + val);
     return "";
 }
 
 if (ctx.ENABLE_AUTO_EXTRUDE() != null) {
-    double val = Double.parseDouble(ctx.NUMBER().getText());
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double val = compute.visit(ctx.expr());
     autoExtrudeEnabled = (val != 0.0);
      System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
     return "";
 }
+
+
+
+//-------------------------------------------
 
 
         // end
@@ -633,7 +672,7 @@ public String visitCoord(JupitoreParser.CoordContext ctx) {
                 throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
             }
             int activeIteration = isInLoop ? iterationStack.peek() : 0;
-            Compute compute = new Compute(activeIteration);
+            Compute compute = new Compute(this, activeIteration);
             double value = compute.visit(ctx.expr());
             double finalE = value * settings.getExtrusionMultiplier();
             hasManualE = true;
@@ -651,7 +690,7 @@ public String visitCoord(JupitoreParser.CoordContext ctx) {
         throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
     }
     int activeIteration = isInLoop ? iterationStack.peek() : 0;
-    Compute compute = new Compute(activeIteration);
+    Compute compute = new Compute(this, activeIteration);
     double value = compute.visit(ctx.expr());
 
     double currentPos = getCurrent(axis);
@@ -786,7 +825,15 @@ private double applyOp(double current, String op, double value) {
         return aggregate + nextResult;
     }
 
-
+@Override
+public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
+    String varName = ctx.ID().getText();
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    variables.put(varName, value);
+    System.out.println("ASSIGN: " + varName + " = " + value);
+    return "";
+}
     
 }
 

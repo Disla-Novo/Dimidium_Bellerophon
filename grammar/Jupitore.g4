@@ -26,41 +26,48 @@ grammar Jupitore;
 statement
     :HOME (ARROW coordList SEMICOLON?)? NEWLINE // ? means optional. Home or Home->x=0
     | MOVE DIRECTION (ARROW coordList (SEMICOLON)?)? NEWLINE  // semicolon optional
-    | HEAT TARGET EQUALS NUMBER NEWLINE  // heat extruder: 200 like m140 s60 ; bed
+    | HEAT TARGET EQUALS expr NEWLINE  // heat extruder: 200 like m140 s60 ; bed
     | LEVEL NEWLINE // level
     | CALL STRING NEWLINE // m.call "Macro Name". so you can call a macros in a macros
                    // | REPEAT NUMBER NEWLINE (statement)* END (NEWLINE | EOF)  // <--- new trying out repeat blocks 3/12/2026
                   //| IF condition NEWLINE statement* ENDIF NEWLINE // for conditional statements - FIXED: NEWLINE instead of SEMICOLON
-    | SET_NOZZLE EQUALS NUMBER NEWLINE
-    | SET_FILAMENT EQUALS NUMBER NEWLINE
-    | SET_LAYER_HEIGHT EQUALS NUMBER NEWLINE
-    | SET_EXTRUSION_MULTIPLIER EQUALS NUMBER NEWLINE
+    | SET_NOZZLE EQUALS expr NEWLINE
+    | SET_FILAMENT EQUALS expr NEWLINE
+    | SET_LAYER_HEIGHT EQUALS expr NEWLINE
+    | SET_EXTRUSION_MULTIPLIER EQUALS expr NEWLINE
     | layer_statement   // new
-    | ENABLE_AUTO_EXTRUDE EQUALS NUMBER NEWLINE
+    | ENABLE_AUTO_EXTRUDE EQUALS expr NEWLINE
     | repeat_statement    // testing
     | if_statement        // testing
     | brepeat_statement  // testing
     | PAUSE NEWLINE
     | RESPOND MSG STRING NEWLINE // to print a message
     | RESUME NEWLINE
-    | SET_HEATER TARGET EQUALS NUMBER NEWLINE // set to target temp. m600 more advanced
+    | SET_HEATER TARGET EQUALS expr NEWLINE // set to target temp. m600 more advanced
     | WAITFORTEMP TARGET NEWLINE // wait for target temp m109
     | COOLDOWN (TARGET)? NEWLINE // added here
     | MOVEEX coordList SEMICOLON? NEWLINE // moves or extrude with the given coords G1 - FIXED: optional semicolon
     | ABSOLUTE NEWLINE   // outputs G90 which is an absolute positioning
     | RELATIVE NEWLINE   // outputs G91 which is a relative positioning
-    | TIMEOUT_SET NUMBER NEWLINE                        // Set idle timeout
+    | TIMEOUT_SET expr NEWLINE                        // Set idle timeout
     | RELATIVEEXTRUSION NEWLINE // this is command M83
     | LOAD_BED_MESH STRING NEWLINE            // BED_MESH_PROFILE LOAD=default
-    | SET_PRESSURE_ADVANCE NUMBER NEWLINE     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
+    | SET_PRESSURE_ADVANCE expr NEWLINE     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
     | RESET_EXTRUDER NEWLINE                  // G92 E0
-    | DWELL NUMBER ( 'S' | 's' | 'MS' | 'ms' )? NEWLINE// new 
+    | DWELL expr ( 'S' | 's' | 'MS' | 'ms' )? NEWLINE// new 
     | BED_MESH_CALIBRATE NEWLINE    // BED_MESH_CALIBRATE command
     | PROBE_CALIBRATE NEWLINE    // PROBE_CALIBRATE
        // Added - FIXED: lowercase 'cooldown' deleted cooldown. 
-    | SET_SPEED EQUALS NUMBER NEWLINE
-    | SET_FAN EQUALS NUMBER NEWLINE     // Added        // Added - FIXED: removed SPEED token
+    | SET_SPEED EQUALS expr NEWLINE // 6/17/26  changed to expr to test for user defined variables. 
+    | SET_FAN EQUALS expr NEWLINE     // Added        // Added - FIXED: removed SPEED token
     | PRINTFILE STRING NEWLINE             // Added - prints a G-code file via SD card
+    | assignment   // new rule for variable assignment 6/17/2026
+    ;
+
+
+// new rule 6/17/26
+ assignment
+    : ID EQUALS expr NEWLINE
     ;
 
   repeat_statement
@@ -130,6 +137,7 @@ coord
     | expr op=('+'|'-') expr          # addSub    // Addition/Subtraction
     | NUMBER                          # number    
     | 'i'                             # iterator  //The loop variable
+    | ID                              # variable  // Variable reference 6/17/2026
     ;
 
 // these are our functions. we may add new ones but itll be computed in compute.java

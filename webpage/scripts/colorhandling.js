@@ -54,6 +54,9 @@ const tokenColors = {
     MINUS: "#abb2bf",
     BREPEAT: "#c678dd", // purple-ish for loops
 
+
+
+    
 };
 
 
@@ -82,12 +85,46 @@ window.addEventListener('DOMContentLoaded', () => {
 
     tokens.forEach(t => {
        
+
+
+
         if (t.start > lastIndex) {
             html += escapeHTML(codeInput.slice(lastIndex, t.start));
         }
 
         let color = tokenColors[t.name] || "white";   // WHITE
         
+
+
+if (t.name === "ID") {
+   
+    let nextIndex = t.end + 1;
+    while (nextIndex < codeInput.length && codeInput[nextIndex].match(/\s/)) {
+        nextIndex++;
+    }
+    const nextChar = codeInput[nextIndex] || '';
+    if (nextChar === '=') {
+        color = "#dd9919"; // assignment target
+    } else {
+       
+        let prevIndex = t.start - 1;
+        while (prevIndex >= 0 && codeInput[prevIndex].match(/\s/)) {
+            prevIndex--;
+        }
+        const prevChar = codeInput[prevIndex] || '';
+        
+        if (['=', '+', '-', '*', '/', '(', ','].includes(prevChar)) {
+            color = "#dd9919";
+        } else {
+          
+            color = tokenColors.ID || "#abb2bf";
+        }
+    }
+}
+
+
+
+
         //  token in a span
         html += `<span style="color: ${color}">${escapeHTML(t.text)}</span>`;
         

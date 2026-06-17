@@ -1,4 +1,4 @@
-// Generated from Jupitore.g4 by ANTLR 4.9.3
+// Generated from grammar/Jupitore.g4 by ANTLR 4.9.3
 package jupitore.gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -28,6 +28,12 @@ public interface JupitoreVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStatement(JupitoreParser.StatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JupitoreParser#assignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignment(JupitoreParser.AssignmentContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link JupitoreParser#repeat_statement}.
 	 * @param ctx the parse tree
@@ -91,6 +97,13 @@ public interface JupitoreVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIterator(JupitoreParser.IteratorContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code variable}
+	 * labeled alternative in {@link JupitoreParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariable(JupitoreParser.VariableContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code addSub}
 	 * labeled alternative in {@link JupitoreParser#expr}.
