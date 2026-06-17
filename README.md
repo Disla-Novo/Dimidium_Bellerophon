@@ -66,7 +66,10 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
 
 - IDE Reference Panel – displays all Bellerophon tokens. Users can pin commands to a sidebar for quick access while typing.
 - Session Restoration – the IDE automatically restores the previous editing session to prevent accidental data loss.
-- Dimidium Ecosystem Integration – compiled macros can be deployed and managed through Gravity Hub or executed directly within Mainsail (Klipper) or any Marlin host. [this was left unfinished] 
+- Dimidium Ecosystem Integration – compiled macros can be deployed and managed through Gravity Hub or executed directly within Mainsail (Klipper) or any Marlin host. [this was left unfinished]
+- Printer Profile UI: The IDE provides a graphical interface to set hardware limits and default printing parameters (nozzle diameter, filament
+diameter, layer height, extrusion multiplier). These settings are used as defaults unless overridden by macro commands.
+- Local user variables – define and reuse variables inside macros.
 
 ---
 
