@@ -74,19 +74,20 @@ public class MarlinVisitor extends GCodeVisitor {
         // NEW marlin specific. apparently it listens to 'R' and not 'S'.
         // 4/4/2026
         if (ctx.HEAT() != null) {
-            if (ctx.TARGET() != null && ctx.NUMBER() != null) {
+            if (ctx.TARGET() != null && ctx.expr() != null) {
                 String target = ctx.TARGET().getText().toLowerCase();
-                String value = ctx.NUMBER().getText();
+                Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+                double value = compute.visit(ctx.expr());
 
                 switch (target) {
                     case "extruder":
 
-                        return "M109 R" + value + "\n";
+                        return "M109 R" + (int)value + "\n";
                     case "bed":
 
-                        return "M190 R" + value + "\n";
+                        return "M190 R" + (int)value + "\n";
                     case "chamber":
-                        return "M141 S" + value + "\n";
+                        return "M141 S" + (int)value + "\n";
                 }
             }
         }
@@ -105,10 +106,11 @@ public class MarlinVisitor extends GCodeVisitor {
         }
 
         // SET_FAN...Marlin uses M106
-        if (ctx.SET_FAN() != null && ctx.NUMBER() != null) {
-            String speed = ctx.NUMBER().getText();
+        if (ctx.SET_FAN() != null && ctx.expr() != null) {
+            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+            double speed = compute.visit(ctx.expr());
             // Marlin fan speed is 0-255; Bellerophon uses 0-1 range
-            int marlinSpeed = (int) (Double.parseDouble(speed) * 255);
+            int marlinSpeed = (int) (speed * 255);
             return "M106 S" + marlinSpeed + "\n";
         }
 
@@ -145,15 +147,17 @@ public class MarlinVisitor extends GCodeVisitor {
         }
 
         // SET_PRESSURE_ADVANCE
-        if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.NUMBER() != null) {
-            String value = ctx.NUMBER().getText();
+        if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.expr() != null) {
+            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+            double value = compute.visit(ctx.expr());
             return "M900 K" + value + "\n"; // Marlin linear advance
         }
 
         // TIMEOUT_SET
-        if (ctx.TIMEOUT_SET() != null && ctx.NUMBER() != null) {
-            String seconds = ctx.NUMBER().getText();
-            return "M84 S" + seconds + "\n"; // Marlin idle timeout
+        if (ctx.TIMEOUT_SET() != null && ctx.expr() != null) {
+            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+            double seconds = compute.visit(ctx.expr());
+            return "M84 S" + (int)seconds + "\n"; // Marlin idle timeout
         }
 
         // PRINTFILE

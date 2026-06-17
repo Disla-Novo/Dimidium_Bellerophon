@@ -5,10 +5,12 @@ import jupitore.gen.*;
 public class Compute extends JupitoreBaseVisitor<Double> {
 
     private int iteration;
+    private GCodeVisitor visitor;
 
-    public Compute(int iteration) {
-        this.iteration = iteration;
-    }
+   public Compute(GCodeVisitor visitor, int iteration) {
+    this.visitor = visitor;
+    this.iteration = iteration;
+}
 
     /** 
      * @param ctx
@@ -71,14 +73,17 @@ public class Compute extends JupitoreBaseVisitor<Double> {
      */
     // multiply / divide
     //MODIFYING 4/3/2026 to op.getText. gonna simplify things even more
-    @Override
-    public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
-
-        double left = visit(ctx.expr(0));
-        double right = visit(ctx.expr(1));
-
-        return ctx.op.getText().equals("*") ? left * right : left / right;
+   @Override
+public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
+    Double left = visit(ctx.expr(0));
+    Double right = visit(ctx.expr(1));
+    System.out.println("MULDIV: left=" + left + ", right=" + right);
+    if (left == null || right == null) {
+        System.out.println("WARNING: left or right is null!");
+        return 0.0;
     }
+    return ctx.op.getText().equals("*") ? left * right : left / right;
+}
 
     /** 
      * @param ctx
@@ -113,4 +118,20 @@ public class Compute extends JupitoreBaseVisitor<Double> {
                 throw new RuntimeException("Unknown function: " + funcName);
         }
     }
+
+
+
+ @Override
+public Double visitVariable(JupitoreParser.VariableContext ctx) {
+    String varName = ctx.ID().getText();
+    Double value = visitor.variables.getOrDefault(varName, 0.0);
+    System.out.println("READ VAR: " + varName + " = " + value); 
+    return value;
+}
+
+@Override
+protected Double defaultResult() {
+    return 0.0;
+}
+
 }

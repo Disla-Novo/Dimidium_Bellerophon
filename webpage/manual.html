@@ -21,94 +21,95 @@
                 </div>
             </section>
 
-        <section class="section">
-    <h2>Getting Started & Platform Requirements</h2>
-    <p><strong>Bellerophon</strong> is a 3D printer scripting IDE and language designed for Klipper and Marlin macros. It allows you to write structured, parametric scripts and compile them into firmware‑compatible G-code macros. This section describes system requirements, inputs, outputs, capabilities, and limitations.</p>
+            <section class="section">
+                <h2>Getting Started & Platform Requirements</h2>
+                <p><strong>Bellerophon</strong> is a 3D printer scripting IDE and language designed for Klipper and Marlin macros. It allows you to write structured, parametric scripts and compile them into firmware‑compatible G-code macros. This section describes system requirements, inputs, outputs, capabilities, and limitations.</p>
 
-     <h3>1. Requirements</h3>
-    <ul>
-        <li><strong>Software:</strong> Java Runtime Environment (JRE) 21 or newer</li>
-        <li><strong>Hardware:</strong> Any computer capable of running Java</li>
-    </ul>
+                <h3>1. Requirements</h3>
+                <ul>
+                    <li><strong>Software:</strong> Java Runtime Environment (JRE) 19 or newer</li>
+                    <li><strong>Hardware:</strong> Any computer capable of running Java</li>
+                </ul>
 
-    <h3>2. Running the IDE</h3>
-    
-    <h4>Windows</h4>
-    <ol>
-        <li>Double-click <code>run.bat</code> to start the server</li>
-        <li>Your browser will open automatically to the Dimidium Ecosystem</li>
-        <li>Close the server window when finished</li>
-    </ol>
+                <h3>2. Running the IDE</h3>
+                
+                <h4>Windows</h4>
+                <ol>
+                    <li>Double-click <code>run.bat</code> to start the server</li>
+                    <li>Your browser will open automatically to the Dimidium Ecosystem</li>
+                    <li>Close the server window when finished</li>
+                </ol>
 
-    <h4>Linux / Mac</h4>
-    <ol>
-        <li>Install Java (OpenJDK 21 or newer)</li>
-        <li>Open a terminal in the SyntaxN folder</li>
-        <li>Run: <code>java -jar SyntaxN.jar</code></li>
-        <li>Open browser to: <code>http://localhost:4567</code></li>
-        <li>Press Ctrl+C in terminal to stop the server</li>
-    </ol>
+                <h4>Linux / Mac</h4>
+                <ol>
+                    <li>Install Java (OpenJDK 19 or newer)</li>
+                    <li>Open a terminal in the SyntaxN folder</li>
+                    <li>Run: <code>java -jar SyntaxN.jar</code></li>
+                    <li>Open browser to: <code>http://localhost:4567</code></li>
+                    <li>Press Ctrl+C in terminal to stop the server</li>
+                </ol>
 
-    <div class="note">
-       The server runs locally on port 4567. No internet connection required after installation.
-    </div>
+                <div class="note">
+                   The server runs locally on port 4567. No internet connection required after installation.
+                </div>
 
-    <h3>3. Compilation Targets: Klipper vs Marlin</h3>
-    <p>The IDE can compile your <code>.bph</code> scripts to two different output formats:</p>
-    <ul>
-        <li><strong>Klipper</strong> – Full support for all Bellerophon features, including <code>if</code> statements, advanced temperature commands, and Klipper‑specific G‑code macros.</li>
-        <li><strong>Marlin</strong> – A simpler output that omits features not available in Marlin firmware. <strong>Conditional statements (<code>if</code>/<code>endif</code>) are not supported in Marlin mode</strong>; all other movement, heating, looping, and macro commands work as expected (loops are expanded at compile time).</li>
-    </ul>
-    <p>Select the target in the IDE before compiling. The generated <code>.cfg</code> (Klipper) or <code>.gcode</code> (Marlin) file will be saved accordingly.</p>
+                <h3>3. Compilation Targets: Klipper vs Marlin</h3>
+                <p>The IDE can compile your <code>.bph</code> scripts to two different output formats:</p>
+                <ul>
+                    <li><strong>Klipper</strong> – Full support for all Bellerophon features, including <code>if</code> statements, advanced temperature commands, and Klipper‑specific G‑code macros.</li>
+                    <li><strong>Marlin</strong> – A simpler output that omits features not available in Marlin firmware. <strong>Conditional statements (<code>if</code>/<code>endif</code>) are not supported in Marlin mode</strong>; all other movement, heating, looping, and macro commands work as expected (loops are expanded at compile time).</li>
+                </ul>
+                <p>Select the target in the IDE before compiling. The generated <code>.cfg</code> (Klipper) or <code>.gcode</code> (Marlin) file will be saved accordingly.</p>
 
-    <h3>4. Inputs</h3>
-    <ul>
-        <li>Bellerophon accepts only <code>.bph</code> script files.</li>
-        <li>The IDE provides real-time syntax validation, highlighting errors as you type.</li>
-        <li>Scripts are line-oriented: each command must be on its own line; blank lines between commands are ignored.</li>
-        <li>Supported commands include: movement, temperature control, heaters, fans, waits, pauses, macros calls, repeat loops, Brepeat loops, conditional execution (Klipper only), extruder control, and bed/probe operations.</li>
-    </ul>
+                <h3>4. Inputs</h3>
+                <ul>
+                    <li>Bellerophon accepts only <code>.bph</code> script files.</li>
+                    <li>The IDE provides real-time syntax validation, highlighting errors as you type.</li>
+                    <li>Scripts are line-oriented: each command must be on its own line; blank lines between commands are ignored.</li>
+                    <li>Supported commands include: movement, temperature control, heaters, fans, waits, pauses, macros calls, repeat loops, Brepeat loops, conditional execution (Klipper only), extruder control, and bed/probe operations.</li>
+                </ul>
 
-    <h3>5. Outputs</h3>
-    <ul>
-        <li>Compiles <code>.bph</code> scripts into either Klipper macro <code>.cfg</code> files or Marlin <code>.gcode</code> files.</li>
-        <li>Compiled macros can be deployed to printers via <strong>Gravity Hub</strong> or directly from Mainsail (Klipper) or any Marlin host.</li>
-        <li>The IDE provides Build Log and Exceptions tabs for debugging and catching compilation errors.</li>
-    </ul>
+                <h3>5. Outputs</h3>
+                <ul>
+                    <li>Compiles <code>.bph</code> scripts into either Klipper macro <code>.cfg</code> files or Marlin <code>.gcode</code> files.</li>
+                    <li>Compiled macros can be deployed to printers via <strong>Gravity Hub</strong> or directly from Mainsail (Klipper) or any Marlin host.</li>
+                    <li>The IDE provides Build Log and Exceptions tabs for debugging and catching compilation errors.</li>
+                </ul>
 
- <h3>6. Capabilities</h3>
-<ul>
-    <li>Compile structured macros for Klipper or Marlin with correct syntax.</li>
-    <li>Support for arithmetic expressions in coordinates and parameters:  <strong>globally available</strong> </li>
-    <li>Mathematical functions: <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code> (absolute value), <code>sign</code> (signum), power operator <code>^</code>, and constant <code>pi</code>.</li>
-    <li>Parametric loops using <code>repeat</code> (static repetition) and <code>Brepeat</code> (dynamic, iteration‑aware loops), including support for <strong>nested loops</strong> and iterator‑based expressions.</li>
-    <li><strong>Parametric Geometry:</strong> Mathematical functions allow the generation of procedural motion paths such as circles, spirals, or arbitrary curves.</li>
-    <li>Conditional execution with <code>if</code> statements (Klipper only), allowing decisions based on temperatures or other parameters.</li>
-    <li>Temperature management for extruder, bed, and chamber (<code>Set_Heater_Temperature</code>, <code>Heat</code>, <code>WaitForTemp</code>).</li>
-    <li>Printer movement commands, including absolute and relative positioning, X/Y/Z moves, extruder control, and dwell/wait commands.</li>
-    <li>Macro calls within macros (<code>M.call</code>), allowing reuse and modular scripts.</li>
-    <li>Bed and probe management: <code>BED_MESH_CALIBRATE</code>, <code>PROBE_CALIBRATE</code>, <code>LoadBedMesh</code>.</li>
-    <li>Fan control, pressure advance, speed settings, and idle timeout (<code>TIMEOUT_SET</code>).</li>
-    <li>Pause, resume, cooldown, and SD card file printing (<code>PRINTFILE</code>).</li>
-    <li><strong>IDE Reference Panel:</strong> Displays all Bellerophon tokens in a user-friendly format. Users can pin commands to a sidebar for quick access while typing, reducing errors and speeding up workflow.</li>
-    <li><strong>Session Restoration:</strong> The IDE automatically restores the previous editing session to prevent accidental data loss and allow users to continue work seamlessly.</li>
-    <li><strong>Dimidium Ecosystem Integration:</strong> Compiled macros can be deployed and managed through the Dimidium Gravity Hub dashboard or executed directly within Mainsail (Klipper) or any Marlin host.</li>
-</ul>
+                <h3>6. Capabilities</h3>
+                <ul>
+                    <li>Compile structured macros for Klipper or Marlin with correct syntax.</li>
+                    <li>Support for arithmetic expressions in coordinates and parameters – <strong>globally available</strong>.</li>
+                    <li>Mathematical functions: <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code> (absolute value), <code>sign</code> (signum), power operator <code>^</code>, and constant <code>pi</code>.</li>
+                    <li><strong>Local user variables</strong> – define and reuse variables inside macros.</li>
+                    <li>Parametric loops using <code>repeat</code> (static repetition) and <code>Brepeat</code> (dynamic, iteration‑aware loops), including support for <strong>nested loops</strong> and iterator‑based expressions.</li>
+                    <li><strong>Parametric Geometry:</strong> Mathematical functions allow the generation of procedural motion paths such as circles, spirals, or arbitrary curves.</li>
+                    <li>Conditional execution with <code>if</code> statements (Klipper only), allowing decisions based on temperatures or other parameters.</li>
+                    <li>Temperature management for extruder, bed, and chamber (<code>Set_Heater_Temperature</code>, <code>Heat</code>, <code>WaitForTemp</code>).</li>
+                    <li>Printer movement commands, including absolute and relative positioning, X/Y/Z moves, extruder control, and dwell/wait commands.</li>
+                    <li>Macro calls within macros (<code>M.call</code>), allowing reuse and modular scripts.</li>
+                    <li>Bed and probe management: <code>BED_MESH_CALIBRATE</code>, <code>PROBE_CALIBRATE</code>, <code>LoadBedMesh</code>.</li>
+                    <li>Fan control, pressure advance, speed settings, and idle timeout (<code>TIMEOUT_SET</code>).</li>
+                    <li>Pause, resume, cooldown, and SD card file printing (<code>PRINTFILE</code>).</li>
+                    <li><strong>IDE Reference Panel:</strong> Displays all Bellerophon tokens in a user-friendly format. Users can pin commands to a sidebar for quick access while typing, reducing errors and speeding up workflow.</li>
+                    <li><strong>Session Restoration:</strong> The IDE automatically restores the previous editing session to prevent accidental data loss and allow users to continue work seamlessly.</li>
+                    <li><strong>Dimidium Ecosystem Integration:</strong> Compiled macros can be deployed and managed through the Dimidium Gravity Hub dashboard or executed directly within Mainsail (Klipper) or any Marlin host.</li>
+                    <li><strong>Printer Profile UI:</strong> The IDE provides a graphical interface to set hardware limits and default printing parameters (nozzle diameter, filament diameter, layer height, extrusion multiplier). These settings are used as defaults unless overridden by macro commands.</li>
+                </ul>
 
+                <h3>7. Limitations</h3>
+                <ul>
+                    <li>Cannot slice 3D models; only generates G-code from Bellerophon <code>.bph</code> scripts.</li>
+                    <li>Does not modify existing G-code files automatically.</li>
+                    <li>Some advanced or rare G-code commands may not be supported.</li>
+                    <li><strong>Variables are local to macros</strong> – they do not persist across macros (global variables are a planned future feature).</li>
+                    <li><strong>Marlin target:</strong> Conditional statements (<code>if</code>/<code>endif</code>) are not supported and will be ignored.</li>
+                </ul>
 
- <h3>7. Limitations</h3>
-<ul>
-    <li>Cannot slice 3D models; only generates G-code from Bellerophon <code>.bph</code> scripts.</li>
-    <li>Does not modify existing G-code files automatically.</li>
-    <li>Some advanced or rare G-code commands may not be supported.</li>
-    <li>No general-purpose variables; logic is limited to loop iterators and math expressions</li>
-    <li><strong>Marlin target:</strong> Conditional statements (<code>if</code>/<code>endif</code>) are not supported and will be ignored</li>
-</ul>
-
-    <h3>9. Workflow Diagram</h3>
-    <p>High-level workflow of using Bellerophon:</p>
-    <pre><code>.bph script  →  IDE (edit & validate)  →  Select target → Compile →  .cfg (Klipper) / .gcode (Marlin) → Deploy → Run macros</code></pre>
-</section>
+                <h3>8. Workflow Diagram</h3>
+                <p>High-level workflow of using Bellerophon:</p>
+                <pre><code>.bph script  →  IDE (edit & validate)  →  Select target → Compile →  .cfg (Klipper) / .gcode (Marlin) → Deploy → Run macros</code></pre>
+            </section>
 
             <section class="section">
                 <h2>Program Structure</h2>
@@ -123,6 +124,56 @@
                 <p>Each command must be on its own line. Indentation is optional but recommended. Comments start with <span class="inline-code">#</span>.</p>
             </section>
 
+            <!-- LOCAL USER VARIABLES -->
+            <section class="section">
+                <h2>Local User Variables</h2>
+                <p>Bellerophon supports <strong>local variables</strong> defined inside macros. Variables are scoped to the macro they are defined in and are not accessible outside it.</p>
+
+                <div class="note">
+                    <strong>Scope:</strong> Variables are local to the macro. They do not persist across macro calls. Global variables are a planned future feature.
+                </div>
+
+                <h3>Assignment Syntax</h3>
+                <p>To define or update a variable, use the assignment statement:</p>
+                <div class="code-block">
+<span class="line"><span class="token-ID">variable_name</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">expression</span></span>
+                </div>
+
+                <h3>Supported Expressions</h3>
+                <p>Variables can be assigned any valid expression:</p>
+                <ul>
+                    <li><strong>Numbers:</strong> <code>150</code>, <code>3.14</code>, <code>-5</code></li>
+                    <li><strong>Arithmetic:</strong> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code> (power)</li>
+                    <li><strong>Parentheses:</strong> <code>(base + offset) * 2</code></li>
+                    <li><strong>Functions:</strong> <code>sin()</code>, <code>cos()</code>, <code>tan()</code>, <code>sqrt()</code>, <code>abs()</code>, <code>sign()</code></li>
+                    <li><strong>Constant:</strong> <code>pi</code></li>
+                    <li><strong>Variable references:</strong> <code>my_x</code>, <code>speed</code> (must be defined earlier in the macro)</li>
+                </ul>
+
+                <h3>Example</h3>
+                <div class="code-block">
+<span class="line"><span class="token-TITLE">M.title</span> <span class="token-STRING">"example"</span></span>
+<span class="line">    <span class="token-ID">base</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">100</span></span>
+<span class="line">    <span class="token-ID">offset</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">50</span></span>
+<span class="line">    <span class="token-ID">speed</span> <span class="token-EQUALS">=</span> (<span class="token-ID">base</span> + <span class="token-ID">offset</span>) * <span class="token-NUMBER">2</span></span>
+<span class="line">    <span class="token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-ID">speed</span></span>
+<span class="line">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">base</span> <span class="token-Y">y</span>=<span class="token-ID">offset</span></span>
+<span class="line">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">base</span>+<span class="token-ID">offset</span> <span class="token-Y">y</span>=<span class="token-ID">base</span>-<span class="token-ID">offset</span></span>
+<span class="line"><span class="token-MEND">M.end</span></span>
+                </div>
+
+                <h4>Output</h4>
+                <div class="code-block">
+<span class="line">[gcode_macro example]</span>
+<span class="line">gcode:</span>
+<span class="line">  G1 F300</span>
+<span class="line">  G1 X100.000 Y50.000</span>
+<span class="line">  G1 X150.000 Y50.000</span>
+                </div>
+
+            
+            </section>
+
             <section class="section">
                 <h2>Statement Reference</h2>
                 <table>
@@ -134,231 +185,286 @@
                             <th>G-code / Notes</th>
                         </tr>
                     </thead>
-                   <tbody>
+                    <tbody>
 
-<tr>
-<td><span class="inline-code token-HOME">Home</span></td>
-<td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-COORD">coordList</span></td>
-<td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-X">x</span>=<span class="token-NUMBER">0</span> <span class="token-Y">y</span>=<span class="token-NUMBER">0</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0</span></td>
-<td>G28 / G28 X Y Z</td>
-</tr>
+                        <!-- ASSIGNMENT -->
+                        <tr>
+                            <td><span class="inline-code token-ID">Assignment</span></td>
+                            <td><span class="inline-code token-ID">variable</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">expression</span></td>
+                            <td><span class="inline-code token-ID">my_x</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">150</span></td>
+                            <td>Stores the expression result in a local variable. Variables are scoped to the macro.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-MOVE">Move</span></td>
-<td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">direction</span></td>
-<td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">left</span> / <span class="token-DIRECTION">right</span> / <span class="token-DIRECTION">center</span> / <span class="token-DIRECTION">up</span> / <span class="token-DIRECTION">down</span></td>
-<td>G1 with directional offset. Iterates 1 mm. <span class="token-DIRECTION">center</span> defaults to X0 Y0</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-HOME">Home</span></td>
+                            <td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-COORD">coordList</span></td>
+                            <td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-X">x</span>=<span class="token-NUMBER">0</span> <span class="token-Y">y</span>=<span class="token-NUMBER">0</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0</span></td>
+                            <td>G28 / G28 X Y Z</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-MOVEEX">MoveTo</span></td>
-<td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-COORD">coordList</span></td>
-<td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">100</span> <span class="token-Y">y</span>=<span class="token-NUMBER">100</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0.2</span></td>
-<td>G1 X Y Z E</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-MOVE">Move</span></td>
+                            <td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">direction</span></td>
+                            <td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">left</span> / <span class="token-DIRECTION">right</span> / <span class="token-DIRECTION">center</span> / <span class="token-DIRECTION">up</span> / <span class="token-DIRECTION">down</span></td>
+                            <td>G1 with directional offset. Iterates 1 mm. <span class="token-DIRECTION">center</span> defaults to X0 Y0</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
-<td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
-<td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
-<td>G90</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-MOVEEX">MoveTo</span></td>
+                            <td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-COORD">coordList</span></td>
+                            <td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">100</span> <span class="token-Y">y</span>=<span class="token-NUMBER">100</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0.2</span></td>
+                            <td>G1 X Y Z E</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-RELATIVE">Relative</span></td>
-<td><span class="inline-code token-RELATIVE">Relative</span></td>
-<td><span class="inline-code token-RELATIVE">Relative</span></td>
-<td>G91</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
+                            <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
+                            <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
+                            <td>G90</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-HEAT">Heat</span></td>
-<td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
-<td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">extruder</span>=<span class="token-NUMBER">200</span></td>
-<td>Sets temperature and <strong>waits until it is reached</strong>. <br>
-Extruder → M109, Bed → M190, Chamber → M141</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-RELATIVE">Relative</span></td>
+                            <td><span class="inline-code token-RELATIVE">Relative</span></td>
+                            <td><span class="inline-code token-RELATIVE">Relative</span></td>
+                            <td>G91</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span></td>
-<td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
-<td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">bed</span>=<span class="token-NUMBER">60</span></td>
-<td>Sets temperature but <strong>does NOT wait</strong>. <br>
-Extruder → M104, Bed → M140, Chamber → M141</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-HEAT">Heat</span></td>
+                            <td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">extruder</span>=<span class="token-NUMBER">200</span></td>
+                            <td>Sets temperature and <strong>waits until it is reached</strong>. <br>
+                            Extruder → M109, Bed → M190, Chamber → M141</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span></td>
-<td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">target</span></td>
-<td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">extruder</span></td>
-<td>Waits until the target reaches its current set temperature. <br>
-Does <strong>not change</strong> the temperature. <br>
-Extruder → M109, Bed → M190, Chamber → M141</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span></td>
+                            <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">bed</span>=<span class="token-NUMBER">60</span></td>
+                            <td>Sets temperature but <strong>does NOT wait</strong>. <br>
+                            Extruder → M104, Bed → M140, Chamber → M141</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-COOLDOWN">Cooldown</span></td>
-<td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">target</span> (optional)</td>
-<td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span> or just <span class="inline-code token-COOLDOWN">Cooldown</span></td>
-<td>M104 S0 / M140 S0 / TURN_OFF_HEATERS. If target omitted, turns off all heaters.</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span></td>
+                            <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">target</span></td>
+                            <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">extruder</span></td>
+                            <td>Waits until the target reaches its current set temperature. <br>
+                            Does <strong>not change</strong> the temperature. <br>
+                            Extruder → M109, Bed → M190, Chamber → M141</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-TIMEOUT_SET">TimeoutSet</span></td>
-<td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">seconds</span></td>
-<td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">300</span></td>
-<td>Set idle timeout (seconds). Maps to Klipper's <code>SET_IDLE_TIMEOUT TIMEOUT=300</code> (ignored in Marlin).</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-COOLDOWN">Cooldown</span></td>
+                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">target</span> (optional)</td>
+                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span> or just <span class="inline-code token-COOLDOWN">Cooldown</span></td>
+                            <td>M104 S0 / M140 S0 / TURN_OFF_HEATERS. If target omitted, turns off all heaters.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-PAUSE">Pause</span></td>
-<td><span class="inline-code token-PAUSE">Pause</span></td>
-<td><span class="inline-code token-PAUSE">Pause</span></td>
-<td>PAUSE (Klipper) / M0 (Marlin)</td>
-</tr>
-<tr>
-<td><span class="inline-code token-RESUME">Resume</span></td>
-<td><span class="inline-code token-RESUME">Resume</span></td>
-<td><span class="inline-code token-RESUME">Resume</span></td>
-<td>RESUME (Klipper) / M108 (Marlin)</td>
-</tr>
-<tr>
-<td><span class="inline-code token-RESPOND">Respond</span></td>
-<td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"text"</span></td>
-<td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Print complete"</span></td>
-<td>RESPOND MSG="text" (Klipper) / M117 (Marlin)</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-TIMEOUT_SET">TimeoutSet</span></td>
+                            <td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">seconds</span></td>
+                            <td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">300</span></td>
+                            <td>Set idle timeout (seconds). Maps to Klipper's <code>SET_IDLE_TIMEOUT TIMEOUT=300</code> (ignored in Marlin).</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-SET_SPEED">SetSpeed</span></td>
-<td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
-<td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">100</span></td>
-<td>G1 F#</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-PAUSE">Pause</span></td>
+                            <td><span class="inline-code token-PAUSE">Pause</span></td>
+                            <td><span class="inline-code token-PAUSE">Pause</span></td>
+                            <td>PAUSE (Klipper) / M0 (Marlin)</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-SET_FAN">SetFan</span></td>
-<td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
-<td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">255</span></td>
-<td>SET_FAN SPEED=# (Klipper) / M106 S# (Marlin)</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-RESUME">Resume</span></td>
+                            <td><span class="inline-code token-RESUME">Resume</span></td>
+                            <td><span class="inline-code token-RESUME">Resume</span></td>
+                            <td>RESUME (Klipper) / M108 (Marlin)</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-PRINTFILE">PrintFile</span></td>
-<td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"file.gcode"</span></td>
-<td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"cube.gcode"</span></td>
-<td>SDCARD_PRINT_FILE FILENAME="file.gcode" (Klipper) / M23 (Marlin)</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-RESPOND">Respond</span></td>
+                            <td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"text"</span></td>
+                            <td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Print complete"</span></td>
+                            <td>RESPOND MSG="text" (Klipper) / M117 (Marlin)</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-CALL">Call Macro</span></td>
-<td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"MacroName"</span></td>
-<td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"CalibrateBed"</span></td>
-<td>Calls another macro (Klipper) / M98 (Marlin)</td>
-</tr>
+                        <!--  SET_SPEED -->
+                        <tr>
+                            <td><span class="inline-code token-SET_SPEED">SetSpeed</span></td>
+                            <td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">100</span></td>
+                            <td>G1 F#</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-IF">If / EndIf</span></td>
-<td><span class="inline-code token-IF">if</span> condition ... <span class="inline-code token-ENDIF">endif</span></td>
-<td><span class="inline-code token-IF">if</span> extruder &gt; <span class="token-NUMBER">190</span> ... <span class="inline-code token-ENDIF">endif</span></td>
-<td><strong>Klipper only</strong>; compiled to Jinja condition. Not available in Marlin target.</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-SET_FAN">SetFan</span></td>
+                            <td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">255</span></td>
+                            <td>SET_FAN SPEED=# (Klipper) / M106 S# (Marlin)</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
-<td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
-<td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
-<td>M83</td>
-</tr>
+                        <!-- NEW PRINTER SETTINGS COMMANDS  -->
+                        <tr>
+                            <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span></td>
+                            <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.6</span></td>
+                            <td>Sets the nozzle diameter (mm) for extrusion calculations. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-RESET">ResetExtruder</span></td>
-<td><span class="inline-code token-RESET">ResetExtruder</span></td>
-<td><span class="inline-code token-RESET">ResetExtruder</span></td>
-<td>G92 E0</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-SET_FILAMENT">SetFilament</span></td>
+                            <td><span class="inline-code token-SET_FILAMENT">SetFilament</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_FILAMENT">SetFilament</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">2.85</span></td>
+                            <td>Sets the filament diameter (mm) for extrusion calculations. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
-<td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
-<td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
-<td>BED_MESH_CALIBRATE (Klipper) / G29 (Marlin)</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span></td>
+                            <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.3</span></td>
+                            <td>Sets the layer height (mm) for extrusion calculations and the <code>Layer</code> command. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-LEVEL">Level</span></td>
-<td><span class="inline-code token-LEVEL">Level</span></td>
-<td><span class="inline-code token-LEVEL">Level</span></td>
-<td>Alias for BedMeshCalibrate → triggers BED_MESH_CALIBRATE or G29</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span></td>
+                            <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.95</span></td>
+                            <td>Adjusts the extrusion multiplier (flow rate compensation). Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
-<td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
-<td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
-<td>PROBE_CALIBRATE (Klipper) – not available in Marlin</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span></td>
+                            <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">1</span>|<span class="token-NUMBER">0</span></td>
+                            <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">1</span></td>
+                            <td>Enables (<code>1</code>) or disables (<code>0</code>) automatic extrusion calculation for <code>MoveTo</code> commands. Manual <code>e=...</code> overrides auto‑extrusion.</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-LOAD">LoadBedMesh</span></td>
-<td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"profile"</span></td>
-<td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"default"</span></td>
-<td>BED_MESH_PROFILE LOAD=profile (Klipper) – not available in Marlin</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-LAYER">Layer</span></td>
+                            <td><span class="inline-code token-LAYER">Layer</span> <span class="token-NUMBER">number</span> ... <span class="token-END">end</span></td>
+                            <td><span class="inline-code token-LAYER">Layer</span> <span class="token-NUMBER">5</span> ... <span class="token-END">end</span></td>
+                            <td>Repeats the enclosed block for the specified number of layers, automatically raising Z by the current <code>LayerHeight</code> after each layer.</td>
+                        </tr>
+                        
 
-<tr>
-<td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span></td>
-<td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">number</span></td>
-<td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">0.04</span></td>
-<td>SET_PRESSURE_ADVANCE ADVANCE=# (Klipper only)</td>
-</tr>
+                        <tr>
+                            <td><span class="inline-code token-PRINTFILE">PrintFile</span></td>
+                            <td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"file.gcode"</span></td>
+                            <td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"cube.gcode"</span></td>
+                            <td>SDCARD_PRINT_FILE FILENAME="file.gcode" (Klipper) / M23 (Marlin)</td>
+                        </tr>
 
-<tr>
-<td><span class="inline-code token-DWELL">Dwell</span></td>
-<td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">time</span> <span class="token-S">S</span>|<span class="token-S">ms</span> (optional unit)</td>
-<td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">0.5</span> <span class="token-S">S</span> or <span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">500</span> <span class="token-S">ms</span></td>
-<td>G4 P# (P is milliseconds). If unit omitted, defaults to seconds. Example: <code>Dwell 0.5</code> → G4 P500</td>
-</tr>
-</tbody>
+                        <tr>
+                            <td><span class="inline-code token-CALL">Call Macro</span></td>
+                            <td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"MacroName"</span></td>
+                            <td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"CalibrateBed"</span></td>
+                            <td>Calls another macro (Klipper) / M98 (Marlin)</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-IF">If / EndIf</span></td>
+                            <td><span class="inline-code token-IF">if</span> condition ... <span class="inline-code token-ENDIF">endif</span></td>
+                            <td><span class="inline-code token-IF">if</span> extruder &gt; <span class="token-NUMBER">190</span> ... <span class="inline-code token-ENDIF">endif</span></td>
+                            <td><strong>Klipper only</strong>; compiled to Jinja condition. Not available in Marlin target.</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
+                            <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
+                            <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
+                            <td>M83</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-RESET">ResetExtruder</span></td>
+                            <td><span class="inline-code token-RESET">ResetExtruder</span></td>
+                            <td><span class="inline-code token-RESET">ResetExtruder</span></td>
+                            <td>G92 E0</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
+                            <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
+                            <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
+                            <td>BED_MESH_CALIBRATE (Klipper) / G29 (Marlin)</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-LEVEL">Level</span></td>
+                            <td><span class="inline-code token-LEVEL">Level</span></td>
+                            <td><span class="inline-code token-LEVEL">Level</span></td>
+                            <td>Alias for BedMeshCalibrate → triggers BED_MESH_CALIBRATE or G29</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
+                            <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
+                            <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
+                            <td>PROBE_CALIBRATE (Klipper) – not available in Marlin</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-LOAD">LoadBedMesh</span></td>
+                            <td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"profile"</span></td>
+                            <td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"default"</span></td>
+                            <td>BED_MESH_PROFILE LOAD=profile (Klipper) – not available in Marlin</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span></td>
+                            <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">number</span></td>
+                            <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">0.04</span></td>
+                            <td>SET_PRESSURE_ADVANCE ADVANCE=# (Klipper only)</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="inline-code token-DWELL">Dwell</span></td>
+                            <td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">time</span> <span class="token-S">S</span>|<span class="token-S">ms</span> (optional unit)</td>
+                            <td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">0.5</span> <span class="token-S">S</span> or <span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">500</span> <span class="token-S">ms</span></td>
+                            <td>G4 P# (P is milliseconds). If unit omitted, defaults to seconds. Example: <code>Dwell 0.5</code> → G4 P500</td>
+                        </tr>
+                    </tbody>
                 </table>
             </section>
 
-    <section class="section">
-    <h2>Loops & Arithmetic Operators</h2>
-    <p>Bellerophon supports two types of loops: <span class="inline-code token-REPEAT">repeat</span> for static repetition and <span class="inline-code token-JREPEAT">Brepeat</span> for dynamic loops.</p>
+            <section class="section">
+                <h2>Loops & Arithmetic Operators</h2>
+                <p>Bellerophon supports two types of loops: <span class="inline-code token-REPEAT">repeat</span> for static repetition and <span class="inline-code token-JREPEAT">Brepeat</span> for dynamic loops.</p>
 
-    <div class="note">
-        <strong>Positioning Context in Loops:</strong> 
-        The behavior of movement inside a loop depends heavily on the active mode:
-        <ul>
-            <li><strong>Relative (G91):</strong> Coordinates are calculated as offsets from the last position. Each move builds on the previous one. Best for iteratively forming shapes, spirals, zig-zags, or any flowing patterns.</li>
-            <li><strong>Absolute (G90):</strong> Coordinates are calculated from a fixed origin on the bed. Each move goes to a specific point. Use this only when you need precise positions that don't depend on the previous move, like moving to a center point or fixed markers.</li>
-        </ul>
-    </div>
+                <div class="note">
+                    <strong>Positioning Context in Loops:</strong> 
+                    The behavior of movement inside a loop depends heavily on the active mode:
+                    <ul>
+                        <li><strong>Relative (G91):</strong> Coordinates are calculated as offsets from the last position. Each move builds on the previous one. Best for iteratively forming shapes, spirals, zig-zags, or any flowing patterns.</li>
+                        <li><strong>Absolute (G90):</strong> Coordinates are calculated from a fixed origin on the bed. Each move goes to a specific point. Use this only when you need precise positions that don't depend on the previous move, like moving to a center point or fixed markers.</li>
+                    </ul>
+                </div>
 
-    <h4>Example: Absolute vs Relative in Loops</h4>
-    <p>The same loop code produces very different results depending on the active mode:</p>
+                <h4>Example: Absolute vs Relative in Loops</h4>
+                <p>The same loop code produces very different results depending on the active mode:</p>
 
-    <div class="code-block">
+                <div class="code-block">
 <span class="line"><span class="token-COMMENT"># Absolute Mode Example</span></span>
 <span class="line"><span class="token-ABSOLUTE">Absolute</span></span>
 <span class="line"><span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">10</span></span>
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">5</span></span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <div class="code-block">
+                <div class="code-block">
 <span class="line"><span class="token-COMMENT"># Relative Mode Example</span></span>
 <span class="line"><span class="token-RELATIVE">Relative</span></span>
 <span class="line"><span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">10</span></span>
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">5</span></span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <h4>Output:</h4>
-    <div class="code-block">
+                <h4>Output:</h4>
+                <div class="code-block">
 <span class="line"><span class="token-COMMENT"># Absolute Mode Output</span></span>
 <span class="line">[gcode_macro Absolute!-tester]</span>
 <span class="line">gcode:</span>
@@ -378,69 +484,69 @@ Extruder → M109, Bed → M190, Chamber → M141</td>
 <span class="line">  G1 X5.000</span>
 <span class="line">  G1 X5.000</span>
 <span class="line">  G1 X5.000</span>
-    </div>
+                </div>
 
-    <div class="note">
-        <strong>Key observation:</strong> In absolute mode, <span class="inline-code">x+=5</span> calculates a new absolute position (10+5=15, then 15+5=20, etc.). In relative mode, it adds 5 to the current position each time, creating equal-sized steps from wherever the previous move ended.
-    </div>
+                <div class="note">
+                    <strong>Key observation:</strong> In absolute mode, <span class="inline-code">x+=5</span> calculates a new absolute position (10+5=15, then 15+5=20, etc.). In relative mode, it adds 5 to the current position each time, creating equal-sized steps from wherever the previous move ended.
+                </div>
 
-    <h3>Assignment Operators</h3>
-    <p>Operators allow for precise control during movement:</p>
-    <ul>
-        <li><span class="inline-code token-EQUALS">=</span> Direct Assignment</li>
-        <li><span class="inline-code token-PLUSEQ">+=</span> Add to current</li>
-        <li><span class="inline-code token-MINUSEQ">-=</span> Subtract from current</li>
-        <li><span class="inline-code token-MULTEQ">*=</span> Multiply current</li>
-        <li><span class="inline-code token-DIVEQ">/=</span> Divide current</li>
-    </ul>
+                <h3>Assignment Operators</h3>
+                <p>Operators allow for precise control during movement:</p>
+                <ul>
+                    <li><span class="inline-code token-EQUALS">=</span> Direct Assignment</li>
+                    <li><span class="inline-code token-PLUSEQ">+=</span> Add to current</li>
+                    <li><span class="inline-code token-MINUSEQ">-=</span> Subtract from current</li>
+                    <li><span class="inline-code token-MULTEQ">*=</span> Multiply current</li>
+                    <li><span class="inline-code token-DIVEQ">/=</span> Divide current</li>
+                </ul>
 
-    <h3>1. Static Repeat (<span class="inline-code token-REPEAT">repeat</span>)</h3>
-    <p>The <span class="inline-code token-REPEAT">repeat</span> command simply duplicates the enclosed G-code commands a specified number of times during compilation.</p>
+                <h3>1. Static Repeat (<span class="inline-code token-REPEAT">repeat</span>)</h3>
+                <p>The <span class="inline-code token-REPEAT">repeat</span> command simply duplicates the enclosed G-code commands a specified number of times during compilation.</p>
 
-    <div class="code-block">
+                <div class="code-block">
 <span class="line"><span class="token-REPEAT">repeat</span> <span class="token-NUMBER">3</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">10</span> <span class="token-Y">y</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">10</span></span>
 <span class="lines">    <span class="token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Moving..."</span></span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <h4>Output (repeat):</h4>
-    <div class="code-block">
+                <h4>Output (repeat):</h4>
+                <div class="code-block">
 <span class="line">  G1 X10.0 Y10.0</span>
 <span class="line">  RESPOND MSG="Moving..."</span>
 <span class="line">  G1 X20.0 Y20.0</span>
 <span class="line">  RESPOND MSG="Moving..."</span>
 <span class="line">  G1 X30.0 Y30.0</span>
 <span class="line">  RESPOND MSG="Moving..."</span>
-    </div>
-    <p class="note">The commands are physically duplicated in the output G-code. Great for simple, fixed repetitions.</p>
+                </div>
+                <p class="note">The commands are physically duplicated in the output G-code. Great for simple, fixed repetitions.</p>
 
-    <h3>2. Dynamic Loop (<span class="inline-code token-JREPEAT">Brepeat</span>)</h3>
-    <p>The <span class="inline-code token-JREPEAT">Brepeat</span> command creates a loop that supports arithmetic expressions and mathematical functions. Unlike <span class="inline-code token-REPEAT">repeat</span>, this loop exposes an iterator variable <span class="inline-code">i</span> which increments each iteration starting from 0. Expressions are evaluated during compilation, producing numeric G-code values.</p>
+                <h3>2. Dynamic Loop (<span class="inline-code token-JREPEAT">Brepeat</span>)</h3>
+                <p>The <span class="inline-code token-JREPEAT">Brepeat</span> command creates a loop that supports arithmetic expressions and mathematical functions. Unlike <span class="inline-code token-REPEAT">repeat</span>, this loop exposes an iterator variable <span class="inline-code">i</span> which increments each iteration starting from 0. Expressions are evaluated during compilation, producing numeric G-code values.</p>
 
-    <div class="note">
-        <strong>Important:</strong> The iterator <span class="inline-code">i</span> is only valid inside <span class="inline-code token-JREPEAT">Brepeat</span> loops, but <strong>mathematical functions (sin, cos, tan, sqrt, abs, sign) and the power operator (^) are globally available anywhere an expression is allowed</strong> (e.g., in <code>MoveTo</code>, <code>Heat</code>, <code>SetSpeed</code>, etc.).
-    </div>
+                <div class="note">
+                    <strong>Important:</strong> The iterator <span class="inline-code">i</span> is only valid inside <span class="inline-code token-JREPEAT">Brepeat</span> loops, but <strong>mathematical functions (sin, cos, tan, sqrt, abs, sign) and the power operator (^) are globally available anywhere an expression is allowed</strong> (e.g., in <code>MoveTo</code>, <code>Heat</code>, <code>SetSpeed</code>, etc.).
+                </div>
 
-    <h4>Example: Using the iterator</h4>
-    <div class="code-block">
+                <h4>Example: Using the iterator</h4>
+                <div class="code-block">
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span></span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <h4>Example: Mathematical Expressions (global availability)</h4>
-    <p>Bellerophon supports arithmetic expressions anywhere: including exponentiation <code>^</code>, absolute value <code>abs()</code>, signum <code>sign()</code>, and the constant <code>pi</code>.</p>
-    <div class="code-block">
+                <h4>Example: Mathematical Expressions (global availability)</h4>
+                <p>Bellerophon supports arithmetic expressions anywhere: including exponentiation <code>^</code>, absolute value <code>abs()</code>, signum <code>sign()</code>, and the constant <code>pi</code>.</p>
+                <div class="code-block">
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">3</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>^<span class="token-NUMBER">2</span> * <span class="token-NUMBER">5</span> + <span class="token-FUNC">abs</span>(<span class="token-ID">i</span>-<span class="token-NUMBER">2</span>)</span>
 <span class="line"><span class="token-END">end</span></span>
 <span class="line"><span class="token-HEAT">Heat</span> <span class="token-TARGET">extruder</span>=<span class="token-NUMBER">180</span> + <span class="token-NUMBER">20</span>*<span class="token-FUNC">sin</span>(<span class="token-NUMBER">3.14159</span>/<span class="token-NUMBER">2</span>)</span>  <span class="token-COMMENT"># works outside loops too</span>
-    </div>
+                </div>
 
-     <h4>Example: Drawing a Square (Relative)</h4>
-    <p>Using <strong>Relative</strong> mode ensures each move is from the previous point, naturally forming shapes when iterating.</p>
-    <div class="code-block">
+                <h4>Example: Drawing a Square (Relative)</h4>
+                <p>Using <strong>Relative</strong> mode ensures each move is from the previous point, naturally forming shapes when iterating.</p>
+                <div class="code-block">
 <span class="line"><span class="token-RELATIVE">Relative</span></span>
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=10 <span class="token-Y">y</span>=0</span>
@@ -448,21 +554,21 @@ Extruder → M109, Bed → M190, Chamber → M141</td>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=-10 <span class="token-Y">y</span>=0</span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=0 <span class="token-Y">y</span>=-10</span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <h4>Example: Drawing a Circle (Relative)</h4>
-    <p>Using <strong>Relative</strong> mode allows the circle to be built incrementally, keeping each move relative to the last point for smooth motion.</p>
-    <div class="code-block">
+                <h4>Example: Drawing a Circle (Relative)</h4>
+                <p>Using <strong>Relative</strong> mode allows the circle to be built incrementally, keeping each move relative to the last point for smooth motion.</p>
+                <div class="code-block">
 <span class="line"><span class="token-RELATIVE">Relative</span></span>
 <span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">60</span></span>
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-FUNC">cos</span>(<span class="token-ID">i</span>*0.1)*5 <span class="token-Y">y</span>=<span class="token-FUNC">sin</span>(<span class="token-ID">i</span>*0.1)*5</span>
 <span class="line"><span class="token-END">end</span></span>
-    </div>
+                </div>
 
-    <h4>Example: Drawing a Spiral (Relative)</h4>
-<p>Using <strong>Relative</strong> mode allows complex parametric shapes to be built incrementally. This spiral uses the loop counter <span class="inline-code token-ID">i</span> to calculate both angle and radius, creating an expanding spiral pattern.</p>
+                <h4>Example: Drawing a Spiral (Relative)</h4>
+                <p>Using <strong>Relative</strong> mode allows complex parametric shapes to be built incrementally. This spiral uses the loop counter <span class="inline-code token-ID">i</span> to calculate both angle and radius, creating an expanding spiral pattern.</p>
 
-<div class="code-block">
+                <div class="code-block">
 <span class="line"><span class="token-COMMENT"># Spiral test macro</span></span>
 <span class="line">M.title <span class="token-STRING">"spiral_test"</span></span>
 <span class="line"><span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span> = <span class="token-NUMBER">160</span> <span class="token-Y">y</span> = <span class="token-NUMBER">160</span> <span class="token-Z">z</span>= <span class="token-NUMBER">10</span></span>
@@ -477,185 +583,24 @@ Extruder → M109, Bed → M190, Chamber → M141</td>
 <span class="line"><span class="token-DWELL">Dwell</span> <span class="token-NUMBER">2</span> s</span>
 <span class="line"><span class="token-HOME">Home</span></span>
 <span class="line">M.end</span>
-    </div>
+                </div>
 
-<h4>Output:</h4>
-<div class="code-block">
-<span class="line">[gcode_macro spiral_test]</span>
-<span class="line">gcode:</span>
-<span class="line">  G90</span>
-<span class="line">  G1 X160.000 Y160.000 Z10.000</span>
-<span class="line">  G91</span>
-<span class="line">  G1 F6500</span>
-<span class="line">  G1 X0.000 Y0.000</span>
-<span class="line">  G1 X0.098 Y0.017</span>
-<span class="line">  G1 X0.188 Y0.068</span>
-<span class="line">  G1 X0.260 Y0.150</span>
-<span class="line">  G1 X0.306 Y0.257</span>
-<span class="line">  G1 X0.321 Y0.383</span>
-<span class="line">  G1 X0.300 Y0.520</span>
-<span class="line">  G1 X0.239 Y0.658</span>
-<span class="line">  G1 X0.139 Y0.788</span>
-<span class="line">  G1 X0.000 Y0.900</span>
-<span class="line">  G1 X-0.174 Y0.985</span>
-<span class="line">  G1 X-0.376 Y1.034</span>
-<span class="line">  G1 X-0.600 Y1.039</span>
-<span class="line">  G1 X-0.836 Y0.996</span>
-<span class="line">  G1 X-1.072 Y0.900</span>
-<span class="line">  G1 X-1.299 Y0.750</span>
-<span class="line">  G1 X-1.504 Y0.547</span>
-<span class="line">  G1 X-1.674 Y0.295</span>
-<span class="line">  G1 X-1.800 Y0.000</span>
-<span class="line">  G1 X-1.871 Y-0.330</span>
-<span class="line">  G1 X-1.879 Y-0.684</span>
-<span class="line">  G1 X-1.819 Y-1.050</span>
-<span class="line">  G1 X-1.685 Y-1.414</span>
-<span class="line">  G1 X-1.478 Y-1.762</span>
-<span class="line">  G1 X-1.200 Y-2.078</span>
-<span class="line">  G1 X-0.855 Y-2.349</span>
-<span class="line">  G1 X-0.451 Y-2.561</span>
-<span class="line">  G1 X-0.000 Y-2.700</span>
-<span class="line">  G1 X0.486 Y-2.757</span>
-<span class="line">  G1 X0.992 Y-2.725</span>
-<span class="line">  G1 X1.500 Y-2.598</span>
-<span class="line">  G1 X1.993 Y-2.375</span>
-<span class="line">  G1 X2.451 Y-2.057</span>
-<span class="line">  G1 X2.858 Y-1.650</span>
-<span class="line">  G1 X3.195 Y-1.163</span>
-<span class="line">  G1 X3.447 Y-0.608</span>
-<span class="line">  G1 X3.600 Y-0.000</span>
-<span class="line">  G1 X3.644 Y0.642</span>
-<span class="line">  G1 X3.571 Y1.300</span>
-<span class="line">  G1 X3.377 Y1.950</span>
-<span class="line">  G1 X3.064 Y2.571</span>
-<span class="line">  G1 X2.635 Y3.141</span>
-<span class="line">  G1 X2.100 Y3.637</span>
-<span class="line">  G1 X1.471 Y4.041</span>
-<span class="line">  G1 X0.764 Y4.333</span>
-<span class="line">  G1 X0.000 Y4.500</span>
-<span class="line">  G1 X-0.799 Y4.530</span>
-<span class="line">  G1 X-1.607 Y4.417</span>
-<span class="line">  G1 X-2.400 Y4.157</span>
-<span class="line">  G1 X-3.150 Y3.754</span>
-<span class="line">  G1 X-3.830 Y3.214</span>
-<span class="line">  G1 X-4.417 Y2.550</span>
-<span class="line">  G1 X-4.886 Y1.779</span>
-<span class="line">  G1 X-5.219 Y0.920</span>
-<span class="line">  G1 X-5.400 Y0.000</span>
-<span class="line">  G1 X-5.416 Y-0.955</span>
-<span class="line">  G1 X-5.262 Y-1.915</span>
-<span class="line">  G1 X-4.936 Y-2.850</span>
-<span class="line">  G1 X-4.443 Y-3.728</span>
-<span class="line">  G1 X-3.792 Y-4.520</span>
-<span class="line">  G1 X-3.000 Y-5.196</span>
-<span class="line">  G1 X-2.086 Y-5.732</span>
-<span class="line">  G1 X-1.077 Y-6.106</span>
-<span class="line">  G1 X-0.000 Y-6.300</span>
-<span class="line">  G1 X1.111 Y-6.303</span>
-<span class="line">  G1 X2.223 Y-6.108</span>
-<span class="line">  G1 X3.300 Y-5.716</span>
-<span class="line">  G1 X4.307 Y-5.132</span>
-<span class="line">  G1 X5.209 Y-4.371</span>
-<span class="line">  G1 X5.976 Y-3.450</span>
-<span class="line">  G1 X6.578 Y-2.394</span>
-<span class="line">  G1 X6.992 Y-1.233</span>
-<span class="line">  G1 X7.200 Y-0.000</span>
-<span class="line">  G1 X7.189 Y1.268</span>
-<span class="line">  G1 X6.954 Y2.531</span>
-<span class="line">  G1 X6.495 Y3.750</span>
-<span class="line">  G1 X5.822 Y4.885</span>
-<span class="line">  G1 X4.949 Y5.899</span>
-<span class="line">  G1 X3.900 Y6.755</span>
-<span class="line">  G1 X2.702 Y7.424</span>
-<span class="line">  G1 X1.389 Y7.878</span>
-<span class="line">  G1 X0.000 Y8.100</span>
-<span class="line">  G1 X-1.424 Y8.075</span>
-<span class="line">  G1 X-2.839 Y7.799</span>
-<span class="line">  G1 X-4.200 Y7.275</span>
-<span class="line">  G1 X-5.464 Y6.511</span>
-<span class="line">  G1 X-6.588 Y5.528</span>
-<span class="line">  G1 X-7.534 Y4.350</span>
-<span class="line">  G1 X-8.269 Y3.010</span>
-<span class="line">  G1 X-8.765 Y1.545</span>
-<span class="line">  G1 X-9.000 Y0.000</span>
-<span class="line">  G1 X-8.962 Y-1.580</span>
-<span class="line">  G1 X-8.645 Y-3.147</span>
-<span class="line">  G1 X-8.054 Y-4.650</span>
-<span class="line">  G1 X-7.201 Y-6.042</span>
-<span class="line">  G1 X-6.106 Y-7.277</span>
-<span class="line">  G1 X-4.800 Y-8.314</span>
-<span class="line">  G1 X-3.318 Y-9.115</span>
-<span class="line">  G1 X-1.702 Y-9.651</span>
-<span class="line">  G1 X0.000 Y-9.900</span>
-<span class="line">  G1 X1.736 Y-9.848</span>
-<span class="line">  G1 X3.454 Y-9.491</span>
-<span class="line">  G1 X5.100 Y-8.833</span>
-<span class="line">  G1 X6.621 Y-7.890</span>
-<span class="line">  G1 X7.967 Y-6.685</span>
-<span class="line">  G1 X9.093 Y-5.250</span>
-<span class="line">  G1 X9.961 Y-3.625</span>
-<span class="line">  G1 X10.537 Y-1.858</span>
-<span class="line">  G1 X10.800 Y-0.000</span>
-<span class="line">  G1 X10.734 Y1.893</span>
-<span class="line">  G1 X10.337 Y3.762</span>
-<span class="line">  G1 X9.613 Y5.550</span>
-<span class="line">  G1 X8.580 Y7.199</span>
-<span class="line">  G1 X7.263 Y8.656</span>
-<span class="line">  G1 X5.700 Y9.873</span>
-<span class="line">  G1 X3.933 Y10.806</span>
-<span class="line">  G1 X2.014 Y11.424</span>
-<span class="line">  G1 X-0.000 Y11.700</span>
-<span class="line">  G1 X-2.049 Y11.621</span>
-<span class="line">  G1 X-4.070 Y11.182</span>
-<span class="line">  G1 X-6.000 Y10.392</span>
-<span class="line">  G1 X-7.778 Y9.269</span>
-<span class="line">  G1 X-9.346 Y7.842</span>
-<span class="line">  G1 X-10.652 Y6.150</span>
-<span class="line">  G1 X-11.652 Y4.241</span>
-<span class="line">  G1 X-12.310 Y2.171</span>
-<span class="line">  G1 X-12.600 Y0.000</span>
-<span class="line">  G1 X-12.507 Y-2.205</span>
-<span class="line">  G1 X-12.028 Y-4.378</span>
-<span class="line">  G1 X-11.172 Y-6.450</span>
-<span class="line">  G1 X-9.959 Y-8.356</span>
-<span class="line">  G1 X-8.421 Y-10.035</span>
-<span class="line">  G1 X-6.600 Y-11.432</span>
-<span class="line">  G1 X-4.549 Y-12.498</span>
-<span class="line">  G1 X-2.327 Y-13.196</span>
-<span class="line">  G1 X0.000 Y-13.500</span>
-<span class="line">  G1 X2.362 Y-13.393</span>
-<span class="line">  G1 X4.686 Y-12.874</span>
-<span class="line">  G1 X6.900 Y-11.951</span>
-<span class="line">  G1 X8.935 Y-10.648</span>
-<span class="line">  G1 X10.725 Y-8.999</span>
-<span class="line">  G1 X12.211 Y-7.050</span>
-<span class="line">  G1 X13.344 Y-4.857</span>
-<span class="line">  G1 X14.083 Y-2.483</span>
-<span class="line">  G1 X14.400 Y-0.000</span>
-<span class="line">  G1 X14.280 Y2.518</span>
-<span class="line">  G1 X13.720 Y4.993</span>
-<span class="line">  G1 X12.731 Y7.350</span>
-<span class="line">  G1 X11.337 Y9.513</span>
-<span class="line">  G1 X9.578 Y11.414</span>
-<span class="line">  G90</span>
-<span class="line">  G28</span>
-</div>
+                <div class="note">
+                    <strong>How the spiral formula works:</strong> The expression 
+                    <span class="inline-code">cos(i*10)*(i*0.1)</span> and 
+                    <span class="inline-code">sin(i*10)*(i*0.1)</span> create an expanding spiral where:
+                    <ul>
+                        <li><span class="inline-code">i*10</span> controls the angular step (angle increases quickly, making many turns)</li>
+                        <li><span class="inline-code">i*0.1</span> controls the radius growth (spiral expands outward slowly)</li>
+                        <li>The product creates a spiral that grows in radius as it rotates</li>
+                        <li>Using <strong>Relative</strong> mode means each move is an offset from the previous position</li>
+                    </ul>
+                </div>
+            </section>
 
-<div class="note">
-    <strong>How the spiral formula works:</strong> The expression 
-    <span class="inline-code">cos(i*10)*(i*0.1)</span> and 
-    <span class="inline-code">sin(i*10)*(i*0.1)</span> create an expanding spiral where:
-    <ul>
-        <li><span class="inline-code">i*10</span> controls the angular step (angle increases quickly, making many turns)</li>
-        <li><span class="inline-code">i*0.1</span> controls the radius growth (spiral expands outward slowly)</li>
-        <li>The product creates a spiral that grows in radius as it rotates</li>
-        <li>Using <strong>Relative</strong> mode means each move is an offset from the previous position</li>
-    </ul>
-</div>
-
-<section class="section">
-    <h2>Example Program</h2>
-    <div class="code-block">
+            <section class="section">
+                <h2>Example Program</h2>
+                <div class="code-block">
 <span class="line"><span class="token-TITLE">M.title</span> <span class="token-STRING">"Bed Leveling Routine"</span></span>
 <span class="line">    <span class="token-ABSOLUTE">Absolute</span></span>
 <span class="line">    <span class="token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">3000</span></span>
@@ -676,8 +621,8 @@ Extruder → M109, Bed → M190, Chamber → M141</td>
 <span class="line">    <span class="token-RESUME">Resume</span></span>
 <span class="line">    <span class="token-COOLDOWN">Cooldown</span></span>
 <span class="line"><span class="token-MEND">M.end</span></span>
-    </div>
-</section>
+                </div>
+            </section>
 
         </div>
     </div>

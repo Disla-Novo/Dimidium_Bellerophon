@@ -335,17 +335,8 @@ if (code.length > 100000) {
               // changed the location
 
 
-            if (t.name === "ID") {
-                const upperText = text.toUpperCase();
-
-                if (!keywords.has(upperText)) {
-                    const suggestion = findClosestKeyword(text);
-                    errors.push({
-                        line: lineNum,
-                        message: `Unknown identifier: ${text}${suggestion ? ` (Did you mean ${suggestion}?)` : ""}`,
-                        type: suggestion ? "hint" : "error"
-                    });
-                }
+       if (t.name === "ID") {
+    const upperText = text.toUpperCase();
 
                 if (["X", "Y", "Z", "E"].includes(upperText)) {
                     if (seenAxes.has(upperText)) {
