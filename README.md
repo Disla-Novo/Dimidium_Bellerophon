@@ -34,7 +34,7 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
     M.end
 
 ---
-<img width="1247" height="670" alt="newsttestbng" src="https://github.com/user-attachments/assets/1919befb-fc9b-4076-a43f-34ec8fd9ffd2" />
+<img width="1920" height="1080" alt="Screenshot 2026-06-17 21-07-27" src="https://github.com/user-attachments/assets/d352abdc-75a9-48d1-892c-2e84c8140ab8" />
 
 ## Capabilities
 
