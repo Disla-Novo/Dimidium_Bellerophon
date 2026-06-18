@@ -44,8 +44,7 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
 
 - Bellerophon accepts only .bph source files.
 - The IDE provides real-time syntax validation, highlighting errors as you type.
-- Programs are line-oriented: each command on its own line; blank lines are ignored.
-  This is a known issue! Bellerophon does not accept blank spaces in between. 
+-Line-Oriented Parsing: In the current build, the compiler utilizes strict line-by-line parsing. Each command must exist on a continuous, contiguous line without empty line breaks separating execution statements.
 - Supported commands include: movement, temperature control, heaters, fans, waits, pauses, macro calls, repeat loops, Brepeat loops, conditional execution (Klipper only), extruder control, and bed/probe operations.
 
 - Compiles .bph scripts into either Klipper macro .cfg files or Marlin .gcode files.
@@ -66,10 +65,11 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
 
 - IDE Reference Panel – displays all Bellerophon tokens. Users can pin commands to a sidebar for quick access while typing.
 - Session Restoration – the IDE automatically restores the previous editing session to prevent accidental data loss.
-- Dimidium Ecosystem Integration – compiled macros can be deployed and managed through Gravity Hub or executed directly within Mainsail (Klipper) or any Marlin host. [this was left unfinished]
+- Dimidium Ecosystem Integration (Beta/Roadmap): Compiled macros are designed to be deployed and managed across a dynamic fleet via Gravity Hub (currently in active pipeline development).
 - Printer Profile UI: The IDE provides a graphical interface to set hardware limits and default printing parameters (nozzle diameter, filament
 diameter, layer height, extrusion multiplier). These settings are used as defaults unless overridden by macro commands.
 - Local user variables – define and reuse variables inside macros.
+- Hardware Configuration: Includes a built-in CFG Generator and visual Boundary Checker web app to generate foundational machine configurations and simulate G-code paths against physical bed dimensions to prevent mechanical crashes.
 
 ---
 
