@@ -1,0 +1,43 @@
+M.title "continuous_square"
+Absolute
+SetSpeed = 6000
+Heat extruder = 210
+Heat bed = 65
+WaitForTemp extruder
+WaitForTemp bed
+Home
+Brepeat 100
+    MoveTo x=10 y=20 z=0.15
+    Relative
+    RelativeExtrusion
+    SetSpeed = 3000
+    MoveTo x=200 e=10
+    Absolute
+    MoveTo x=125 y=125 z=0.15
+    SetFan = 1
+    Relative
+    SetSpeed = 4000
+    Brepeat 90
+        MoveTo x=50 y=0 e=2.5
+        MoveTo x=0 y=50 e=2.5
+        MoveTo x=-50 y=0 e=2.5
+        MoveTo x=0 y=-50 e=2.5
+        MoveTo z=0.25
+    end
+    Absolute
+    MoveTo z=30
+    MoveTo x=125 y=230
+    MoveTo z=2
+    Set_Heater_Temperature bed = 40
+    WaitForTemp bed
+    Relative
+    SetSpeed = 800
+    MoveTo y=-210 e=0
+    Absolute
+    MoveTo x=125 y=125 z=30
+    Set_Heater_Temperature bed = 65
+    WaitForTemp bed
+    Home
+end
+Cooldown
+M.end

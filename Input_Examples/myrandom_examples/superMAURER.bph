@@ -1,0 +1,34 @@
+M.title "Bellerophon_Maurer_Rose"
+Absolute
+SetSpeed = 6000
+Heat extruder = 160
+Heat bed = 65
+Home
+Heat extruder = 215
+MoveTo x=10 y=20 z=0.15
+Relative
+RelativeExtrusion
+SetSpeed = 3000
+MoveTo x=200 e=10
+Absolute
+MoveTo x=110 y=110 z=0.15
+SetFan = 1
+SetSpeed = 2200
+RelativeExtrusion
+Brepeat 6000
+    MoveTo x+=cos(i*71)*30 y+=sin(i*71)*30 z+=0.04 e=1.8
+end
+Absolute
+SetSpeed = 7000
+Relative
+MoveTo z=5
+Absolute
+MoveTo z=10 x=110 y=220
+Cooldown
+Heat bed = 35
+Relative
+SetSpeed = 2000
+MoveTo y=-210
+Absolute
+Home
+M.end

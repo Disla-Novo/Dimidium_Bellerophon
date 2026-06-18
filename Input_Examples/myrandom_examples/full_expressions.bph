@@ -1,0 +1,27 @@
+M.title "full_expression_test"
+    base_temp = 200
+    fan_speed = 0.75
+    nozzle = 0.6
+    filament = 2.85
+    layer_h = 0.3
+    multiplier = 0.95
+    auto = 1
+    timeout = 120
+    pressure = 0.04
+    dwell_ms = 500
+    Heat extruder = base_temp + 10
+    Set_Heater_Temperature bed = base_temp - 30
+    SetNozzle = nozzle * 1.0
+    SetFilament = filament
+    SetLayerHeight = layer_h * 1.5
+    SetExtrusionMultiplier = multiplier - 0.05
+    EnableAutoExtrude = auto
+    SetFan = fan_speed * 2
+    TIMEOUT_SET = timeout + 30
+    SetPressureAdvance = pressure * 2.5
+    Dwell = dwell_ms / 2 ms
+    Absolute
+    SetSpeed = 3000
+    MoveTo x=100 y=100
+    MoveTo x=100+50 y=100+50
+M.end

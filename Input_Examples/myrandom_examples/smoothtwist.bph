@@ -1,0 +1,45 @@
+M.title "Bellerophon_Smooth_Twist"
+Absolute
+SetSpeed = 6000
+Heat extruder = 215
+Heat bed = 65
+WaitForTemp extruder
+WaitForTemp bed
+Home
+MoveTo x=10 y=20 z=0.15
+Relative
+RelativeExtrusion
+SetSpeed = 3000
+MoveTo x=200 e=10
+Absolute
+MoveTo x=125 y=125 z=0.15
+SetFan = 1
+Relative
+SetSpeed = 3500
+Brepeat 200
+    MoveTo x=20 y=10 e=1.0
+    MoveTo x=10 y=20 e=1.0
+    MoveTo x=-10 y=20 e=1.0
+    MoveTo x=-20 y=10 e=1.0
+    MoveTo x=-20 y=-10 e=1.0
+    MoveTo x=-10 y=-20 e=1.0
+    MoveTo x=10 y=-20 e=1.0
+    MoveTo x=20 y=-10 e=1.0
+    MoveTo x=0.05 y=0.05 z=0.2 e=0
+end
+Absolute
+MoveTo z=30
+MoveTo x=125 y=230
+MoveTo z=2
+Set_Heater_Temperature bed = 40
+WaitForTemp bed
+Relative
+SetSpeed = 800
+MoveTo y=-210 e=0
+Absolute
+MoveTo x=125 y=125 z=30
+Set_Heater_Temperature bed = 65
+WaitForTemp bed
+Home
+Cooldown
+M.end

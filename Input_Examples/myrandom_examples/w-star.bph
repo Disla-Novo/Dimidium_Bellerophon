@@ -1,0 +1,32 @@
+M.title "Bellerophon_Beefy_Star_V2"
+Absolute
+SetSpeed = 6000
+Heat extruder = 215
+Heat bed = 65
+WaitForTemp extruder
+WaitForTemp bed
+Home
+MoveTo x=10 y=20 z=0.15
+Relative
+RelativeExtrusion
+SetSpeed = 3000
+MoveTo x=200 e=10
+Absolute
+MoveTo x=110 y=110 z=0.15
+SetFan = 1
+SetSpeed = 1800
+RelativeExtrusion
+Brepeat 800
+    MoveTo x+=cos(i*72)*30 y+=sin(i*72)*30 z+=0.04 e=1.2
+end
+Absolute
+SetSpeed = 7000
+MoveTo z=10 x=110 y=220
+Cooldown
+Heat bed = 55
+Relative
+SetSpeed = 2000
+MoveTo y=-210 e=0
+Absolute
+Home
+M.end
