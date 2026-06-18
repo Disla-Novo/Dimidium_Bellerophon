@@ -136,7 +136,7 @@ console.log("Profile maxZ:", profile.maxZ);
                     </div>`;
                     logMessage(log, "Build finished. Memory Paging active: Streamed to local disk.", "system");
                 } else {
-                    gcodeOutput.textContent = data.output;
+                    gcodeOutput.innerHTML = window.highlightGCode(data.output);
                     logMessage(log, "Build finished. Successfully compiled to " + window.currentMode.toUpperCase() + " format", "system");
                 }
             } 
@@ -308,14 +308,15 @@ if (code.length > 100000) {
         const trimmed = line.trim(); // added 4/10/2026
            if (!trimmed || trimmed.startsWith("#")) return;
 
-           if (/^\w+\s*=\s*\d+/.test(trimmed)) {
+     if (/^\w+\s*=\s*\d+/.test(trimmed)) {
     const firstWord = trimmed.split(/\s|=/)[0].toUpperCase();
-    // If it's a known keyword but missing the action 
+    const originalWord = trimmed.split(/\s|=/)[0]; 
+    
     if (["EXTRUDER", "BED", "FAN"].includes(firstWord)) {
         errors.push({
             line: lineNum,
-            message: `Half-statement detected: Did you mean 'SET_HEATER ${trimmed}' or 'SET_FAN ${trimmed}'?`,
-            type: "warning"
+            message: `Hint: You defined a variable named '${originalWord}'. If you meant to control hardware, make sure to use a command like 'Heat extruder = ...' or 'SetFan = ...'`,
+            type: "hint" 
         });
     }
 }

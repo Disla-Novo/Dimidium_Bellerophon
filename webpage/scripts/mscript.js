@@ -494,3 +494,35 @@ document.addEventListener('mouseup', () => {
     isResizing = false;
     document.body.style.cursor = 'default';
 });
+
+// Im adding a better coloring system for the output. I think it would be nice
+window.highlightGCode = function(rawGcode) {
+    const colors = {
+        header: "#ffffff",
+        comment: "#5c6370",
+        command: "#56b6c2",
+        custom: "#56b6c2",
+        param: "#abb2bf",
+        number: "#d19a66"
+    };
+
+    let formattedCode = rawGcode.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    formattedCode = formattedCode.replace(/^(\[.*?\])/gm, `<span style="color: ${colors.header}">$1</span>`);
+    formattedCode = formattedCode.replace(/^(gcode:)/gm, `<span style="color: ${colors.header}">$1</span>`);
+    
+    formattedCode = formattedCode.replace(/(;.*)/g, `<span style="color: ${colors.comment}">$1</span>`);
+
+    formattedCode = formattedCode.replace(/\b([GM]\d+)\b/g, `<span style="color: ${colors.command}">$1</span>`);
+    
+    formattedCode = formattedCode.replace(/\b([A-Z_]+)(?=\s|$|=)/g, (match) => {
+        if (['X', 'Y', 'Z', 'E', 'F', 'S', 'P', 'SPEED', 'TIMEOUT', 'ADVANCE'].includes(match)) return match;
+        return `<span style="color: ${colors.custom}">${match}</span>`;
+    });
+    
+    formattedCode = formattedCode.replace(/\b([XYZEFSP]|SPEED|TIMEOUT|ADVANCE)(=|\s*)?(-?\d+(\.\d+)?)/g, 
+        `<span style="color: ${colors.param}">$1</span>$2<span style="color: ${colors.number}">$3</span>`
+    );
+
+    return formattedCode;
+};
