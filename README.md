@@ -4,8 +4,15 @@
 
 # Bellerophon – A Compiled DSL for 3D Printer Macros
 
-Bellerophon is a compiled domain-specific language (DSL) for 3D printer macros, with an IDE that compiles your code to Klipper or Marlin G-code. It lets you write structured, parametric programs and compile them into firmware-compatible G-code.
+Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper and Marlin.
 
+Built entirely as a local-first, cloud-free toolchain, the overarching Dimidium Ecosystem provides a complete end-to-end manufacturing pipeline:
+
+Bellerophon IDE: A real-time syntax-validating editor for authoring multi-firmware macros.
+
+CFG Generator & Boundary Checker: A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
+
+Gravity Hub (Beta): A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
 Note: The server runs locally on port 4567. No internet connection required after installation.
 
 ---
@@ -39,8 +46,7 @@ A Bellerophon program consists of one or more macros. Each macro starts with M.t
 ## Capabilities
 
 - Klipper: support for most Bellerophon features, including if statements, advanced temperature commands, and Klipper-specific G-code macros.
-- Marlin:  Simpler output that omits features not available in Marlin firmware. Conditional statements (if/endif) are not supported in Marlin mode;
-- all other movement, heating, looping, and macro commands work as expected (loops are expanded at compile time).
+-Marlin: Simpler output that omits features not available in Marlin firmware. Conditional statements (if/endif) are not supported in Marlin mode; however, all other movement, heating, looping, and macro commands work as expected (loops are automatically expanded at compile time).
 
 - Bellerophon accepts only .bph source files.
 - The IDE provides real-time syntax validation, highlighting errors as you type.
@@ -87,3 +93,6 @@ See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/user-
 Dimidium is free for personal, educational, and non-commercial use! You are completely free to download, modify, and share this software.
 
 Commercial use is strictly prohibited without explicit permission. If you are a company or individual wanting to use Dimidium for commercial purposes, please contact me directly at dislaofficialt@gmail.com  to discuss a commercial license.
+
+Disclaimer:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
