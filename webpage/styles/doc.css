@@ -457,7 +457,7 @@ p {
 }
 
 @media print {
-    /* 1. Reset Body & Containers */
+    /*  Reset Body & Containers */
     body {
         background: white !important;
         background-image: none !important;

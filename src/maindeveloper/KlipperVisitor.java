@@ -1,27 +1,23 @@
 package maindeveloper;
 
-// here we just add overrides that arent supported. 
-// these typically are just word commands that marlin doesn't support. 
-// awaiting a few more, dont forget to add. 
+public class KlipperVisitor extends GCodeVisitor {
 
-public class MarlinVisitor extends GCodeVisitor {
-    public MarlinVisitor(PrinterProfile profile) {
-        super(profile); // calls the GCodeVisitor constructor above
+    public KlipperVisitor(PrinterProfile profile) {
+        super(profile);
     }
 
+    // ---- Klipper-specific
     @Override
     protected String emitMacroHeader(String macroName) {
-        return "; " + macroName + "\n";
+        return "[gcode_macro " + macroName + "]\ngcode:\n";
     }
 
     @Override
     protected String emitHeat(String target, double value, boolean wait) {
-        // NEW marlin specific. apparently it listens to 'R' and not 'S'.
-        // 4/4/2026
         if (wait) {
             switch (target) {
-                case "extruder": return "M109 R" + (int)value + "\n";
-                case "bed":      return "M190 R" + (int)value + "\n";
+                case "extruder": return "M109 S" + (int)value + "\n";
+                case "bed":      return "M190 S" + (int)value + "\n";
                 case "chamber":  return "M141 S" + (int)value + "\n";
                 default: return "";
             }
@@ -42,27 +38,24 @@ public class MarlinVisitor extends GCodeVisitor {
 
     @Override
     protected String emitPause() {
-        return "M25\n"; // Marlin pause
+        return "PAUSE\n";
     }
 
     @Override
     protected String emitResume() {
-        return "M24\n"; // Marlin resume
+        return "RESUME\n";
     }
 
     @Override
     protected String emitRespond(String message) {
-        return "M117 " + message + "\n"; // Marlin LCD message
+        return "RESPOND MSG=\"" + message + "\"\n";
     }
 
     @Override
     protected String emitCooldown(String target) {
-        // adding cooldown stuff for marlin
         if (target == null) {
-            // Turn off all heaters
-            return "M104 S0\nM140 S0\nM141 S0\n";
+            return "TURN_OFF_HEATERS\n";
         } else {
-            // Turn off specific heater
             switch (target) {
                 case "extruder": return "M104 S0\n";
                 case "bed":      return "M140 S0\n";
@@ -74,55 +67,51 @@ public class MarlinVisitor extends GCodeVisitor {
 
     @Override
     protected String emitTimeoutSet(double seconds) {
-        return "M84 S" + (int)seconds + "\n"; // Marlin idle timeout
+        return "SET_IDLE_TIMEOUT TIMEOUT=" + (int)seconds + "\n";
     }
 
     @Override
     protected String emitLoadBedMesh(String profile) {
-        return "G29 L" + profile + "\n"; // Marlin load mesh
+        return "BED_MESH_PROFILE LOAD=" + profile + "\n";
     }
 
     @Override
     protected String emitProbeCalibrate() {
-        return "G30\n"; // Single probe point (simplified)
+        return "PROBE_CALIBRATE\n";
     }
 
     @Override
     protected String emitSetPressureAdvance(double value) {
-        return "M900 K" + value + "\n"; // Marlin linear advance
+        return "SET_PRESSURE_ADVANCE ADVANCE=" + value + "\n";
     }
 
     @Override
     protected String emitSetFan(double value) {
-        // SET_FAN...Marlin uses M106
-        int marlinSpeed = (int)(value * 255);
-        return "M106 S" + marlinSpeed + "\n";
+        return "SET_FAN SPEED=" + (int)value + "\n";
     }
 
     @Override
     protected String emitMacroCall(String macroName) {
-        System.err.println("Warning: Macro call '" + macroName + "' not supported in Marlin mode");
-        return "; CALL " + macroName + " (ignored in Marlin)\n";
+        return macroName + "\n";
     }
 
     @Override
     protected String emitBedMeshCalibrate() {
-        return "G29\n"; // Marlin bed leveling
+        return "BED_MESH_CALIBRATE\n";
     }
 
     @Override
     protected String emitPrintFile(String filename) {
-        return "M23 " + filename + "\nM24\n"; // Marlin select + start print
+        return "SDCARD_PRINT_FILE FILENAME=\"" + filename + "\"\n";
     }
 
     @Override
     protected String emitIfStart(String condition) {
-        // Optionally extract the condition to show what was skipped
-        return "; Marlin does not support if statements\n; Skipped: if " + condition + "\n";
+        return "{% if " + condition + " %}\n";
     }
 
     @Override
     protected String emitIfEnd() {
-        return "";
+        return "{% endif %}\n";
     }
 }

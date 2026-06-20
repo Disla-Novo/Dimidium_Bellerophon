@@ -20,7 +20,7 @@ import javax.script.ScriptEngineManager;
 
 import jupitore.gen.*;
 
-public class GCodeVisitor extends JupitoreBaseVisitor<String> {
+public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 // ADDED 4/10/2026
 protected PrinterSettings settings = new PrinterSettings();
 protected boolean enablePaging = false;
@@ -57,6 +57,26 @@ public GCodeVisitor(PrinterProfile profile) {
     this.settings.setLayerHeight(profile.getLayerHeight());
     this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
 }
+
+    // Abstract firmware-specific methods ----
+    protected abstract String emitMacroHeader(String macroName);
+    protected abstract String emitHeat(String target, double value, boolean wait);
+    protected abstract String emitSetHeater(String target, double value);
+    protected abstract String emitPause();
+    protected abstract String emitResume();
+    protected abstract String emitRespond(String message);
+    protected abstract String emitCooldown(String target); // null = all off
+    protected abstract String emitTimeoutSet(double seconds);
+    protected abstract String emitLoadBedMesh(String profile);
+    protected abstract String emitProbeCalibrate();
+    protected abstract String emitSetPressureAdvance(double value);
+    protected abstract String emitSetFan(double value);
+    protected abstract String emitMacroCall(String macroName);
+    protected abstract String emitBedMeshCalibrate();  // LEVEL or BED_MESH_CALIBRATE
+    protected abstract String emitPrintFile(String filename);
+    protected abstract String emitIfStart(String condition);
+    protected abstract String emitIfEnd();
+
     /** 
      * @param ctx
      * @return String
@@ -129,8 +149,7 @@ public String visitMacro(JupitoreParser.MacroContext ctx) {
 
     if (ctx.TITLE() != null && ctx.STRING() != null) {
         String macroName = ctx.STRING().getText().replace("\"", "");
-        gcode.append("[gcode_macro ").append(macroName).append("]\n");
-        gcode.append("gcode:\n");
+        gcode.append(emitMacroHeader(macroName));
     }
 
     if (ctx.statement() != null && !ctx.statement().isEmpty()) {
@@ -214,14 +233,7 @@ if (ctx.assignment() != null) {
         String target = ctx.TARGET().getText().toLowerCase();
         Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
         double value = compute.visit(ctx.expr());
-        switch (target) {
-            case "extruder":
-                return "M104 S" + (int)value + "\n";
-            case "bed":
-                return "M140 S" + (int)value + "\n";
-            case "chamber":
-                return "M141 S" + (int)value + "\n";
-        }
+        return emitSetHeater(target, value);
     }
 }
 
@@ -231,14 +243,7 @@ if (ctx.assignment() != null) {
         String target = ctx.TARGET().getText().toLowerCase();
         Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
         double value = compute.visit(ctx.expr());
-        switch (target) {
-            case "extruder":
-                return "M109 S" + (int)value + "\n";
-            case "bed":
-                return "M190 S" + (int)value + "\n";
-            case "chamber":
-                return "M141 S" + (int)value + "\n";
-        }
+        return emitHeat(target, value, true);
     }
 }
 
@@ -249,17 +254,17 @@ if (ctx.assignment() != null) {
         }
 
         if (ctx.PAUSE() != null) {
-            return "PAUSE\n";
+            return emitPause();
         }
         if (ctx.RESUME() != null) {
 
-            return "RESUME\n";
+            return emitResume();
         }
 
         if (ctx.RESPOND() != null) {
             if (ctx.STRING() != null) {
                 String message = ctx.STRING().getText().replace("\"", "");
-                return "RESPOND MSG=\"" + message + "\"\n";
+                return emitRespond(message);
             }
         }
         // added relativemode to fix the coords issue
@@ -278,7 +283,7 @@ if (ctx.assignment() != null) {
         // klipper macro caller
         if (ctx.CALL() != null && ctx.STRING() != null) {
             String macroName = ctx.STRING().getText().replace("\"", "");
-            return macroName + "\n";
+            return emitMacroCall(macroName);
         }
         // this is just testing
 
@@ -300,14 +305,14 @@ if (ctx.assignment() != null) {
 
         // semantic different but the same. for convenience. might change later.
         if (ctx.LEVEL() != null || ctx.BED_MESH_CALIBRATE() != null) {
-            return "BED_MESH_CALIBRATE\n";
+            return emitBedMeshCalibrate();
         }
 
         // timeout
        if (ctx.TIMEOUT_SET() != null && ctx.expr() != null) {
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
-    return "SET_IDLE_TIMEOUT TIMEOUT=" + (int)value + "\n";
+    return emitTimeoutSet(value);
 }
 
         // RELATIVE EXTRUSION check documentation
@@ -319,7 +324,7 @@ if (ctx.assignment() != null) {
         // LOADING MESH
         if (ctx.LOAD_BED_MESH() != null && ctx.STRING() != null) {
             String pr = ctx.STRING().getText().replace("\"", "");
-            return "BED_MESH_PROFILE LOAD=" + pr + "\n";
+            return emitLoadBedMesh(pr);
 
         }
         // reeset extruder
@@ -330,7 +335,7 @@ if (ctx.assignment() != null) {
 
         // PROBE CALIBRATE
         if (ctx.PROBE_CALIBRATE() != null) {
-            return "PROBE_CALIBRATE\n";
+            return emitProbeCalibrate();
 
         }
 
@@ -339,20 +344,12 @@ if (ctx.assignment() != null) {
         if (ctx.COOLDOWN() != null) {
             // no target? turn off all heaters plz
             if (ctx.TARGET() == null) {
-                return "TURN_OFF_HEATERS\n";
+                return emitCooldown(null);
             }
 
             // target exists? handle specific heater
             String t = ctx.TARGET().getText().toLowerCase();
-            switch (t) {
-                case "extruder":
-                    return "M104 S0\n";
-                case "bed":
-                    return "M140 S0\n";
-                case "chamber":
-                    return "M141 S0\n"; // for chamber
-
-            }
+            return emitCooldown(t);
         }
         // dwell
        if (ctx.DWELL() != null && ctx.expr() != null) {
@@ -388,19 +385,19 @@ if (ctx.assignment() != null) {
 
         if (ctx.PRINTFILE() != null && ctx.STRING() != null) {
             String file = ctx.STRING().getText().replace("\"", "");
-            return "SDCARD_PRINT_FILE FILENAME=\"" + file + "\"\n";
+            return emitPrintFile(file);
         }
 
         if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.expr() != null) {
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
-    return "SET_PRESSURE_ADVANCE ADVANCE=" + value + "\n";
+    return emitSetPressureAdvance(value);
 }
 
        if (ctx.SET_FAN() != null && ctx.expr() != null) {
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
-    return "SET_FAN SPEED=" + (int)value + "\n";
+    return emitSetFan(value);
 }
 
 
@@ -539,7 +536,7 @@ public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx
     public String visitIf_statement(JupitoreParser.If_statementContext ctx) {
         String condition = visit(ctx.condition());
         StringBuilder sb = new StringBuilder();
-        sb.append("{% if ").append(condition).append(" %}\n");
+        sb.append(emitIfStart(condition));
 
         for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
             String inner = visit(stmt);
@@ -552,7 +549,7 @@ public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx
             }
         }
 
-        sb.append("{% endif %}\n");
+        sb.append(emitIfEnd());
         return sb.toString();
     }
 
@@ -836,4 +833,3 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
 }
     
 }
-
