@@ -12,11 +12,16 @@
 // errorHandler.js - Fixed Version
 // using currentMode from mscript hopefully
 // Helper function for logging
+
+// security change: added this to prevent potential XSS if the log messages ever include user input. All messages are now treated as plain text.
 function addLogMessage(message) {
     const consoleLog = document.getElementById('console-log');
     if (consoleLog) {
         const timestamp = new Date().toLocaleTimeString();
-        consoleLog.innerHTML += `<div class="log-entry">[${timestamp}] ${message}</div>`;
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `[${timestamp}] ${message}`;
+        consoleLog.appendChild(entry);
         consoleLog.scrollTop = consoleLog.scrollHeight;
     }
 }

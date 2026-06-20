@@ -48,6 +48,7 @@ public class WebServer {
      */
     public static void main(String[] args) {
 
+        ipAddress("127.0.0.1");   // added this to force it to use localhost. 
         port(4567); // Spark server port
         staticFiles.externalLocation("webpage"); // serve frontend
 
