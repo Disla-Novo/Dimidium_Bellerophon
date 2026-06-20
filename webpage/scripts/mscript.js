@@ -91,11 +91,16 @@ function updateDownloadButton() {
     }
 }
 
+// security measure for log messages to prevent potential XSS if any user input ever gets logged. All messages are now treated as plain text.
+
 function addLogMessage(message) {
     const consoleLog = document.getElementById('console-log');
     if (consoleLog) {
         const timestamp = new Date().toLocaleTimeString();
-        consoleLog.innerHTML += `<div class="log-entry">[${timestamp}] ${message}</div>`;
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `[${timestamp}] ${message}`;
+        consoleLog.appendChild(entry);
         consoleLog.scrollTop = consoleLog.scrollHeight;
     }
 }
@@ -129,13 +134,11 @@ function syncScroll() {
     if (overlay) overlay.scrollTop = input.scrollTop;
 }
 
+// Single set of listeners 
 if (input) {
     input.addEventListener('input', updateLines);
     input.addEventListener('scroll', syncScroll);
 }
-
-// Initial line numbers
-window.addEventListener('DOMContentLoaded', updateLines);
 
 // this is references 
 let savedRefs = JSON.parse(localStorage.getItem('jupitoreRefs')) || [];
@@ -213,58 +216,53 @@ window.addEventListener('storage', (e) => {
 const STORAGE_KEY = "bellerophon_editor_content";
 
 // Restore code when page loads
+// Also handles profile loading, mode toggles, and modal setup
 window.addEventListener("DOMContentLoaded", () => {
-     loadProfileFromStorage(); 
-    const savedCode = localStorage.getItem(STORAGE_KEY);
+    // Load profile from storage
+    loadProfileFromStorage();
 
+    // Restore saved editor content
+    const savedCode = localStorage.getItem(STORAGE_KEY);
     if (savedCode && codeInput) {
         codeInput.value = savedCode;
         updateLines();
         codeInput.dispatchEvent(new Event('input'));
-
-        if (log) {
-            log.innerHTML += `<div class="log-entry system">> Restored previous session.</div>`;
-        }
-    }
-    
-
-        // added saves for the hardware limits 4/8/2026
-    /// deleted in place of profile
-
-
-
-
-
-// this is where i am adding the MODE TOGGLE IT IS HERE
-   const klipperBtn = document.getElementById('klipper-mode-btn');
-const marlinBtn = document.getElementById('marlin-mode-btn');
-
-if (klipperBtn && marlinBtn) {
-    klipperBtn.addEventListener('click', () => {
-        window.currentMode = "klipper";
-        klipperBtn.classList.add('active');
-        marlinBtn.classList.remove('active');
-        addLogMessage("Switched to Klipper output mode");
-        updateDownloadButton();
-    });
-    
-    marlinBtn.addEventListener('click', () => {
-        window.currentMode = "marlin";
-        marlinBtn.classList.add('active');
-        klipperBtn.classList.remove('active');
-        addLogMessage("Switched to Marlin output mode");
-        updateDownloadButton();
-    });
+        // Use safe log function instead of innerHTML
+        addLogMessage("Restored previous session.");
     }
 
-  const profileBtn = document.getElementById('profileBtn');
+    // Mode toggle buttons
+    const klipperBtn = document.getElementById('klipper-mode-btn');
+    const marlinBtn = document.getElementById('marlin-mode-btn');
+
+    if (klipperBtn && marlinBtn) {
+        klipperBtn.addEventListener('click', () => {
+            window.currentMode = "klipper";
+            klipperBtn.classList.add('active');
+            marlinBtn.classList.remove('active');
+            addLogMessage("Switched to Klipper output mode");
+            updateDownloadButton();
+        });
+        
+        marlinBtn.addEventListener('click', () => {
+            window.currentMode = "marlin";
+            marlinBtn.classList.add('active');
+            klipperBtn.classList.remove('active');
+            addLogMessage("Switched to Marlin output mode");
+            updateDownloadButton();
+        });
+    }
+
+    // Profile modal controls
+    const profileBtn = document.getElementById('profileBtn');
     if (profileBtn) profileBtn.addEventListener('click', openProfileModal);
 
-    // Modal close handlers
     const closeSpan = document.querySelector('.close-modal');
     if (closeSpan) closeSpan.addEventListener('click', closeProfileModal);
+    
     const cancelBtn = document.getElementById('cancelProfileBtn');
     if (cancelBtn) cancelBtn.addEventListener('click', closeProfileModal);
+    
     const saveBtn = document.getElementById('saveProfileBtn');
     if (saveBtn) saveBtn.addEventListener('click', saveProfileFromModal);
 
@@ -274,9 +272,8 @@ if (klipperBtn && marlinBtn) {
         if (event.target === modal) closeProfileModal();
     });
 
-
-
-
+    // Initial line numbers (in case DOMContentLoaded fires after the listener above)
+    updateLines();
 });
 
 // Save whenever user types
