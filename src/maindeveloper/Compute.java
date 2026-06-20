@@ -107,9 +107,12 @@ public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
 
             case "tan":
                 return Math.tan(Math.toRadians(value));
-
-            case "sqrt":
-                return Math.sqrt(value);
+      // added safety check for sqrt of negative number 6/19/26
+           case "sqrt":
+    if (value < 0) {
+        throw new RuntimeException("ERROR: Cannot calculate square root of a negative number: " + value);
+    }
+    return Math.sqrt(value);
             case "abs":
                 return Math.abs(value);
             case "sign":

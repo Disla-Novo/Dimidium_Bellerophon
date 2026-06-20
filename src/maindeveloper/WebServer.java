@@ -166,7 +166,7 @@ System.out.println("-------------------------");
         visitor.setEnablePaging(pagingUse);
         return visitor.visit(tree);
     } else {
-        GCodeVisitor visitor = new GCodeVisitor(profile);
+        KlipperVisitor visitor = new KlipperVisitor(profile);
         visitor.setEnablePaging(pagingUse);
         return visitor.visit(tree);
     }
