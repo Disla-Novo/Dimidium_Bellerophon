@@ -1,4 +1,4 @@
-package maindeveloper;
+package main.java.maindeveloper;
 
 public class PrinterProfile {
     private String name = "Default";

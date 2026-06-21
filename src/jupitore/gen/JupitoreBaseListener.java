@@ -1,4 +1,4 @@
-// Generated from grammar/Jupitore.g4 by ANTLR 4.9.3
+// Generated from Jupitore.g4 by ANTLR 4.9.3
 package jupitore.gen;
 
 import org.antlr.v4.runtime.ParserRuleContext;
