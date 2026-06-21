@@ -1,7 +1,7 @@
 // this program sets up a web server using the Spark framework to handle requests for compiling Jupitore code and highlighting syntax.
 // it defines endpoints for compiling code and returning syntax highlights
 // and uses the GCodeVisitor to generate G-code from Jupitore input. 
-package maindeveloper;
+package main.java.maindeveloper;
 import static spark.Spark.*;
 
 import java.util.ArrayList;

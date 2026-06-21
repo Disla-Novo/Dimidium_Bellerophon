@@ -1,4 +1,4 @@
-package maindeveloper;
+package main.java.maindeveloper;
 
 import jupitore.gen.*;
 

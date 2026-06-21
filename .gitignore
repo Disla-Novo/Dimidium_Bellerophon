@@ -1,2 +1,16 @@
 .vscode/
 Micro.sh/
+
+# Build Artifacts
+target/
+bin/
+
+# Java / IDE Specific
+.classpath
+.project
+.settings/
+.cache/
+
+# OS Generated Files
+Thumbs.db
+.DS_Store

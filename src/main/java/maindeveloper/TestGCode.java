@@ -1,7 +1,7 @@
 // this program is the heart of the compiler. 
 // it traverses the parse tree and generates G-code based on the rules defined in the visitor methods.
 // vs code comment generator used
-package maindeveloper;
+package main.java.maindeveloper;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 

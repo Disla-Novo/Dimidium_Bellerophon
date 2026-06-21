@@ -1,4 +1,4 @@
-package maindeveloper;
+package main.java.maindeveloper;
 
 // here we just add overrides that arent supported. 
 // these typically are just word commands that marlin doesn't support. 
