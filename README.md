@@ -1,10 +1,6 @@
 
-
+# Bellerophon: The Parametric DSL for Additive Manufacturing
 <img width="1920" height="1080" alt="Screenshot 2026-06-21 16-41-05" src="https://github.com/user-attachments/assets/f183a2cc-0eb3-400e-80fb-a63b39963ac6" />
-
-
-
-# Bellerophon – The Parametric DSL for Additive Manufacturing
 
 Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper, Marlin, or other types of firmware. 
 
@@ -36,7 +32,7 @@ Stop hardcoding static values. Bellerophon gives you real programming power insi
 
 ### Smart Extrusion
 
-Bellerophon's `EnableAutoExtrude` engine calculates path-aware extrusion volumes automatically. Need manual control? You can override with precision. Either way, your extrusion is always optimized for the hardware you're targeting.
+Bellerophon's `EnableAutoExtrude` engine calculates path-aware extrusion volumes automatically. Need manual control? You can override with precision. Either way, your extrusion is always optimized for what you're targeting.
 
 ### Built-In Safety & Validation
 
@@ -47,7 +43,7 @@ Before your macro ever reaches the printer, Bellerophon checks it:
 - **Boundary Checking:** The compiler simulates your paths against your hardware dimensions, so you catch potential bed crashes before they happen.
 - **Real-Time Syntax Validation:** The IDE highlights errors as you type, so you don't waste time debugging after compilation.
 - **Build Log & Exceptions:** Transparent feedback on exactly what went wrong and where.
---
+---
 ## Program Structure
 
 A Bellerophon program consists of one or more macros. Each macro starts with M.title and ends with M.end.
