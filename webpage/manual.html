@@ -22,95 +22,96 @@
             </section>
 
             <section class="section">
-                <h2>Getting Started & Platform Requirements</h2>
-                <p><strong>Bellerophon</strong> is a 3D printer scripting IDE and language designed for Klipper and Marlin macros. It allows you to write structured, parametric scripts and compile them into firmware‑compatible G-code macros. This section describes system requirements, inputs, outputs, capabilities, and limitations.</p>
+               <h2>Getting Started</h2>
+    <p><strong>Bellerophon</strong> is a compiled Domain-Specific Language (DSL) and IDE for additive manufacturing. It allows you to write structured, parametric scripts and compile them into firmware-compatible G-code macros. This section describes the setup and workflow for the Bellerophon development environment.</p>
 
-                <h3>1. Requirements</h3>
-                <ul>
-                    <li><strong>Software:</strong> Java Runtime Environment (JRE) 19 or newer</li>
-                    <li><strong>Hardware:</strong> Any computer capable of running Java</li>
-                </ul>
+    <h3>1. System Requirements</h3>
+    <ul>
+        <li><strong>Bundle:</strong> Bellerophon includes a bundled JRE, eliminating the need for manual Java installation.</li>
+        <li><strong>Hardware:</strong> Any modern Windows, Linux, or macOS system.</li>
+    </ul>
 
-                <h3>2. Running the IDE</h3>
-                
-                <h4>Windows</h4>
-                <ol>
-                    <li>Double-click <code>run.bat</code> to start the server</li>
-                    <li>Your browser will open automatically to the Dimidium Ecosystem</li>
-                    <li>Close the server window when finished</li>
-                </ol>
+    <h3>2. Launching the IDE</h3>
+    <p>The Bellerophon IDE is delivered as a self-contained environment. Simply launch the provided executable to initialize the local server.</p>
 
-                <h4>Linux / Mac</h4>
-                <ol>
-                    <li>Install Java (OpenJDK 19 or newer)</li>
-                    <li>Open a terminal in the SyntaxN folder</li>
-                    <li>Run: <code>java -jar SyntaxN.jar</code></li>
-                    <li>Open browser to: <code>http://localhost:4567</code></li>
-                    <li>Press Ctrl+C in terminal to stop the server</li>
-                </ol>
+    <h4>Windows</h4>
+    <ul>
+        <li>Navigate to the project root folder.</li>
+        <li>Double-click <code>run.bat</code>. This will initialize the bundled JRE and start the Bellerophon server.</li>
+        <li>The IDE will automatically launch in your default web browser at <code>http://localhost:4567</code>.</li>
+        <li>To shut down, simply close the server terminal window.</li>
+    </ul>
+
+    <h4>Linux / Mac</h4>
+    <ul>
+        <li>Navigate to the project root folder in your terminal.</li>
+        <li>Ensure the launch script is executable: <code>chmod +x run.sh</code></li>
+        <li>Run the script: <code>./run.sh</code></li>
+        <li>The IDE will be accessible at <code>http://localhost:4567</code>.</li>
+        <li>Press <code>Ctrl+C</code> in the terminal to terminate the server.</li>
+</ul>
 
                 <div class="note">
                    The server runs locally on port 4567. No internet connection required after installation.
                 </div>
 
-                <h3>3. Compilation Targets: Klipper vs Marlin</h3>
-                <p>The IDE can compile your <code>.bph</code> scripts to two different output formats:</p>
-                <ul>
-                    <li><strong>Klipper</strong> – Full support for all Bellerophon features, including <code>if</code> statements, advanced temperature commands, and Klipper‑specific G‑code macros.</li>
-                    <li><strong>Marlin</strong> – A simpler output that omits features not available in Marlin firmware. <strong>Conditional statements (<code>if</code>/<code>endif</code>) are not supported in Marlin mode</strong>; all other movement, heating, looping, and macro commands work as expected (loops are expanded at compile time).</li>
-                </ul>
-                <p>Select the target in the IDE before compiling. The generated <code>.cfg</code> (Klipper) or <code>.gcode</code> (Marlin) file will be saved accordingly.</p>
+                <h3>3. Compilation Architecture</h3>
+<p>Bellerophon uses a decoupled <strong>Firmware Adapter Architecture</strong>. Your <code>.bph</code> source code remains universal, while the compiler handles the conversion to firmware-specific instructions via targeted adapters.</p>
+<ul>
+    <li><strong>Universal Source:</strong> Write once, deploy anywhere. Your logic is maintained in a single Bellerophon project regardless of the printer controller.</li>
+    <li><strong>Modular Adapters:</strong> Choose your target in the IDE prior to compilation. The compiler applies the appropriate syntax rules and feature-set limitations for that specific environment (e.g., Klipper, Marlin, or future custom firmware targets).</li>
+    <li><strong>Firmware Independence:</strong> The Bellerophon engine is designed to be firmware-agnostic; as new manufacturing controllers emerge, new adapters can be integrated without modifying your existing scripts.</li>
+</ul>
 
-                <h3>4. Inputs</h3>
-                <ul>
-                    <li>Bellerophon accepts only <code>.bph</code> script files.</li>
-                    <li>The IDE provides real-time syntax validation, highlighting errors as you type.</li>
-                    <li>Scripts are line-oriented: each command must be on its own line; blank lines between commands are ignored.</li>
-                    <li>Supported commands include: movement, temperature control, heaters, fans, waits, pauses, macros calls, repeat loops, Brepeat loops, conditional execution (Klipper only), extruder control, and bed/probe operations.</li>
-                </ul>
+<h3>4. IDE & Workflow</h3>
+<ul>
+    <li><strong>Input:</strong> Bellerophon processes <code>.bph</code> scripts. The IDE provides real-time, line-oriented syntax validation and error highlighting as you develop.</li>
+    <li><strong>Debugging:</strong> Access the <strong>Build Log</strong> and <strong>Exceptions</strong> tabs for immediate feedback on compilation errors.</li>
+    <li><strong>Session Management:</strong> The IDE automatically preserves your workspace, restoring open files and settings to prevent data loss.</li>
+    <li><strong>Reference Panel:</strong> Access all Bellerophon tokens and documentation directly within the IDE sidebar to reduce syntax lookups and speed up your workflow.</li>
+</ul>
 
-                <h3>5. Outputs</h3>
-                <ul>
-                    <li>Compiles <code>.bph</code> scripts into either Klipper macro <code>.cfg</code> files or Marlin <code>.gcode</code> files.</li>
-                    <li>Compiled macros can be deployed to printers via <strong>Gravity Hub</strong> or directly from Mainsail (Klipper) or any Marlin host.</li>
-                    <li>The IDE provides Build Log and Exceptions tabs for debugging and catching compilation errors.</li>
-                </ul>
+<h3>5. Core Capabilities</h3>
+<p>Bellerophon is a <strong>Parametric Engine</strong>, moving manufacturing beyond static G-code into procedurally generated motion.</p>
 
-                <h3>6. Capabilities</h3>
-                <ul>
-                    <li>Compile structured macros for Klipper or Marlin with correct syntax.</li>
-                    <li>Support for arithmetic expressions in coordinates and parameters – <strong>globally available</strong>.</li>
-                    <li>Mathematical functions: <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code> (absolute value), <code>sign</code> (signum), power operator <code>^</code>, and constant <code>pi</code>.</li>
-                    <li><strong>Local user variables</strong> – define and reuse variables inside macros.</li>
-                    <li>Parametric loops using <code>repeat</code> (static repetition) and <code>Brepeat</code> (dynamic, iteration‑aware loops), including support for <strong>nested loops</strong> and iterator‑based expressions.</li>
-                    <li><strong>Parametric Geometry:</strong> Mathematical functions allow the generation of procedural motion paths such as circles, spirals, or arbitrary curves.</li>
-                    <li>Conditional execution with <code>if</code> statements (Klipper only), allowing decisions based on temperatures or other parameters.</li>
-                    <li>Temperature management for extruder, bed, and chamber (<code>Set_Heater_Temperature</code>, <code>Heat</code>, <code>WaitForTemp</code>).</li>
-                    <li>Printer movement commands, including absolute and relative positioning, X/Y/Z moves, extruder control, and dwell/wait commands.</li>
-                    <li>Macro calls within macros (<code>M.call</code>), allowing reuse and modular scripts.</li>
-                    <li>Bed and probe management: <code>BED_MESH_CALIBRATE</code>, <code>PROBE_CALIBRATE</code>, <code>LoadBedMesh</code>.</li>
-                    <li>Fan control, pressure advance, speed settings, and idle timeout (<code>TIMEOUT_SET</code>).</li>
-                    <li>Pause, resume, cooldown, and SD card file printing (<code>PRINTFILE</code>).</li>
-                    <li><strong>IDE Reference Panel:</strong> Displays all Bellerophon tokens in a user-friendly format. Users can pin commands to a sidebar for quick access while typing, reducing errors and speeding up workflow.</li>
-                    <li><strong>Session Restoration:</strong> The IDE automatically restores the previous editing session to prevent accidental data loss and allow users to continue work seamlessly.</li>
-                    <li><strong>Dimidium Ecosystem Integration:</strong> Compiled macros can be deployed and managed through the Dimidium Gravity Hub dashboard or executed directly within Mainsail (Klipper) or any Marlin host.</li>
-                    <li><strong>Printer Profile UI:</strong> The IDE provides a graphical interface to set hardware limits and default printing parameters (nozzle diameter, filament diameter, layer height, extrusion multiplier). These settings are used as defaults unless overridden by macro commands.</li>
-                </ul>
+<div class="feature-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+    <div class="feature-card" style="border: 1px solid #ccc; padding: 15px; border-radius: 4px;">
+        <h4>Parametric Geometry</h4>
+        <p>Use global variables, nested <code>Brepeat</code> loops, and advanced math (<code>sin</code>, <code>cos</code>, <code>sqrt</code>, <code>pi</code>) to define complex motion paths programmatically.</p>
+    </div>
+    <div class="feature-card" style="border: 1px solid #ccc; padding: 15px; border-radius: 4px;">
+        <h4>Smart Extrusion</h4>
+        <p>Utilize the <code>EnableAutoExtrude</code> engine for path-aware volume calculation, or perform manual overrides for high-precision extrusion control.</p>
+    </div>
+</div>
 
-                <h3>7. Limitations</h3>
-                <ul>
-                    <li>Cannot slice 3D models; only generates G-code from Bellerophon <code>.bph</code> scripts.</li>
-                    <li>Does not modify existing G-code files automatically.</li>
-                    <li>Some advanced or rare G-code commands may not be supported.</li>
-                    <li><strong>Variables are local to macros</strong> – they do not persist across macros (global variables are a planned future feature).</li>
-                    <li><strong>Marlin target:</strong> Conditional statements (<code>if</code>/<code>endif</code>) are not supported and will be ignored.</li>
-                </ul>
+<p>Because these features are evaluated by the <strong>Bellerophon Compiler</strong> at build-time, your final macro output is optimized, validated, and ready for hardware execution. This offloads the computational weight of complex mathematics from your printer’s controller, ensuring fluid motion even for highly intricate, procedural geometry.</p>
+<h3>6. Technical Considerations & Limitations</h3>
+<ul>
+    <li><strong>DSL Purpose:</strong> Bellerophon is a compilation engine, not a 3D slicer; it does not process 3D meshes (STL/STEP).</li>
+    <li><strong>Variable Scope:</strong> Variables are currently local to the macro scope to prevent collision. Global state persistence is a planned future architectural expansion.</li>
+    <li><strong>Target Compatibility:</strong> Feature support (such as conditional logic) is determined by the specific capabilities of the firmware target adapter selected at compile-time.</li>
+</ul>
 
-                <h3>8. Workflow Diagram</h3>
-                <p>High-level workflow of using Bellerophon:</p>
-                <pre><code>.bph script  →  IDE (edit & validate)  →  Select target → Compile →  .cfg (Klipper) / .gcode (Marlin) → Deploy → Run macros</code></pre>
-            </section>
+            <h3>7. Bellerophon Architecture & Workflow</h3>
+<p>Bellerophon operates as a high-level parametric engine, abstracting complex geometry into firmware-specific instructions via a modular adapter system.</p>
 
+<pre><code>
+┌──────────────┐      ┌───────────────────────────┐      ┌────────────────────┐
+│ .bph Script  │ ──►  │ Bellerophon Compiler/IDE  │ ──►  │ Firmware Adapters: │
+│ (Parametric) │      │ (Math & Logic Engine)     │      │ • Target A         │
+└──────────────┘      └─────────────┬─────────────┘      │ • Target B         │
+                                    │                    │ • [Plugin-Ready]   │
+                                    ▼                    └────────────────────┘
+                          ┌──────────────────┐
+                          │  Gravity Hub     │
+                          │ (Fleet Deploy)   │
+                          └──────────────────┘
+</code></pre>
+
+<div class="note">
+    <strong>Extensible Architecture:</strong> Bellerophon uses a decoupled compiler design. New firmware targets can be added by implementing a new <code>FirmwareAdapter</code>, allowing the DSL to remain constant even as the manufacturing landscape changes.
+</div>
             <section class="section">
                 <h2>Program Structure</h2>
                 <p>A Bellerophon program consists of one or more macros. Each macro starts with <span class="inline-code token-TITLE">M.title</span> and ends with <span class="inline-code token-MEND">M.end</span>.</p>
@@ -428,6 +429,41 @@
                     </tbody>
                 </table>
             </section>
+
+
+            <section class="section">
+    <h2>Advanced Features & Concepts</h2>
+    
+    <h3>1. Parametric Geometry Engine</h3>
+    <p>Bellerophon goes beyond simple macro scripts by acting as a <strong>Parametric DSL</strong>. Because the compiler evaluates mathematical expressions at build-time, you can create complex, procedural geometry that scales based on variables or mathematical functions.</p>
+    <ul>
+        <li><strong>Global Math:</strong> Use <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code>, <code>sign</code>, <code>^</code>, and <code>pi</code> anywhere an expression is expected (e.g., coordinates, temperatures, or speed).</li>
+        <li><strong>Procedural Motion:</strong> By combining <code>Brepeat</code> loops with trigonometric functions, you can generate spirals, waves, and curves that are impossible to maintain by hand.</li>
+    </ul>
+
+    <h3>2. The "Override" System (Auto vs. Manual)</h3>
+    <p>Bellerophon employs an intelligent extrusion engine designed to simplify your workflow while retaining full manual control:</p>
+    <div class="note">
+        <strong>Execution Priority:</strong>
+        <ol>
+            <li><strong>Manual Override:</strong> If an <code>e=...</code> value is provided in a <code>MoveTo</code> command, it is <strong>always</strong> prioritized.</li>
+            <li><strong>Automatic Calculation:</strong> If <code>EnableAutoExtrude = 1</code> is active and no manual <code>e</code> is provided, the compiler calculates the required filament volume based on your defined nozzle, filament diameter, and layer height.</li>
+            <li><strong>Travel Move:</strong> If <code>EnableAutoExtrude = 0</code> and no <code>e</code> is provided, the printer performs a pure travel move (no extrusion).</li>
+        </ol>
+    </div>
+
+    <h3>3. Procedural Layering (<span class="inline-code token-LAYER">Layer</span>)</h3>
+    <p>The <span class="inline-code token-LAYER">Layer</span> command automates vertical iteration. It not only repeats your macro block, but it also automatically injects a Z-hop (G91 move) between layers using your defined <code>LayerHeight</code>.</p>
+    <div class="code-block">
+<span class="line"><span class="token-LAYER">Layer</span> <span class="token-NUMBER">50</span></span>
+<span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>*2 <span class="token-Y">y</span>=50</span>
+<span class="line"><span class="token-END">end</span></span>
+    </div>
+    <p>This is the engine behind "vase mode" style procedural printing, allowing you to build up volume automatically without manually managing Z-heights.</p>
+
+    <h3>4. Variable Scoping</h3>
+    <p>Variables are defined via <code>name = expression</code>. They are <strong>local to the macro</strong>. This prevents variable name collisions across different macros, ensuring your code remains modular and safe for inclusion in larger printer config files.</p>
+</section>
 
             <section class="section">
                 <h2>Loops & Arithmetic Operators</h2>
