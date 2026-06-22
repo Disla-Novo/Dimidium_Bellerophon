@@ -8,15 +8,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.Map;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import jupitore.gen.*;
 
@@ -728,19 +725,6 @@ if (!Double.isNaN(targetY)) limiter.checkAndMove("Y", targetY);
 if (!Double.isNaN(targetZ)) limiter.checkAndMove("Z", targetZ);
     return "";
 }
-/** 
- * @param axis
- * @param delta
- */
-// Relative helpers
-private void applyRelative(String axis, double delta) {
-    switch (axis) {
-        case "X": currentX += delta; break;
-        case "Y": currentY += delta; break;
-        case "Z": currentZ += delta; break;
-        case "E": break; // extrusion not tracked
-    }
-}
 
 /** 
  * @param axis
@@ -755,32 +739,7 @@ private double getCurrent(String axis) {
     }
     return 0;
 }
-/** 
- * @param ctx
- * @return boolean
- */
-// Recursive helper to detect math functions in an expression
-private boolean containsMathFunction(JupitoreParser.ExprContext ctx) {
-    if (ctx == null) return false;
 
-    // check children recursively
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-        // if child is an expression, recurse
-        if (ctx.getChild(i) instanceof JupitoreParser.ExprContext) {
-            if (containsMathFunction((JupitoreParser.ExprContext) ctx.getChild(i))) {
-                return true;
-            }
-        } else {
-            // check if the text matches a math function
-            String text = ctx.getChild(i).getText();
-            if (text.matches("(?i)sin|cos|tan|sqrt")) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
 
   /** 
    * @param current
