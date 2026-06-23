@@ -9,8 +9,8 @@
     <version>1.0</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -50,7 +50,7 @@
                 <configuration>
                     <sourceDirectory>grammar</sourceDirectory>
                     <visitor>true</visitor>
-                    <outputDirectory>src/jupitore/gen</outputDirectory>
+                    <outputDirectory>target/generated-sources/antlr4</outputDirectory>
                     <arguments>
                         <argument>-package</argument>
                         <argument>jupitore.gen</argument>
@@ -69,15 +69,33 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>move-tokens</id>
+                        <id>move-generated-antlr-files</id>
                         <phase>process-sources</phase>
                         <goals><goal>run</goal></goals>
                         <configuration>
                             <target>
+                                <delete>
+                                    <fileset dir="src/main/java">
+                                        <include name="Jupitore*.java"/>
+                                        <include name="Jupitore*.tokens"/>
+                                        <include name="Jupitore*.interp"/>
+                                    </fileset>
+                                </delete>
+                                <delete>
+                                    <fileset dir="src/main/java/jupitore/gen">
+                                        <include name="Jupitore*.java"/>
+                                    </fileset>
+                                </delete>
+                                <mkdir dir="src/main/java/jupitore/gen"/>
+                                <move todir="src/main/java/jupitore/gen" overwrite="true">
+                                    <fileset dir="target/generated-sources/antlr4">
+                                        <include name="Jupitore*.java"/>
+                                    </fileset>
+                                </move>
                                 <move todir="grammar" overwrite="true">
-                                    <fileset dir="src/jupitore/gen">
-                                        <include name="*.tokens"/>
-                                        <include name="*.interp"/>
+                                    <fileset dir="target/generated-sources/antlr4">
+                                        <include name="Jupitore*.tokens"/>
+                                        <include name="Jupitore*.interp"/>
                                     </fileset>
                                 </move>
                             </target>
