@@ -16,8 +16,8 @@ Gravity Hub (Beta): A dynamic fleet deployment layer for managing and syncing co
 - **Write Once, Deploy Anywhere** – One script, all firmware.
 - **Safety-First** – Simulate before you print. Prevent bed crashes.
 - **Parametric Power** – Variables, math, loops. No more hardcoding.
-- **100% Free & Local** – All local network features are and will remain free.
+- **100% Local** – All local network features are and will remain free.
 ---
 ## Full documentation
-See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/Juli132/Dimidium_Bellerophon/blob/05cd10f3a161eebd50cf3e2cab236c9d0c7ba68c/Bellerophon%20Language%20_%20Documentation.pdf)
+See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/Juli132/Dimidium_Bellerophon/blob/cfa96d5c36f6dbbeb7445c9f42592eeaa5f39f22/Bellerophon%20Language%20_%20Documentation.pdf)
  for the complete command reference, examples, and limitations.
