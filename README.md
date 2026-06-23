@@ -28,10 +28,10 @@ M.title "Simple Square"
 Home
 Absolute
 SetSpeed = 3000
+MoveTo x=10 y=0 z=0.2
 MoveTo x=10 y=10 z=0.2
 MoveTo x=0 y=10 z=0.2
 MoveTo x=0 y=0 z=0.2
-MoveTo x=10 y=0 z=0.2
 Home
 M.end
 ```
@@ -40,7 +40,7 @@ M.end
 1. `Home` – Return to origin (0,0,0)
 2. `Absolute` – Use absolute positioning (vs `Relative`)
 3. `SetSpeed = 3000` – Set print speed (mm/min)
-4. Four `MoveTo` commands – Move to each corner of a 10mm square at 0.2mm height
+4. Four `MoveTo` commands – Trace the perimeter of a 10mm square at a 0.2mm height. It moves right to create the bottom edge, up for the right edge, left for the top edge, and finally down to close the shape exactly at the origin.
 5. `Home` – Return to origin when done
 
 **To try it:**
