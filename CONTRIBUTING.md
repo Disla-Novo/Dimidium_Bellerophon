@@ -42,7 +42,7 @@ This repository combines parser/compiler backend logic, firmware adapter archite
 
 - `webpage/generator.html` — CFG Generator page UI with board selection, input form, output panel, and file upload controls.
 - `webpage/scripts/cfg-generator.js` — CFG generation logic, board pin mapping, config string assembly, boundary checking, and file upload handling.
-- `webpage/styles/generator.css` — styling for the CFG Generator page, controls, cards, and results display.
+ - `webpage/styles/generator.css` — used by `webpage/generator.html` (CFG Generator styling).
 
 ### Firmware Adapters
 
@@ -57,11 +57,12 @@ This repository combines parser/compiler backend logic, firmware adapter archite
 - `webpage/library.html` — page listing macro libraries and reusable example content.
 -  // Legacy `webpage/premade.html` — preset macro examples page for prebuilt workflows.
 - `webpage/index.html` — landing page that links to the IDE, CFG Generator, and Gravity Hub.
-- `webpage/styles/starter.css` — shared CSS used across the IDE, landing page, and documentation pages.
-- `webpage/styles/premade.css` — styling for the premade example collection interface.
-- `webpage/styles/library.css` — styling for the library/examples page.
-- `webpage/styles/index.css` — styles for the landing page and navigation elements.
-- `webpage/styles/doc.css` — documentation-specific styling for manuals and help content.
+ - `webpage/styles/starter.css` — used by `webpage/ide.html` (IDE styling).
+
+ - `webpage/styles/premade.css` — used by `webpage/premade.html` (premade examples styling).
+ - `webpage/styles/library.css` — used by `webpage/library.html` (library/examples styling).
+ - `webpage/styles/index.css` — used by `webpage/index.html` (landing page styling).
+ - `webpage/styles/doc.css` — used by `webpage/manual.html` and `webpage/Documentation.html` (documentation styling).
 - `webpage/scripts/colorhandling.js` — syntax highlighting, code colorization, and editor styling behavior.
 - `webpage/scripts/console-resize.js` — dynamic resizing logic for output consoles and IDE panels.
 - `webpage/scripts/firmware.js` — firmware selection and target switcher logic in the IDE.
@@ -75,7 +76,7 @@ This repository combines parser/compiler backend logic, firmware adapter archite
 - `webpage/hub.html` — Gravity Hub dashboard page for fleet/group management and status overview.
 - `webpage/group.html` — Gravity Hub group details page showing individual printer state and controls.
 - `webpage/dash.html` — Gravity Hub launcher/dashboard page and navigation entry.
-- `webpage/hub.text` — supplementary text/content for hub documentation or metadata.
+- `webpage/hub.text` — Legacy html
 - `webpage/styles/hub.css` — styling for Gravity Hub dashboards, cards, and group layouts.
 - `webpage/scripts/hub.js` — Hub dashboard interaction logic and user event handling.
 - `webpage/scripts/group.js` — group page logic for Gravity Hub UI updates and interactions.
