@@ -19,5 +19,5 @@ Gravity Hub (Beta): A dynamic fleet deployment layer for managing and syncing co
 - **100% Local** – All local network features are and will remain free.
 ---
 ## Full documentation
-See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/Juli132/Dimidium_Bellerophon/blob/cfa96d5c36f6dbbeb7445c9f42592eeaa5f39f22/Bellerophon%20Language%20_%20Documentation.pdf)
+See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/Juli132/Dimidium_Bellerophon/blob/5b9c211964540af6fb8f43d44403dcac3e63377a/Bellerophon%20Language%20_%20Documentation.pdf)
  for the complete command reference, examples, and limitations.
