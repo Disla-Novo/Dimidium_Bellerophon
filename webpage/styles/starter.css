@@ -701,3 +701,24 @@ body {
     background: #444;
     color: #fff;
 }
+/*adding architecture fix*/
+
+.target-dropdown {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #6b6a6a;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+.target-dropdown:hover {
+    border-color: #9c4c4cab;
+}
+
+.target-dropdown:focus {
+    border-color: #bd8127cb;
+}
