@@ -1,5 +1,5 @@
-package main.java.maindeveloper;
-import jupitore.gen.*;
+package maindeveloper;
+
 public class PrinterSettings {
     private double nozzleDiameter = 0.4;      // mm
     private double filamentDiameter = 1.75;   // mm
