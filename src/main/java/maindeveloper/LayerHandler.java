@@ -1,4 +1,4 @@
-package main.java.maindeveloper;
+package maindeveloper;
 import jupitore.gen.JupitoreParser;
 public class LayerHandler {
     private final GCodeVisitor visitor;
