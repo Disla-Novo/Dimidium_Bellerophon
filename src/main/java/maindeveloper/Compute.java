@@ -57,7 +57,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
      */
     // addition / subtraction
 
-    // fixing 4/3/2026 to op.getText. gonna simplify things even more
+    // 4/3/2026: Use op.getText() for simpler operator dispatch
     @Override
     public Double visitAddSub(JupitoreParser.AddSubContext ctx) {
 
@@ -72,9 +72,9 @@ public class Compute extends JupitoreBaseVisitor<Double> {
      * @return Double
      */
     // multiply / divide
-    //MODIFYING 4/3/2026 to op.getText. gonna simplify things even more
-   @Override
-public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
+    // 4/3/2026: Operator dispatch via op.getText()
+    @Override
+    public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
     Double left = visit(ctx.expr(0));
     Double right = visit(ctx.expr(1));
     System.out.println("MULDIV: left=" + left + ", right=" + right);
@@ -93,7 +93,7 @@ public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
     // adding Math.toRadians 4/3/2026
     @Override
     public Double visitFuncCall(JupitoreParser.FuncCallContext ctx) {
-           // ctx.func().getText().toLowerCase() added this! 4/3/2026 to make it case insensitive
+        // 4/3/2026: Case-insensitive function matching
         double value = visit(ctx.expr());
         String funcName = ctx.func().getText().toLowerCase();
 

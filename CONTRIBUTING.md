@@ -150,6 +150,7 @@ Notes:
 
 ### Getting Help
 
+- **First, check [KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Common error messages, workarounds, and current limitations.
 - Stuck on writing a new firmware adapter? Not sure how the AST evaluates math? Open a discussion in the GitHub repository or create an Issue tagged with `question`. We are happy to point you in the right direction.
 
 ### Reporting Bugs

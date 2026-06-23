@@ -18,6 +18,41 @@ Gravity Hub (Beta): A dynamic fleet deployment layer for managing and syncing co
 - **Parametric Power** – Variables, math, loops. No more hardcoding.
 - **100% Local** – All local network features are and will remain free.
 ---
+
+## First Steps: Your First Macro
+
+New to Bellerophon? Start with this simple example:
+
+```bellerophon
+M.title "Simple Square"
+Home
+Absolute
+SetSpeed = 3000
+MoveTo x=10 y=10 z=0.2
+MoveTo x=0 y=10 z=0.2
+MoveTo x=0 y=0 z=0.2
+MoveTo x=10 y=0 z=0.2
+Home
+M.end
+```
+
+**What this does:**
+1. `Home` – Return to origin (0,0,0)
+2. `Absolute` – Use absolute positioning (vs `Relative`)
+3. `SetSpeed = 3000` – Set print speed (mm/min)
+4. Four `MoveTo` commands – Move to each corner of a 10mm square at 0.2mm height
+5. `Home` – Return to origin when done
+
+**To try it:**
+1. Open the **IDE** at `localhost:4567` (or run `./run.bat` / `./run.sh`)
+2. Paste the above code
+3. Select **Klipper** or **Marlin** firmware
+4. Click **Compile** → see generated G-code
+5. (Optional) Use the **CFG Generator** tab to visualize your path on your printer's bed
+
+See [Input_Examples/](Input_Examples/) for more complex examples, or read [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for common patterns and troubleshooting.
+
+---
 ## Full documentation
 See [Official_Bellerophon Language _ Documentation.pdf](https://github.com/Juli132/Dimidium_Bellerophon/blob/5b9c211964540af6fb8f43d44403dcac3e63377a/Bellerophon%20Language%20_%20Documentation.pdf)
  for the complete command reference, examples, and limitations.

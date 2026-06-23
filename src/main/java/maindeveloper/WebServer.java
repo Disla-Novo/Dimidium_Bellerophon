@@ -25,7 +25,7 @@ public class WebServer {
         public String name;
     }
 
-    // Request & Response Classes 
+    // Request/Response DTOs for compilation and syntax highlighting 
     static class CompileRequest {
         public String code;
         // adding klipper or marlin mode!
@@ -48,13 +48,13 @@ public class WebServer {
      */
     public static void main(String[] args) {
 
-        ipAddress("127.0.0.1");   // added this to force it to use localhost. 
+        ipAddress("127.0.0.1");   // Bind to localhost only 
         port(4567); // Spark server port
         staticFiles.externalLocation("webpage"); // serve frontend
 
         Gson gson = new Gson();
 
-        //  endpoint compiling yo
+        // /compile endpoint: parses and compiles Bellerophon code
         post("/compile", (req, res) -> {
             CompileRequest input = gson.fromJson(req.body(), CompileRequest.class);
             CompileResponse out = new CompileResponse();
@@ -65,7 +65,23 @@ public class WebServer {
                 out.success = true;
             } catch (Exception e) {
                 out.success = false;
-                out.error = e.getMessage();
+                String message = e.getMessage();
+                String hint = "";
+                
+                // Provide helpful hints for common errors
+                if (message != null) {
+                    if (message.contains("out of bounds")) {
+                        hint = " → Check your PrinterProfile max values in the CFG Generator.";
+                    } else if (message.contains("iterator") && message.contains("only")) {
+                        hint = " → The 'i' variable only works inside Brepeat loops.";
+                    } else if (message.contains("Unknown function")) {
+                        hint = " → Check function name (case-insensitive). Supported: sqrt, sin, cos, tan, and basic arithmetic.";
+                    } else if (message.contains("Memory Paging Failed")) {
+                        hint = " → Free up disk space or reduce repeat counts/macro complexity.";
+                    }
+                }
+                
+                out.error = message + hint;
             }
 
             res.type("application/json");
