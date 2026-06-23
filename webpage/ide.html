@@ -32,11 +32,9 @@
           <!---WE ADDED THIS. marking so its easier to find and delete-->
           <!--update: its working well so itll stay-->
           <div class="mode-selector">
-            <button id="klipper-mode-btn" class="mode-option active">
-              Klipper
-            </button>
-            <button id="marlin-mode-btn" class="mode-option">Marlin</button>
-          </div>
+   <label for="target-select" style="color:#abb2bf; margin-right: 8px; font-size: 13px;">Firmware:</label>
+<select id="target-select" class="target-dropdown"></select>
+</div>
           <!------------------------------------------------------------>
 
           <span class="file-name-wrapper">
@@ -94,6 +92,7 @@
     </div>
 
   <script src="/scripts/colorhandling.js"></script>
+     <script src="/scripts/firmware.js"></script>
     <script src="/scripts/mscript.js"></script>
     <script src="/scripts/errorHandler.js"></script>
     <script src="/scripts/console-resize.js"></script>

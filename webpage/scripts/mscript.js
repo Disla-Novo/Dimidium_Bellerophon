@@ -1,5 +1,6 @@
 // IMPORTANT SCRIPT. This is the main script for the info tab, handling line numbers
 // file loading/saving, and reference management. It also includes the console resizing code for convenience.
+// this is 6/22/26
 
 // mock line numbers cause idk 
 const input = document.getElementById('code-input');
@@ -80,16 +81,23 @@ function saveProfileFromModal() {
 
 
 // Update download button! added 3/26/2026
+// updated to modular 6/22/26
+
 function updateDownloadButton() {
     const downloadBtn = document.getElementById('download-cfg-btn');
-    if (downloadBtn) {
-        if (window.currentMode === 'marlin') {
-            downloadBtn.textContent = 'Download .gcode';
-        } else {
-            downloadBtn.textContent = 'Download .cfg';
-        }
+    if (!downloadBtn) return;
+    
+    const config = TARGET_CONFIG[window.currentMode];
+    if (config) {
+        downloadBtn.textContent = config.downloadLabel;
+    } else {
+        // Fallback for unknown modes
+        downloadBtn.textContent = 'Download .cfg';
     }
 }
+
+
+
 
 // security measure for log messages to prevent potential XSS if any user input ever gets logged. All messages are now treated as plain text.
 
@@ -231,28 +239,41 @@ window.addEventListener("DOMContentLoaded", () => {
         addLogMessage("Restored previous session.");
     }
 
-    // Mode toggle buttons
-    const klipperBtn = document.getElementById('klipper-mode-btn');
-    const marlinBtn = document.getElementById('marlin-mode-btn');
-
-    if (klipperBtn && marlinBtn) {
-        klipperBtn.addEventListener('click', () => {
-            window.currentMode = "klipper";
-            klipperBtn.classList.add('active');
-            marlinBtn.classList.remove('active');
-            addLogMessage("Switched to Klipper output mode");
-            updateDownloadButton();
-        });
-        
-        marlinBtn.addEventListener('click', () => {
-            window.currentMode = "marlin";
-            marlinBtn.classList.add('active');
-            klipperBtn.classList.remove('active');
-            addLogMessage("Switched to Marlin output mode");
-            updateDownloadButton();
+    
+    const targetSelect = document.getElementById('target-select');
+    if (targetSelect) {
+        // Clear existing options (if any)
+        targetSelect.innerHTML = '';
+        Object.entries(TARGET_CONFIG).forEach(([key, config]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = `${config.label} (${config.ext})`;
+            targetSelect.appendChild(option);
         });
     }
 
+    // Mode toggle dropdown logic
+    const savedTarget = sessionStorage.getItem('bellerophon_target') || 'klipper';
+    if (targetSelect) {
+        targetSelect.value = savedTarget;
+        window.currentMode = savedTarget;
+        updateDownloadButton();
+    }
+
+    if (targetSelect) {
+        targetSelect.addEventListener('change', () => {
+            const mode = targetSelect.value;
+            window.currentMode = mode;
+            sessionStorage.setItem('bellerophon_target', mode);
+            updateDownloadButton();
+            
+            const config = TARGET_CONFIG[mode];
+            const label = config ? config.label : mode.charAt(0).toUpperCase() + mode.slice(1);
+            addLogMessage(`Switched to ${label} output mode`);
+        });
+    }
+
+    //----------------------------------------------------------------------
     // Profile modal controls
     const profileBtn = document.getElementById('profileBtn');
     if (profileBtn) profileBtn.addEventListener('click', openProfileModal);
@@ -377,8 +398,9 @@ if (downloadBtn && gcodeOutput) {
         if (!baseName || baseName === 'filename') baseName = 'macro';
         
         // Add extension based on mode
-        const ext = window.currentMode === 'marlin' ? '.gcode' : '.cfg';
-        const filename = baseName + ext;
+        // Add extension based on mode (using config) new change 6/22/26
+const config = TARGET_CONFIG[window.currentMode] || TARGET_CONFIG.klipper;
+const filename = baseName + config.ext;
         
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
