@@ -33,9 +33,8 @@ private double manualEValue = 0.0;
 private boolean hasAutoE = false;   // user wrote "E" without value
 protected double centerX = 0; // <-- Jrepeat center for X
 protected double centerY = 0; // <-- Jrepeat center for Y
-//NEW LIMITER TO ENSURE SAFETY. THIS IS A HARD LIMITER THAT THROWS AN ERROR IF EXCEEDED. THE FRONTEND SHOULD CATCH THIS AND ALERT THE USER.
+// Hardware safety limiter: enforces axis bounds at compile time.
 protected HardwareLimiter limiter;
-// new function
 public void setEnablePaging(boolean enable) {
     System.out.println("VISITOR LOG: Paging has been set to: " + enable);
     this.enablePaging = enable;
@@ -96,7 +95,7 @@ public GCodeVisitor(PrinterProfile profile) {
             // Create a temporary file to store long gcodes
             File tempFile = File.createTempFile("bph_scratch_", ".gcode");
             System.out.println("PAGING ACTIVE: Writing to " + tempFile.getAbsolutePath());
-            tempFile.deleteOnExit(); // OS cleans this up when the IDE closes... right? 
+            tempFile.deleteOnExit(); // JVM cleans up on exit 
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
                 for (JupitoreParser.MacroContext macro : ctx.macro()) {
@@ -192,9 +191,8 @@ if (ctx.assignment() != null) {
             return visit(ctx.brepeat_statement());
         } 
 
-        // added, i forgot this
-          if (ctx.if_statement() != null) {
-        return visit(ctx.if_statement());
+        if (ctx.if_statement() != null) {
+            return visit(ctx.if_statement());
     }
         if (ctx.MOVE() != null) {
             StringBuilder gcode = new StringBuilder("G1 ");
@@ -221,10 +219,7 @@ if (ctx.assignment() != null) {
             return gcode.toString() + "\n";
         }
 
-        // here is where i added REPEAT statement implementation
-
-        // SET_HEATER: set temperature and does not wait. REMEMEBR
-        // added chamber
+        // SET_HEATER: set temperature without waiting.
       if (ctx.SET_HEATER() != null) {
     if (ctx.TARGET() != null && ctx.expr() != null) {
         String target = ctx.TARGET().getText().toLowerCase();
@@ -234,7 +229,7 @@ if (ctx.assignment() != null) {
     }
 }
 
-        // HEAT: set temperature AND wait. ADDED CHAMBER
+        // HEAT: set temperature and wait.
    if (ctx.HEAT() != null) {
     if (ctx.TARGET() != null && ctx.expr() != null) {
         String target = ctx.TARGET().getText().toLowerCase();
@@ -264,7 +259,7 @@ if (ctx.assignment() != null) {
                 return emitRespond(message);
             }
         }
-        // added relativemode to fix the coords issue
+        // Track relative mode for coordinate handling
         if (ctx.ABSOLUTE() != null) {
             relativeMode = false;
             return "G90\n";
@@ -285,7 +280,7 @@ if (ctx.assignment() != null) {
         // this is just testing
 
         // not to be confused with heat. this one waits for an existing temperature
-        // have to remind myself. so it does not change STATE. ADDED CHAMBER
+        // Note: COOLDOWN does not change printer state for subsequent statements
 
         if (ctx.WAITFORTEMP() != null && ctx.TARGET() != null) {
             String target = ctx.TARGET().getText().toLowerCase();
@@ -373,7 +368,7 @@ if (ctx.assignment() != null) {
     return "G4 P" + ((int) value) + "\n";
 }
 
-        // set speed. tested 6/17/26 with user defined variables
+        // Set speed (6/17/26: supports user-defined variables)
        if (ctx.SET_SPEED() != null && ctx.expr() != null) {
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double speed = compute.visit(ctx.expr());

@@ -116,8 +116,7 @@ function generateConfig() {
     cfg += `position_endstop: 0\n`;
     cfg += `position_max: ${bedZ}\n\n`;
   }
-  // honestly just copy and paste at this point.... tiring. 
-
+  // Stepper driver configuration
   if (driverType === "tmc2209") {
     if (boardKey === "skr-e3-turbo") {
       cfg += `[tmc2209 stepper_x]\nuart_pin: ${board.uart_pin_x}\nuart_address: ${board.uart_addr_x}\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
