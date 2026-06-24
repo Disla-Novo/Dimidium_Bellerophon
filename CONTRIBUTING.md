@@ -36,7 +36,7 @@ This repository combines parser/compiler backend logic, firmware adapter archite
 - `src/main/java/maindeveloper/LayerHandler.java` — helper for layer-specific macro generation and per-layer state management.
 - `src/main/java/maindeveloper/PrinterSettings.java` — backend model capturing printer, extruder, and temperature settings.
 - `src/main/java/maindeveloper/PrinterProfile.java` — printer profile model for build volume, nozzle characteristics, and motion limits.
-- `src/main/java/maindeveloper/TestGCode.java` — local compiler/test harness for validating generated output and debugging compilation behavior.
+
 
 ### Configuration (CFG) Generator
 
@@ -53,9 +53,7 @@ This repository combines parser/compiler backend logic, firmware adapter archite
 
 - `webpage/ide.html` — main IDE page for writing, compiling, and testing `.bph` source.
 - `webpage/manual.html` — IDE documentation page describing language constructs and usage.
-- // Legacy `webpage/Documentation.html` — documentation page covering feature details and compiler behavior.
 - `webpage/library.html` — page listing macro libraries and reusable example content.
--  // Legacy `webpage/premade.html` — preset macro examples page for prebuilt workflows.
 - `webpage/index.html` — landing page that links to the IDE, CFG Generator, and Gravity Hub.
  - `webpage/styles/starter.css` — used by `webpage/ide.html` (IDE styling).
 
