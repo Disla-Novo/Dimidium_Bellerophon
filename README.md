@@ -30,24 +30,30 @@ Bellerophon is a compiled domain-specific language (DSL) and IDE designed to rep
 New to Bellerophon? Start with this simple example:
 
 ```bellerophon
-M.title "Simple Square"
-Home
+M.title "first_line"
 Absolute
-SetSpeed = 3000
-MoveTo x=10 y=0 z=0.2
-MoveTo x=10 y=10 z=0.2
-MoveTo x=0 y=10 z=0.2
-MoveTo x=0 y=0 z=0.2
+SetSpeed = 2000
+Home
+MoveTo x=100 y=100 z=0.2
+MoveTo x=150 y=100
+MoveTo x=150 y=150
+MoveTo x=100 y=150
+MoveTo x=100 y=100
 Home
 M.end
 ```
 
-**What this does:**
-1. `Home` – Return to origin (0,0,0)
-2. `Absolute` – Use absolute positioning (vs `Relative`)
-3. `SetSpeed = 3000` – Set print speed (mm/min)
-4. Four `MoveTo` commands – Trace the perimeter of a 10mm square at a 0.2mm height. It moves right to create the bottom edge, up for the right edge, left for the top edge, and finally down to close the shape exactly at the origin.
-5. `Home` – Return to origin when done
+## What this does
+
+1. `Home` – Moves the printer to its origin.
+2. `Absolute` – Uses absolute positioning so all coordinates are based on the printer’s origin.
+3. `SetSpeed = 2000` – Sets a moderate movement speed for the macro (mm/min).
+4. `MoveTo x=100 y=100 z=0.2` – Moves to the starting point slightly above the bed.
+5. `MoveTo x=150 y=100` – Moves along the X axis.
+6. `MoveTo x=150 y=150` – Moves along the Y axis.
+7. `MoveTo x=100 y=150` – Moves along the X axis.
+8. `MoveTo x=100 y=100` – Returns to the starting point, completing a square path.
+9. `Home` – Returns the printer to its origin.
 
 **To try it:**
 1. Open the **IDE** at `localhost:4567` (or run `./run.bat` / `./run.sh`)
