@@ -1,9 +1,7 @@
 
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="300" alt="Dimidium Logo">
+  <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="400" alt="Dimidium Logo">
 </div>
-
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
 
