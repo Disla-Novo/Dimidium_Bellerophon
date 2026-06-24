@@ -1,6 +1,21 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="350" alt="Dimidium Logo">
 </div>
+<p align="center">
+  <!-- Row 1: Project Identity -->
+<img src="https://img.shields.io/badge/Bellerophon-DSL-black?labelColor=0d9488&style=flat" alt="Bellerophon: DSL">
+  <img src="https://img.shields.io/badge/GravityHub-Beta-black?labelColor=0d9488&style=flat" alt="Gravity Hub: Beta">
+  <!-- <a href="The link would go here">
+  <img src="https://img.shields.io/badge/Community-Discord-black?labelColor=7289da&style=flat" alt="Discord"> </a>-->
+  <br>
+  <!-- Row 2: Firmware Support -->
+  <img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=orange&style=flat" alt="Klipper">
+  <img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=00B2D6&style=flat" alt="Marlin">
+  <br>
+  <!-- Row 4: Environment -->
+<img src="https://img.shields.io/badge/OS-Windows%20|%20Linux%20|%20macOS-black?labelColor=0078D4&style=flat" alt="Platform">
+</p>
+
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
 
