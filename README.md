@@ -1,17 +1,20 @@
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="400" alt="Dimidium Logo">
+  <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="350" alt="Dimidium Logo">
 </div>
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
 
-Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper, Marlin, or other types of firmware. 
+Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper, Marlin, or other types of firmware.
 
-Bellerophon IDE: A real-time syntax-validating editor for authoring multi-firmware macros.
+---
 
-CFG Generator & Boundary Checker: A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
+### Key Components
 
-Gravity Hub (Beta): A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
+> **Bellerophon IDE** — A real-time syntax-validating editor for authoring multi-firmware macros.
+>
+> **CFG Generator & Boundary Checker** — A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
+>
+> **Gravity Hub (Beta)** — A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
 
 ---
 ## What This Means for You
