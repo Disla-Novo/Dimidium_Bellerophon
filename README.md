@@ -71,10 +71,11 @@ M.end
 
 **To try it:**
 1. Open the **IDE** at `localhost:4567` (or run `./run.bat` / `./run.sh`)
-2. Paste the above code
-3. Select **Klipper** or **Marlin** firmware
-4. Click **Compile** → see generated G-code
-5. (Optional) Use the **CFG Generator** tab to visualize your path on your printer's bed
+2. open the IDE
+3. Paste the above code
+4. Select **Klipper** or **Marlin** firmware
+5. Click **Compile** → see generated G-code
+6. (Optional) Use the **CFG Generator** tab to visualize your path on your printer's bed
 
 See [Input_Examples/](Input_Examples/) for more complex examples, or read [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for common patterns and troubleshooting.
 
