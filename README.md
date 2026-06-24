@@ -1,6 +1,10 @@
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
-<img width="1920" height="1080" alt="Screenshot 2026-06-21 16-41-05" src="https://github.com/user-attachments/assets/f183a2cc-0eb3-400e-80fb-a63b39963ac6" />
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/4a7732fe-02cb-4732-989d-df65d4456197" width="300" alt="Dimidium Logo">
+</div>
+
 
 Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper, Marlin, or other types of firmware. 
 
