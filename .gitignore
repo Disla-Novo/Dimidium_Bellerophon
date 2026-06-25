@@ -16,7 +16,12 @@ Thumbs.db
 .DS_Store
 
 
+*.interp
+*.tokens
+
 *.jar
 jre/
 lib/bin/ 
  
+dependency-reduced-pom.xml
+
