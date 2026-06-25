@@ -10,8 +10,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -36,26 +36,41 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.32</version>
         </dependency>
-        
-        <!-- JSON handling (if used) -->
+
+        <!-- JSON handling -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.9.0</version>
         </dependency>
+
+        <!-- JUnit 5 for testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- AssertJ for better assertions -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>SyntaxN</finalName>
 
-     <finalName>SyntaxN</finalName>
         <plugins>
-            <!--(cleaned up) -->
+            <!-- ANTLR Plugin -->
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.9.3</version>
                 <configuration>
-                    <!-- Looks inside grammar/ for the nested jupitore/gen/ structure -->
                     <sourceDirectory>grammar</sourceDirectory>
                     <visitor>true</visitor>
                     <listener>true</listener>
@@ -73,7 +88,7 @@
                 </executions>
             </plugin>
 
-            <!-- (fixes VSCode source root detection) -->
+            <!--  (for VSCode source root) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -94,18 +109,18 @@
                 </executions>
             </plugin>
 
-            <!-- Compiler Plugin -->
+            <!-- (Java 19) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>19</source>
+                    <target>19</target>
                 </configuration>
             </plugin>
 
-            <!-- (makes it executable) -->
+            <!-- (executable manifest) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -119,7 +134,7 @@
                 </configuration>
             </plugin>
 
-            <!-- (bundles dependencies into one fat jar) -->
+            <!-- (fat JAR) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -139,6 +154,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- (test runner) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
             </plugin>
         </plugins>
     </build>
