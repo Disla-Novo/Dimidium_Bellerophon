@@ -2,7 +2,7 @@ name: Create Release Package
 
 on:
   release:
-    types: [created]  # Runs when you publish a GitHub Release
+    types: [created]
 
 jobs:
   build:
@@ -21,6 +21,15 @@ jobs:
     - name: Build the JAR with Maven
       run: ./mvnw -B clean package --file pom.xml
       
+    - name: Create custom JRE with jlink
+      run: |
+        jlink --module-path $JAVA_HOME/jmods \
+              --add-modules java.base,java.logging,java.sql,java.desktop \
+              --output custom-jre \
+              --compress=2 \
+              --no-header-files \
+              --no-man-pages
+      
     - name: Prepare Release Package
       run: |
         mkdir release-package
@@ -28,6 +37,7 @@ jobs:
         cp run.bat release-package/
         cp run.sh release-package/
         cp -r webpage release-package/
+        cp -r custom-jre release-package/jre   
         
     - name: Create Versioned ZIP Archive
       run: |
