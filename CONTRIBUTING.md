@@ -31,6 +31,31 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 
 This repository combines parser/compiler backend logic, firmware adapter architecture, local launch infrastructure, and a static web frontend.
 
+
+## 🗺️ Current Milestones & Where to Contribute
+
+If you are looking for a place to jump in, here are the active development milestones we are currently focusing on. Feel free to open a PR for any of these focus areas:
+
+### 1. Bellerophon's Health (Compiler & Parser)
+**Goal:** Make the compiler more forgiving, intuitive, and lexically robust.
+*   **Whitespace Resilience:** Update the Lexer/Parser to treat arbitrary whitespace and indentation as non-functional. We want to move away from fragile parsing (where an extra space throws an exception) to a token-stream approach that safely skips whitespace.
+*   **Error Reporting:** Ensure the error reporter tracks the actual code line accurately, regardless of leading blank lines or comments.
+
+### 2. Variable Support (State Management)
+**Goal:** Expand the stateful variable system beyond simple procedural geometry.
+*   **Global Variables:** Phase 1 (local-scoped variables within macros) is implemented. The next step is transitioning state management to support global, unit-scoped user-defined variables that persist across the entire compilation unit.
+
+### 3. Gravity Hub Deployment (Networking & Infrastructure)
+**Goal:** Transition Gravity Hub from a prototype to a scalable, production-ready fleet manager.
+*   **Dynamic Discovery:** Move away from static, manual IP management and implement a dynamic printer discovery and registration system.
+*   **Group Logic & Syncing:** Build out the logic to ensure group-level public folders are correctly synced and deployed across the dynamic printer fleet.
+
+### 4. Dimidium's Reach (System Architecture)
+**Goal:** Expand ecosystem flexibility and system-level control.
+*   **Configuration Management:** Strip out hardcoded defaults (ports, timeout intervals, host addresses) and migrate them to configurable system parameters.
+*   **Optimization & Adaptability:** Reduce data handling latency and ensure the ecosystem can be deployed seamlessly across different hardware environments and network architectures.
+  
+
 ## 🚀 Quick Start
 
 - Want to get the Bellerophon IDE running immediately? Just run the bundled executable from the project root:
