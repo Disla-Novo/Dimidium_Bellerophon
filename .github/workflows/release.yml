@@ -7,6 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: read
 
     steps:
     - uses: actions/checkout@v4
@@ -19,7 +23,7 @@ jobs:
         cache: maven
         
     - name: Build the JAR with Maven
-      run: mvn -B clean package --file pom.xml   # ← CHANGED and fixed
+      run: mvn -B clean package --file pom.xml
       
     - name: Create custom JRE with jlink
       run: |
@@ -45,11 +49,7 @@ jobs:
         zip -r ../SyntaxN-${{ github.ref_name }}.zip .
         
     - name: Upload to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./SyntaxN-${{ github.ref_name }}.zip
-        asset_name: SyntaxN-${{ github.ref_name }}.zip
-        asset_content_type: application/zip
+        files: |
+          ./SyntaxN-${{ github.ref_name }}.zip
