@@ -46,6 +46,8 @@
     </dependencies>
 
     <build>
+
+     <finalName>SyntaxN</finalName>
         <plugins>
             <!--(cleaned up) -->
             <plugin>
