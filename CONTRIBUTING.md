@@ -1,5 +1,12 @@
+
 # CONTRIBUTING to the Dimidium Ecosystem
 
+Thank you for your interest in contributing! Whether you're a first‑time open source contributor or a seasoned developer, we welcome your help. This guide gives you the essentials to get started.
+
+- For a **high‑level overview** and contribution ideas, read on.
+- For **deep technical details** (file‑by‑file breakdown, adapter architecture, etc.), see [`guts.md`](./guts.md).
+
+  
 ## Contributor License Agreement (Required)
 
 By contributing to this repository, you agree to the Dimidium Contributor License Agreement (CLA).
@@ -24,99 +31,37 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 
 This repository combines parser/compiler backend logic, firmware adapter architecture, local launch infrastructure, and a static web frontend.
 
+
+## 🗺️ Current Milestones & Where to Contribute
+
+If you are looking for a place to jump in, here are the active development milestones we are currently focusing on. Feel free to open a PR for any of these focus areas:
+
+### 1. Bellerophon's Health (Compiler & Parser)
+**Goal:** Make the compiler more forgiving, intuitive, and lexically robust.
+*   **Whitespace Resilience:** Update the Lexer/Parser to treat arbitrary whitespace and indentation as non-functional. We want to move away from fragile parsing (where an extra space throws an exception) to a token-stream approach that safely skips whitespace.
+*   **Error Reporting:** Ensure the error reporter tracks the actual code line accurately, regardless of leading blank lines or comments.
+
+### 2. Variable Support (State Management)
+**Goal:** Expand the stateful variable system beyond simple procedural geometry.
+*   **Global Variables:** Phase 1 (local-scoped variables within macros) is implemented. The next step is transitioning state management to support global, unit-scoped user-defined variables that persist across the entire compilation unit.
+
+### 3. Gravity Hub Deployment (Networking & Infrastructure)
+**Goal:** Transition Gravity Hub from a prototype to a scalable, production-ready fleet manager.
+*   **Dynamic Discovery:** Move away from static, manual IP management and implement a dynamic printer discovery and registration system.
+*   **Group Logic & Syncing:** Build out the logic to ensure group-level public folders are correctly synced and deployed across the dynamic printer fleet.
+
+### 4. Dimidium's Reach (System Architecture)
+**Goal:** Expand ecosystem flexibility and system-level control.
+*   **Configuration Management:** Strip out hardcoded defaults (ports, timeout intervals, host addresses) and migrate them to configurable system parameters.
+*   **Optimization & Adaptability:** Reduce data handling latency and ensure the ecosystem can be deployed seamlessly across different hardware environments and network architectures.
+  
+
 ## 🚀 Quick Start
 
 - Want to get the Bellerophon IDE running immediately? Just run the bundled executable from the project root:
 - Windows: `.\\run.bat`
 - Mac/Linux: `./run.sh`
 - Then open `http://localhost:4567` in your browser. (See the Local Environment Setup section for full build details).
-
-## File-by-File Categorization by Feature
-
-### Bellerophon Compiler Engine (Backend)
-
-> *Note: The core parsing engine, ANTLR grammar, and generated syntax tree files currently use the legacy project name `Jupitore`. These operate as the core engine for the Bellerophon compiler.*
-
-- `grammar/Jupitore.g4` — ANTLR grammar defining the Bellerophon DSL syntax and parse structure.
-- `src/main/java/jupitore/gen/JupitoreLexer.java` — generated lexer that tokenizes Bellerophon source.
-- `src/main/java/jupitore/gen/JupitoreParser.java` — generated parser that builds the parse tree from lexed tokens.
-- `src/main/java/jupitore/gen/JupitoreVisitor.java` — generated visitor interface for parse tree traversal.
-- `src/main/java/jupitore/gen/JupitoreBaseVisitor.java` — generated base visitor with default traversal behavior.
-- `src/main/java/jupitore/gen/JupitoreListener.java` — generated listener interface for parse tree events.
-- `src/main/java/jupitore/gen/JupitoreBaseListener.java` — generated base listener with empty event methods.
-- `src/main/java/maindeveloper/GCodeVisitor.java` — core compiler engine that visits the AST and emits firmware-agnostic motion, macro, and extrusion commands.
-- `src/main/java/maindeveloper/Compute.java` — expression evaluator used by the compiler for arithmetic, vector math, and parameter expansion.
-- `src/main/java/maindeveloper/HardwareLimiter.java` — safety layer that enforces axis limits and rejects invalid motion during compile-time validation.
-- `src/main/java/maindeveloper/LayerHandler.java` — helper for layer-specific macro generation and per-layer state management.
-- `src/main/java/maindeveloper/PrinterSettings.java` — backend model capturing printer, extruder, and temperature settings.
-- `src/main/java/maindeveloper/PrinterProfile.java` — printer profile model for build volume, nozzle characteristics, and motion limits.
-
-
-### Configuration (CFG) Generator
-
-- `webpage/generator.html` — CFG Generator page UI with board selection, input form, output panel, and file upload controls.
-- `webpage/scripts/cfg-generator.js` — CFG generation logic, board pin mapping, config string assembly, boundary checking, and file upload handling.
- - `webpage/styles/generator.css` — used by `webpage/generator.html` (CFG Generator styling).
-
-### Firmware Adapters
-
-- `src/main/java/maindeveloper/KlipperVisitor.java` — Klipper firmware adapter implementing Bellerophon emission rules for Klipper macros and command syntax.
-- `src/main/java/maindeveloper/MarlinVisitor.java` — Marlin firmware adapter implementing Bellerophon emission rules for Marlin-compatible G-code and macros.
-
-### Bellerophon IDE (Frontend)
-
-- `webpage/ide.html` — main IDE page for writing, compiling, and testing `.bph` source.
-- `webpage/manual.html` — IDE documentation page describing language constructs and usage.
-- `webpage/library.html` — page listing macro libraries and reusable example content.
-- `webpage/index.html` — landing page that links to the IDE, CFG Generator, and Gravity Hub.
- - `webpage/styles/starter.css` — used by `webpage/ide.html` (IDE styling).
-
- - `webpage/styles/premade.css` — used by `webpage/premade.html` (premade examples styling).
- - `webpage/styles/library.css` — used by `webpage/library.html` (library/examples styling).
- - `webpage/styles/index.css` — used by `webpage/index.html` (landing page styling).
- - `webpage/styles/doc.css` — used by `webpage/manual.html` and `webpage/Documentation.html` (documentation styling).
-- `webpage/scripts/colorhandling.js` — syntax highlighting, code colorization, and editor styling behavior.
-- `webpage/scripts/console-resize.js` — dynamic resizing logic for output consoles and IDE panels.
-- `webpage/scripts/firmware.js` — firmware selection and target switcher logic in the IDE.
-- `webpage/scripts/errorHandler.js` — client-side UI error handling and display utilities.
-- `webpage/scripts/demo.js` — demo interaction logic and supplemental frontend behavior.
-- `webpage/scripts/mscript.js` — shared macro/script utilities used by the IDE.
-- `webpage/scripts/multiprinter.js` — frontend support for managing multiple printer displays and state.
-
-### Gravity Hub (MVP)
-
-- `webpage/hub.html` — Gravity Hub dashboard page for fleet/group management and status overview.
-- `webpage/group.html` — Gravity Hub group details page showing individual printer state and controls.
-- `webpage/dash.html` — Gravity Hub launcher/dashboard page and navigation entry.
-- `webpage/hub.text` — Legacy html
-- `webpage/styles/hub.css` — styling for Gravity Hub dashboards, cards, and group layouts.
-- `webpage/scripts/hub.js` — Hub dashboard interaction logic and user event handling.
-- `webpage/scripts/group.js` — group page logic for Gravity Hub UI updates and interactions.
-- `webpage/scripts/hubfolder.js` — Hub navigation helpers and content loading support.
-
-### Core Server & Infrastructure
-
-- `src/main/java/maindeveloper/WebServer.java` — Spark Java server startup, HTTP routing, compile/highlight endpoints, and static file hosting.
-- `pom.xml` — Maven project configuration, dependency declarations, and build lifecycle settings.
-- `run.bat` — Windows launch script that starts the bundled JRE and opens the local web app.
-- `run.sh` — Unix launch script for starting the bundled JRE and serving the app locally.
-
-
-## Adapter Architecture
-
-The Bellerophon compiler uses a decoupled firmware adapter architecture:
-
-- Source files are parsed by the ANTLR grammar into an AST.
-- The compiler engine walks the tree using `GCodeVisitor`.
-- Firmware-specific adapters (`KlipperVisitor`, `MarlinVisitor`) implement the abstract emission hooks.
-
-Creating a new adapter is a well-scoped contribution: add a new visitor in `src/main/java/maindeveloper/` and implement the target-specific emission methods.
-
-**How to add a new Firmware Target:**
-
-- **Step 1 (Backend Logic):** Create a new Java class (e.g., `RepRapVisitor.java`) in `src/main/java/maindeveloper/` that extends `GCodeVisitor`.
-- **Step 2 (Backend Routing):** Register the new visitor as a compilation target in `WebServer.java`.
-- **Step 3 (Frontend UI):** Add the new firmware option to the target dropdown in `webpage/scripts/firmware.js`.
 
 ## Local Environment Setup
 
@@ -138,19 +83,6 @@ or on Unix-like systems:
 
 ```text
 http://localhost:4567
-```
-
-5. To build from source:
-
-```bash
-./mvnw -q package
-java -jar target/SyntaxN.jar
-```
-
-6. For live development:
-
-```bash
-./mvnw -DskipTests compile exec:java -Dexec.mainClass=maindeveloper.WebServer
 ```
 
 Notes:
