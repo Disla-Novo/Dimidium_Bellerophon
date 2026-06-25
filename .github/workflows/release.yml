@@ -1,15 +1,30 @@
 name: Create Release Package
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            archive_cmd: zip -r ../Dimidium-${{ github.ref_name }}-windows.zip .
+            asset_name: Dimidium-${{ github.ref_name }}-windows.zip
+          - os: ubuntu-latest
+            archive_cmd: tar -czvf ../Dimidium-${{ github.ref_name }}-linux.tar.gz .
+            asset_name: Dimidium-${{ github.ref_name }}-linux.tar.gz
+
+    runs-on: ${{ matrix.os }} 
+    
+    defaults:
+      run:
+        shell: bash
 
     steps:
     - uses: actions/checkout@v4
@@ -36,18 +51,20 @@ jobs:
     - name: Prepare Release Package
       run: |
         mkdir release-package
-        cp target/*.jar release-package/
+        cp target/SyntaxN.jar release-package/ 
         cp run.bat release-package/
         cp run.sh release-package/
         cp -r webpage release-package/
         cp -r custom-jre release-package/jre
 
-    - name: Create ZIP
+    - name: Create Archive
       run: |
         cd release-package
-        zip -r ../Dimidium-${{ github.ref_name }}.zip .
+        ${{ matrix.archive_cmd }}
 
-    - name: Upload Release Asset
+    - name: Auto-Create Release (As Draft)
       uses: softprops/action-gh-release@v2
       with:
-        files: Dimidium-${{ github.ref_name }}.zip
+        draft: true
+        generate_release_notes: true
+        files: ${{ matrix.asset_name }}
