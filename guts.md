@@ -4,7 +4,7 @@ This document is a companion to [`CONTRIBUTING.md`](./CONTRIBUTING.md). It provi
 
 If you just want to get started quickly, see the main contributing guide. If you are planning to modify the parser, add a new firmware adapter, or understand the full stack, read on.
 
-Files are always being moved around! if some files are out of place, help us document properly! 
+> The project is actively evolving. If you notice any file paths in this document that don't match the current structure, please open an issue or submit a pull request with corrections. Your help keeping documentation accurate is appreciated!
 
 ### Bellerophon Compiler Engine (Backend)
 
