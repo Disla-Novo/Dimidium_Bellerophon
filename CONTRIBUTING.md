@@ -85,7 +85,7 @@ Bellerophon uses a data-driven theming system. Adding a new theme is modular and
          ...
      }
      ```
-2. **Register the theme:** Open `/scripts/themes.js`. Add a new entry to the `window.THEME_MAP` object, including the `label`, the `css` path, and a `preview` hex code for the settings modal.
+2. **Register the theme:** Open `/scripts/colors_scripts/themes.js`. Add a new entry to the `window.THEME_MAP` object, including the `label`, the `css` path, and a `preview` hex code for the settings modal.
 3. **Submit:** Include a screenshot of your theme in your PR so we can verify the syntax highlighting and contrast.
 
 > **⚠️ The Golden Rule:** Do **not** modify `starter.css` or the core layout files. We want to keep the base structure consistent for everyone. One theme per Pull Request, please!
