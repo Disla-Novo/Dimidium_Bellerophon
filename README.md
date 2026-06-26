@@ -23,7 +23,9 @@
 <a href="https://github.com/Juli132/Dimidium_Bellerophon">
   <img src="https://img.shields.io/badge/OS-Windows%20|%20Linux%20|%20macOS-black?labelColor=0078D4&style=flat" alt="Platform">
 </a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="LICENSE">
+  <img src="https://img.shields.io/badge/License-AGPL_3.0-blue.svg" alt="License">
+</a>
 </p>
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
