@@ -33,6 +33,7 @@ Explain the motivation or problem being solved.
 - [ ] Runtime system (Gravity Hub)
 - [ ] Documentation
 - [ ] Refactor / internal changes
+- [ ] UI/UX & Ecosystem Polish
 ---
 
 ## How was this tested?
