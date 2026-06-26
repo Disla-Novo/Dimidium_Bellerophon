@@ -10,11 +10,11 @@
   <br>
 
   <!-- Row 2: Firmware Support -->
-<a href="https://github.com/Klipper3d">
+<a href="https://github.com/Klipper3d" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;">
 </a>
 
-<a href="https://github.com/MarlinFirmware">
+<a href="https://github.com/MarlinFirmware" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;">
 </a>
   <br>
