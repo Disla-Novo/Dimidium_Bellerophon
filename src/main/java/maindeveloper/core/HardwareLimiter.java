@@ -1,4 +1,4 @@
-package maindeveloper;
+package maindeveloper.core;
 
 public class HardwareLimiter {
     private double x = 0, y = 0, z = 0;

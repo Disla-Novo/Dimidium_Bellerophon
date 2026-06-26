@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Test;
 
+import maindeveloper.core.PrinterProfile;
+import maindeveloper.dialects.KlipperVisitor;
+import maindeveloper.dialects.MarlinVisitor;
+
 public class FirmwareAdapterTest {
 
     @Test

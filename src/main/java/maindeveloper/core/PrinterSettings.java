@@ -1,4 +1,4 @@
-package maindeveloper;
+package maindeveloper.core;
 
 public class PrinterSettings {
     private double nozzleDiameter = 0.4;      // mm
