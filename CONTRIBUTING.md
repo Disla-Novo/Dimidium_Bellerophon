@@ -12,7 +12,7 @@ Thank you for your interest in contributing! Whether you're a first‑time open 
 By contributing to this repository, you agree to the Dimidium Contributor License Agreement (CLA).
 
 The CLA grants permission for your contributions to be used in both:
-- the open-source Bellerophon project (Apache 2.0)
+- the open-source Dimidium ecosystem (Apache 2.0)
 - proprietary and commercial components of the Dimidium Ecosystem
 
 This CLA does not transfer ownership of your contribution.
