@@ -10,8 +10,13 @@
   <br>
 
   <!-- Row 2: Firmware Support -->
-  <img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=orange&style=flat" alt="Klipper" style="pointer-events: none;">
-  <img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=00B2D6&style=flat" alt="Marlin" style="pointer-events: none;">
+<a href="https://github.com/Klipper3d">
+  <img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;">
+</a>
+
+<a href="https://github.com/MarlinFirmware">
+  <img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;">
+</a>
   <br>
 
   <!-- Row 3: Environment & License -->
