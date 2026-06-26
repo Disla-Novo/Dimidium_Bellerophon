@@ -1,0 +1,37 @@
+name: CLA Enforcement
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  verify-cla:
+    name: Verify Legal Checklist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Body for Checked Boxes
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Convert the PR body to lowercase so it catches both [x] and [X]
+          BODY_LOWER=$(echo "$PR_BODY" | tr '[:upper:]' '[:lower:]')
+
+          # Check 1: CLA Agreement
+          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] i have read and agree to the cla"; then
+            echo "::error::Missing CLA Agreement. You must check the 'I have read and agree to the CLA' box in the PR description."
+            exit 1
+          fi
+
+          # Check 2: Original Work Confirmation
+          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] this code is my original work"; then
+            echo "::error::Missing Original Work confirmation. You must check the 'This code is my original work' box."
+            exit 1
+          fi
+
+          # Check 3: Unlicensed Code Confirmation
+          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] i am not knowingly submitting copied"; then
+            echo "::error::Missing Unlicensed Code confirmation. You must check the 'I am not knowingly submitting copied code' box."
+            exit 1
+          fi
+
+          echo "All legal and CLA checkboxes are marked. Code is cleared for review."
