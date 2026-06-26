@@ -1,4 +1,7 @@
-package maindeveloper;
+package maindeveloper.dialects;
+
+import maindeveloper.core.GCodeVisitor;
+import maindeveloper.core.PrinterProfile;
 
 public class KlipperVisitor extends GCodeVisitor {
 

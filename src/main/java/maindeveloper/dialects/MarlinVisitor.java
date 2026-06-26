@@ -1,4 +1,7 @@
-package maindeveloper;
+package maindeveloper.dialects;
+
+import maindeveloper.core.GCodeVisitor;
+import maindeveloper.core.PrinterProfile;
 
 // here we just add overrides that arent supported. 
 // these typically are just word commands that marlin doesn't support. 

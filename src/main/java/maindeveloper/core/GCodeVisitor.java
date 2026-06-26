@@ -2,7 +2,7 @@
 // each method corresponds to a specific rule in the grammar and is responsible for translating that rule into G-code. 
 // the visitor pattern allows us to separate the logic of code generation from the structure of the parse tree
 //  making it easier to maintain and extend in the future.
-package maindeveloper;
+package maindeveloper.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
