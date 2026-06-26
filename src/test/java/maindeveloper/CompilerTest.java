@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Test;
 
+import maindeveloper.core.PrinterProfile;
+import maindeveloper.dialects.KlipperVisitor;
+
 public class CompilerTest {
 
     @Test
