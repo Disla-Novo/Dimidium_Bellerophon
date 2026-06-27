@@ -59,12 +59,17 @@ M.end
 8.   MoveTo x=100 y=100 – Returns to the starting point, completing a square path.
 9.   Home – Returns the printer to its origin.
 
-### To try it:
-- Open the IDE at `localhost:4567` (or run `./run.bat` / `./run.sh`)
-- Paste the above code
-- Select Klipper or Marlin firmware
-- Click Compile → see generated G-code
-- (Optional) Use the CFG Generator tab to visualize your path on your printer's bed
+## Quick Start
+
+1. **Download**: Grab the latest release from the [Releases page](https://github.com/Juli132/Dimidium_Bellerophon/releases).
+2. **Run**: Unzip the folder and launch the application:
+   - **Windows**: Double-click `run.bat`
+   - **Mac/Linux**: Run `./run.sh`
+3. **Compile**: 
+   - Paste your code into the editor.
+   - Select your firmware dialect (**Klipper** or **Marlin**).
+   - Click **Compile** to generate your G-code.
+4. **Visualize** (Optional): Use the **CFG Generator** tab to preview your path on the printer bed.
 
 ---
 
