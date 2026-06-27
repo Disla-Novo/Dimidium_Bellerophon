@@ -155,8 +155,10 @@ Please refer to [Local Development](https://github.com/Juli132/Dimidium_Bellerop
 
 ---
 
-## Questions?
+## Questions & Brainstorming
 
-If you have questions about the frontend architecture, need help with a UI change, or want to add a new feature, open a GitHub issue with the `question` tag.
+Have a question about the architecture, want to propose a UI change, or just want to chat about a new feature? Please use our **[GitHub Discussions](https://github.com/Juli132/Dimidium_Bellerophon/discussions)** page.
+
+*Use the **Issues** tab only for reporting confirmed bugs or tracking specific, actionable development tasks.*
 
 Thank you for helping improve the Dimidium frontend!
