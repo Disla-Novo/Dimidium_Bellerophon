@@ -35,6 +35,9 @@ Bellerophon is a compiled domain-specific language (DSL) and IDE designed to rep
 ---
 
 
+<img width="1920" height="1080" alt="Screenshot 2026-06-27 00-15-28" src="https://github.com/user-attachments/assets/5a6e1570-7a37-42e0-b0e9-2e5cef7bb6f3" />
+
+
 ## First Steps: Your First Macro
 ```
 M.title "first_line"
@@ -72,7 +75,7 @@ M.end
    - Select your firmware dialect (**Klipper** or **Marlin**).
    - Click **Compile** to generate your G-code.
 4. **Visualize** (Optional): Use the **CFG Generator** tab to preview your path on the printer bed.
-<img width="1920" height="1080" alt="Screenshot 2026-06-27 00-15-28" src="https://github.com/user-attachments/assets/5a6e1570-7a37-42e0-b0e9-2e5cef7bb6f3" />
+
 
 ---
 
