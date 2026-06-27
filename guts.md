@@ -6,7 +6,7 @@ If you are planning to modify the parser, compiler core, or firmware adapters, r
 
 ---
 
-> The project is actively evolving. If you notice any file paths in this document that do not match the current structure, please open an issue or submit a pull request with corrections.
+> The project is actively evolving. If you notice any file paths in this document that do not match the current structure, please open an issue or submit a pull request with corrections or additions.
 
 ---
 

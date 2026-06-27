@@ -30,11 +30,17 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 - **CFG Generator** — a browser-based printer configuration generator and boundary checker for Klipper-style `printer.cfg` files.
 - **Gravity Hub** — an MVP dashboard and group management layer surfaced in the local web UI.
 
-This repository combines parser/compiler backend logic, firmware adapter architecture, local launch infrastructure, and a static web frontend.
+---
 
 ### Local Development
 
 > **Prerequisite:** This source code requires **Java 19** (JDK) to compile and run. The release versions bundle their own JRE, but source-code development relies on your local Java installation. We have the bundle in the [dev-kit-0.1.0](https://github.com/Juli132/Dimidium_Bellerophon/releases/tag/dev-kit-0.1.0) for your convenience.
+
+__Before submitting a PR, Please verify your code passes all tests as our automated pipeline will run these checks:__
+
+`./mvnw clean test`       # PowerShell / Mac / Linux
+
+`.\mvnw.cmd clean test`   # Command Prompt (cmd)
 
 The `./run.sh` and `.\run.bat` scripts are intended only for the packaged release version and will not work with the source tree unless you have the JRE bundle from the dev kit and generated the .jar. You must generate a .jar via `./mvnw clean package`  # PowerShell / Mac / Linux or `.\mvnw.cmd clean package`  # Command Prompt (cmd) and move it to the root folder. 
 Otherwise, you may also run directly from the file as long as you have **Java 19**: 
@@ -46,6 +52,7 @@ Otherwise, you may also run directly from the file as long as you have **Java 19
      Open the project in your IDE and run the `main` method of `WebServer.java`.
 
 2. Open `http://localhost:4567` in your browser.
+
 
 ## 🌱 How You Can Help (Beginner Friendly!)
 
@@ -181,7 +188,7 @@ Notes:
 ### Getting Help
 
 - **First, check [KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Common error messages, workarounds, and current limitations.
-- Stuck on writing a new firmware adapter? Not sure how the AST evaluates math? Open a discussion in the GitHub repository or create an Issue tagged with `question`. We are happy to point you in the right direction.
+- Stuck on writing a new firmware adapter? Not sure how the AST evaluates math? Open a [discussion](https://github.com/Juli132/Dimidium_Bellerophon/discussions)! We are happy to point you in the right direction.
 
 ### Reporting Bugs
 

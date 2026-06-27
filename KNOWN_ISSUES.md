@@ -74,84 +74,6 @@ M.end
 ; Once working, increase to 1000, 10000, etc.
 ```
 
-### "Memory Paging Failed"
-**Cause**: G-code output exceeded available system memory. Compiler switched to disk paging and encountered an I/O error.
-
-**Solution**:
-- Free up disk space (paging uses system temp directory)
-- Reduce repeat counts or macro complexity
-- Split into multiple macros and call them sequentially
-
----
-
-## Workarounds for Current Limitations
-
-### Deep Loop Nesting
-**Problem**: Deeply nested loops can generate large G-code outputs and slow compilation.
-
-**Workaround**: Factor into multiple macros and call them:
-```bellerophon
-M.title "Outer"
-Absolute
-Brepeat 10
-  M.call "Middle"
-end
-M.end
-
-M.title "Middle"
-Absolute
-Brepeat 5
-  M.call "Inner"
-end
-M.end
-
-M.title "Inner"
-Absolute
-Brepeat 3
-  MoveTo z+=0.1
-end
-M.end
-```
-
-### Variable Scoping
-**Problem**: You need temporary variables that don't affect other macros.
-
-**Workaround**: Use naming conventions to avoid collisions:
-```bellerophon
-M.title "Square A"
-Absolute
-tempA_x = 10
-tempA_y = 20
-MoveTo x=tempA_x y=tempA_y
-M.end
-
-M.title "Square B"
-Absolute
-tempB_x = 30  # Different namespace, won't collide
-tempB_y = 40
-MoveTo x=tempB_x y=tempB_y
-M.end
-```
-
-### Circular Paths
-**Problem**: You want to draw a circle or arc.
-
-**Workaround**: Approximate with linear segments using math:
-```bellerophon
-M.title "Circular Path"
-Absolute
-SetSpeed = 3000
-radius = 20
-numSteps = 36  # 36 * 10° = 360°
-Brepeat numSteps
-  angle = i * 10 * 3.14159 / 180  # Convert degrees to radians
-  xPos = radius * cos(angle)
-  yPos = radius * sin(angle)
-  MoveTo x=xPos y=yPos
-end
-M.end
-```
-
 ---
 
 ## Planned Improvements
@@ -166,4 +88,4 @@ M.end
 
 ## Found a bug? 
 
-See [CONTRIBUTING.md](CONTRIBUTING.md#getting-help) for how to report issues and ask for help.
+See [CONTRIBUTING.md](CONTRIBUTING.md#getting-help) for how to report issues and ask for help. If bugs were documented, please add them here!

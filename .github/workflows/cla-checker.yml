@@ -7,13 +7,18 @@ on:
 jobs:
   verify-cla:
     name: Verify Legal Checklist
+
+    # Only run for forked PRs (external contributors)
+    if: github.event.pull_request.head.repo.fork == true
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Check PR Body for Checked Boxes
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          # Convert the PR body to lowercase so it catches both [x] and [X]
+          # Convert PR body to lowercase so it matches [x] or [X]
           BODY_LOWER=$(echo "$PR_BODY" | tr '[:upper:]' '[:lower:]')
 
           # Check 1: CLA Agreement

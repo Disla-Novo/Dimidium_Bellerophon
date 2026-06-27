@@ -6,7 +6,7 @@ If you want to modify the UI, add a new theme, or understand how the frontend wo
 
 ---
 
-> The project is actively evolving. If you notice any file paths in this document that do not match the current structure, please open an issue or submit a pull request with corrections.
+> The project is actively evolving. If you notice any file paths in this document that do not match the current structure, please open an issue or submit a pull request with corrections or additions.
 
 ---
 
@@ -39,7 +39,7 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 | :--- | :--- | :--- |
 | 1 | `webpage/styles/themes/` | Create a new CSS file (e.g., `forest.css`). |
 | 2 | — | Scope all styles to a unique body class (e.g., `body.theme-forest`). |
-| 3 | `webpage/scripts/colors_scripts/themes.js` | Add an entry to `window.THEME_MAP` with `label`, `preview` (hex), `css` (path), and `tokens` (color mappings). |
+| 3 | `webpage/scripts/colors_scripts/themes.js` | Add an entry to `window.THEME_MAP` with `label`, `preview` (preview color for theme), `css` (path), `tokens` (The colors for Bellerophon's commands!) and `variables` (color for local user-defined variables). |
 | 4 | — | Test locally and include a screenshot of your theme in your PR. |
 
 ### The Golden Rule
@@ -91,7 +91,7 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 
 > **Adding a new theme:** 
 > - **UI Theme:** Create a new CSS file in `webpage/styles/themes/` (e.g., `forest.css`) for the IDE's visual styling.
-> - **Syntax Colors:** Add a new entry to `window.THEME_MAP` in `webpage/scripts/colors_scripts/themes.js` with `label`, `preview`, `css`, and `tokens` (where `tokens` defines the syntax highlighting colors for that theme).
+> - **Syntax Colors:** Add a new entry to `window.THEME_MAP` in `webpage/scripts/colors_scripts/themes.js` with `label`, `preview`, `css`, `tokens` (where `tokens` defines the syntax highlighting colors for that theme) and `variables` (the highlighting for local user-defined variables).
 
 ---
 
@@ -155,8 +155,10 @@ Please refer to [Local Development](https://github.com/Juli132/Dimidium_Bellerop
 
 ---
 
-## Questions?
+## Questions & Brainstorming
 
-If you have questions about the frontend architecture, need help with a UI change, or want to add a new feature, open a GitHub issue with the `question` tag.
+Have a question about the architecture, want to propose a UI change, or just want to chat about a new feature? Please use our **[GitHub Discussions](https://github.com/Juli132/Dimidium_Bellerophon/discussions)** page.
+
+*Use the **Issues** tab only for reporting confirmed bugs or tracking specific, actionable development tasks.*
 
 Thank you for helping improve the Dimidium frontend!
