@@ -4,7 +4,8 @@
 Thank you for your interest in contributing! Whether you're a first‑time open source contributor or a seasoned developer, we welcome your help. This guide gives you the essentials to get started.
 
 - For a **high‑level overview** and contribution ideas, read on.
-- For **deep technical details** (file‑by‑file breakdown, adapter architecture, etc.), see [`guts.md`](./guts.md).
+- For **technical details** of the backend see [`guts.md`](./guts.md).
+- For **technical details** of the frontend see [`frontend_reference.md`](frontend_reference.md). This is more friendly and less complex for contributors that want to get started. 
 
   
 ## Contributor License Agreement (Required)
@@ -31,6 +32,20 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 
 This repository combines parser/compiler backend logic, firmware adapter architecture, local launch infrastructure, and a static web frontend.
 
+### Local Development
+
+> **Prerequisite:** This source code requires **Java 19** (JDK) to compile and run. The release versions bundle their own JRE, but source-code development relies on your local Java installation. We have the bundle in the [dev-kit-0.1.0](https://github.com/Juli132/Dimidium_Bellerophon/releases/tag/dev-kit-0.1.0) for your convenience.
+
+The `./run.sh` and `.\run.bat` scripts are intended only for the packaged release version and will not work with the source tree unless you have the JRE bundle from the dev kit and generated the .jar. You must generate a .jar via `./mvnw clean package`  # PowerShell / Mac / Linux or `.\mvnw.cmd clean package`  # Command Prompt (cmd) and move it to the root folder. 
+Otherwise, you may also run directly from the file as long as you have **Java 19**: 
+1. **Run the `WebServer` class**  
+   The entry point is `maindeveloper.core.WebServer`, located at  
+   `src/main/java/maindeveloper/core/WebServer.java`.
+
+   - **Using an IDE**:  
+     Open the project in your IDE and run the `main` method of `WebServer.java`.
+
+2. Open `http://localhost:4567` in your browser.
 
 ## 🌱 How You Can Help (Beginner Friendly!)
 
@@ -155,34 +170,6 @@ If you are looking for a place to jump in, here are the active development miles
 </table>
 
 ---
-## 🚀 Quick Start
-
-- Want to get the Bellerophon IDE running immediately? Just run the bundled executable from the project root:
-- Windows: `.\run.bat`
-- Mac/Linux: `./run.sh`
-- Then open `http://localhost:4567` in your browser. (See the Local Environment Setup section for full build details).
-
-## Local Environment Setup
-
-1. Open the repository root in VS Code.
-2. Use the bundled Java runtime in `jre/`.
-3. Start the app with:
-
-```powershell
-.\run.bat
-```
-
-or on Unix-like systems:
-
-```bash
-./run.sh
-```
-
-4. Open the app in your browser at:
-
-```text
-http://localhost:4567
-```
 
 Notes:
 

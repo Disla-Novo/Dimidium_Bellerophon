@@ -14,7 +14,7 @@ By submitting a contribution, you grant permission for your work to be used in b
 
 ## 2. Assignment of Ownership
 
-You hereby assign and transfer to the Project Owner all right, title, and interest (including all copyright and intellectual property rights) in and to your Contributions. You agree that the Project Owner is the sole owner of the Contributions as integrated into the Dimidium Ecosystem.
+You hereby irrevocably assign and transfer to the Project Owner all right, title, and interest (including all copyright and other intellectual property rights) in and to your Contributions. Following this assignment, the Project Owner shall own all copyright and other intellectual property rights in the Contribution, subject only to rights that cannot be legally assigned under applicable law.
 
 ### 2.1 Contributor's Retained Rights
 The Project Owner grants back to you a perpetual, worldwide, non-exclusive, royalty-free, transferable license to use, modify, copy, and distribute your own specific Contributions for any purpose outside of the Dimidium Ecosystem.
