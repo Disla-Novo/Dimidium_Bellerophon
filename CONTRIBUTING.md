@@ -30,7 +30,7 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 - **CFG Generator** — a browser-based printer configuration generator and boundary checker for Klipper-style `printer.cfg` files.
 - **Gravity Hub** — an MVP dashboard and group management layer surfaced in the local web UI.
 
-This repository combines parser/compiler backend logic, firmware adapter architecture, local launch infrastructure, and a static web frontend.
+---
 
 ### Local Development
 
