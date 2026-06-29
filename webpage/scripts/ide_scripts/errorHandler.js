@@ -130,7 +130,6 @@ window.addEventListener("DOMContentLoaded", () => {
       if (savedProfile) {
         profile = JSON.parse(savedProfile);
       } else {
-        // Fallback: use existing limit inputs or defaults
         const limitXInput = document.getElementById("limit-x");
         const limitYInput = document.getElementById("limit-y");
         const limitZInput = document.getElementById("limit-z");
@@ -154,10 +153,13 @@ window.addEventListener("DOMContentLoaded", () => {
       console.log("Profile maxZ:", profile.maxZ);
 
       // ADDEDDDDDDD 4/8/2026
+      const gcodeFolder = localStorage.getItem("bellerophon-gcode-folder") || "";
+
       const payload = {
         code: code,
         mode: window.currentMode,
         profile: profile,
+        gcodeFolder: gcodeFolder,
       };
 
       const res = await fetch("/compile", {

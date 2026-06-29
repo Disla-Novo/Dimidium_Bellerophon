@@ -9,6 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let gcodeFileList = [];
   let fileListOpen = false;
 
+  // file list from storage on script load so autocomplete works immediately
+  const savedFilesOnLoad = localStorage.getItem("bellerophon-gcode-files");
+  if (savedFilesOnLoad) {
+    gcodeFileList = JSON.parse(savedFilesOnLoad);
+    window.gcodeFileList = gcodeFileList;
+  }
+
   function getThemeLabel(key) {
     return window.THEME_MAP?.[key]?.label || key;
   }
@@ -55,6 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderGcodeSettings() {
+    //  from storage every render so the list survives page refresh
+    const savedFiles = localStorage.getItem("bellerophon-gcode-files");
+    if (savedFiles && gcodeFileList.length === 0) {
+      gcodeFileList = JSON.parse(savedFiles);
+      window.gcodeFileList = gcodeFileList;
+    }
+
     const container = document.getElementById("gcodeSettingsContainer");
     if (!container) return;
 
@@ -72,9 +86,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           </div>
           <div class="folder-actions">
-            <button id="browseFolderBtn" class="browse-folder-btn">${hasFolder ? 'Change Folder' : 'Select Folder'}</button>
             ${hasFolder ? `<button id="removeFolderBtn" class="remove-folder-btn">✕ Remove</button>` : ''}
           </div>
+        </div>
+        
+        <!-- Manual path input -->
+        <div class="folder-manual-input">
+          <input type="text" id="manualFolderPath" 
+                 value="${gcodeFolderPath}" 
+                 placeholder="Paste full path: D:/gcode_folder or /home/user/gcode"
+                 class="folder-path-input" />
+          <button id="saveManualFolderBtn" class="save-folder-btn">Save Path</button>
         </div>
         
         ${hasFolder ? `
@@ -89,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ${hasFolder && hasFiles ? `
           <div class="gcode-file-list-container">
             <button id="gcodeFileToggle" class="gcode-file-list-toggle">
-              <span> Show Files (${fileCount})</span>
+              <span>📄 Show Files (${fileCount})</span>
               <span class="arrow ${fileListOpen ? 'open' : ''}">▼</span>
             </button>
             <div id="gcodeFileDropdown" class="gcode-file-list-dropdown ${fileListOpen ? 'open' : ''}">
@@ -105,11 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-    const browseBtn = document.getElementById("browseFolderBtn");
-    if (browseBtn) {
-      browseBtn.addEventListener("click", selectFolder);
-    }
-
     const removeBtn = document.getElementById("removeFolderBtn");
     if (removeBtn) {
       removeBtn.addEventListener("click", removeFolder);
@@ -122,114 +139,67 @@ document.addEventListener("DOMContentLoaded", () => {
         renderGcodeSettings();
       });
     }
+
+    // Manual path save handler
+    const saveManualBtn = document.getElementById("saveManualFolderBtn");
+    const manualInput = document.getElementById("manualFolderPath");
+    if (saveManualBtn && manualInput) {
+      saveManualBtn.addEventListener("click", () => {
+        const path = manualInput.value.trim();
+        if (path) {
+          gcodeFolderPath = path;
+          localStorage.setItem("bellerophon-gcode-folder", path);
+          scanFolderViaBackend(path);
+          renderGcodeSettings();
+          addLogMessage(`G-code folder set to: ${path}`);
+        }
+      });
+      manualInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          saveManualBtn.click();
+        }
+      });
+    }
   }
 
   function removeFolder() {
-    // Clear the folder path
     gcodeFolderPath = "";
     gcodeFileList = [];
     fileListOpen = false;
     
-    // Remove from localStorage
     localStorage.removeItem("bellerophon-gcode-folder");
     localStorage.removeItem("bellerophon-gcode-files");
     
-    // Clear the autocomplete list
     window.gcodeFileList = [];
     
-    // Re-render the settings
     renderGcodeSettings();
     
-    // Log the action
     addLogMessage("G-code folder removed.");
   }
 
-  function selectFolder() {
-    if (window.showDirectoryPicker) {
-      window.showDirectoryPicker()
-        .then(dirHandle => {
-          const folderName = dirHandle.name;
-          window.gcodeDirectoryHandle = dirHandle;
-          gcodeFolderPath = folderName;
-          localStorage.setItem("bellerophon-gcode-folder", folderName);
-          scanDirectoryHandle(dirHandle);
-          renderGcodeSettings();
-          addLogMessage(`G-code folder set to: ${folderName}`);
-        })
-        .catch(err => {
-          if (err.name !== 'AbortError' && err.name !== 'SecurityError') {
-            console.error("Folder selection error:", err);
-            addLogMessage("Failed to select folder: " + err.message);
-          }
-        });
-    } else {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.webkitdirectory = true;
-      input.multiple = true;
-      
-      input.addEventListener('change', (e) => {
-        const files = e.target.files;
-        if (files.length === 0) return;
-        
-        const firstFile = files[0];
-        const path = firstFile.webkitRelativePath;
-        const folderName = path.split('/')[0];
-        
-        gcodeFolderPath = folderName;
-        localStorage.setItem("bellerophon-gcode-folder", folderName);
-        
-        const gcodeFiles = [];
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          if (file.name.toLowerCase().endsWith('.gcode') || 
-              file.name.toLowerCase().endsWith('.g') ||
-              file.name.toLowerCase().endsWith('.gc')) {
-            gcodeFiles.push(file.name);
-          }
-        }
-        
-        gcodeFileList = gcodeFiles;
+  // Backend scan for manual path
+  function scanFolderViaBackend(folderPath) {
+    fetch('/scan-folder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folderPath })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        gcodeFileList = data.files;
         localStorage.setItem("bellerophon-gcode-files", JSON.stringify(gcodeFileList));
         updateGcodeAutocomplete(gcodeFileList);
         renderGcodeSettings();
-        addLogMessage(`Found ${gcodeFiles.length} .gcode files in "${folderName}"`);
-      });
-      
-      input.click();
-    }
-  }
-
-  async function scanDirectoryHandle(dirHandle) {
-    try {
-      const gcodeFiles = [];
-      const entries = dirHandle.values();
-      
-      for await (const entry of entries) {
-        if (entry.kind === 'file') {
-          const name = entry.name;
-          if (name.toLowerCase().endsWith('.gcode') || 
-              name.toLowerCase().endsWith('.g') ||
-              name.toLowerCase().endsWith('.gc')) {
-            gcodeFiles.push(name);
-          }
-        }
-      }
-      
-      gcodeFileList = gcodeFiles;
-      localStorage.setItem("bellerophon-gcode-files", JSON.stringify(gcodeFileList));
-      updateGcodeAutocomplete(gcodeFileList);
-      renderGcodeSettings();
-      
-      if (gcodeFiles.length > 0) {
-        addLogMessage(`Found ${gcodeFiles.length} .gcode files in folder`);
+        addLogMessage(`Found ${gcodeFileList.length} .gcode files in "${folderPath}"`);
       } else {
-        addLogMessage("No .gcode files found in selected folder");
+        addLogMessage("Error scanning folder: " + data.error);
       }
-    } catch (err) {
-      console.error("Error scanning directory:", err);
+    })
+    .catch(err => {
+      console.error("Error scanning folder:", err);
       addLogMessage("Error scanning folder: " + err.message);
-    }
+    });
   }
 
   function updateGcodeAutocomplete(files) {
@@ -238,6 +208,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function open() {
     modal.style.display = "block";
+
+    //  folder path and file list from storage every time the modal opens
+    gcodeFolderPath = localStorage.getItem("bellerophon-gcode-folder") || "";
+    const savedFiles = localStorage.getItem("bellerophon-gcode-files");
+    if (savedFiles) {
+      gcodeFileList = JSON.parse(savedFiles);
+      window.gcodeFileList = gcodeFileList;
+    }
+
     const current = localStorage.getItem("bellerophon-theme") || "starter";
     renderThemes();
     setActiveTheme(current);

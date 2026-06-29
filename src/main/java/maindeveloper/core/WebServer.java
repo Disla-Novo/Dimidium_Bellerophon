@@ -7,6 +7,9 @@ import static spark.Spark.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.io.File;
 
 import com.google.gson.Gson;
 
@@ -39,11 +42,22 @@ public class WebServer {
         public double limitZ;
         public PrinterProfile profile; // added printer profile for the visitor to use when setting up the hardware
                                        // limiter and printer settings
+        public String gcodeFolder; // insertGcode folder - the G-code library folder path from frontend
     }
 
     static class CompileResponse {
         public boolean success;
         public String output;
+        public String error;
+    }
+
+    static class ScanRequest {
+        public String folderPath;
+    }
+
+    static class ScanResponse {
+        public boolean success;
+        public List<String> files;
         public String error;
     }
 
@@ -72,7 +86,7 @@ public class WebServer {
                 String message = e.getMessage();
                 String hint = "";
 
-                // Provide helpful hints for common errors
+                //  helpful hints for common errors
                 if (message != null) {
                     if (message.contains("out of bounds")) {
                         hint = " → Check your PrinterProfile max values in the CFG Generator.";
@@ -119,6 +133,41 @@ public class WebServer {
 
             res.type("application/json");
             return gson.toJson(highlights);
+        });
+
+        // scan folder endpoint
+        post("/scan-folder", (req, res) -> {
+            ScanRequest request = gson.fromJson(req.body(), ScanRequest.class);
+            ScanResponse response = new ScanResponse();
+            response.files = new ArrayList<>();
+            
+            if (request.folderPath != null && !request.folderPath.isEmpty()) {
+                File folder = new File(request.folderPath);
+                if (folder.exists() && folder.isDirectory()) {
+                    File[] gcodeFiles = folder.listFiles((dir, name) -> 
+                        name.toLowerCase().endsWith(".gcode") || 
+                        name.toLowerCase().endsWith(".g") ||
+                        name.toLowerCase().endsWith(".gc")
+                    );
+                    if (gcodeFiles != null) {
+                        for (File f : gcodeFiles) {
+                            response.files.add(f.getName());
+                        }
+                        response.success = true;
+                    } else {
+                        response.success = true;
+                    }
+                } else {
+                    response.success = false;
+                    response.error = "Folder does not exist: " + request.folderPath;
+                }
+            } else {
+                response.success = false;
+                response.error = "No folder path provided";
+            }
+            
+            res.type("application/json");
+            return gson.toJson(response);
         });
 
     }
@@ -185,10 +234,18 @@ public class WebServer {
         if ("marlin".equals(input.mode)) {
             MarlinVisitor visitor = new MarlinVisitor(profile);
             visitor.setEnablePaging(pagingUse);
+            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
+                visitor.setSourceFilePath(input.gcodeFolder);
+                System.out.println("G-code folder set to: " + input.gcodeFolder);
+            }
             return visitor.visit(tree);
         } else {
             KlipperVisitor visitor = new KlipperVisitor(profile);
             visitor.setEnablePaging(pagingUse);
+            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
+                visitor.setSourceFilePath(input.gcodeFolder);
+                System.out.println("G-code folder set to: " + input.gcodeFolder);
+            }
             return visitor.visit(tree);
         }
     }

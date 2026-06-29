@@ -85,7 +85,7 @@
     </div>
 </div>
 
-<p>Because these features are evaluated by the <strong>Bellerophon Compiler</strong> at build-time, your final macro output is optimized, validated, and ready for hardware execution. This offloads the computational weight of complex mathematics from your printer’s controller, ensuring fluid motion even for highly intricate, procedural geometry.</p>
+<p>Because these features are evaluated by the <strong>Bellerophon Compiler</strong> at build-time, your final macro output is optimized, validated, and ready for hardware execution. This offloads the computational weight of complex mathematics from your printer's controller, ensuring fluid motion even for highly intricate, procedural geometry.</p>
 <h3>6. Technical Considerations & Limitations</h3>
 <ul>
     <li><strong>DSL Purpose:</strong> Bellerophon is a compilation engine, not a 3D slicer; it does not process 3D meshes (STL/STEP).</li>
@@ -183,248 +183,242 @@
                             <th>Command</th>
                             <th>Syntax</th>
                             <th>Example</th>
-                            <th>G-code / Notes</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
 
-                        <!-- ASSIGNMENT -->
                         <tr>
                             <td><span class="inline-code token-ID">Assignment</span></td>
                             <td><span class="inline-code token-ID">variable</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">expression</span></td>
                             <td><span class="inline-code token-ID">my_x</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">150</span></td>
-                            <td>Stores the expression result in a local variable. Variables are scoped to the macro.</td>
+                            <td>Stores the expression result in a local variable. Variables are scoped to the macro. Supports arithmetic operations: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code> (power), and functions: <code>sin()</code>, <code>cos()</code>, <code>tan()</code>, <code>sqrt()</code>, <code>abs()</code>, <code>sign()</code>, and constant <code>pi</code>.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-HOME">Home</span></td>
                             <td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-COORD">coordList</span></td>
-                            <td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-X">x</span>=<span class="token-NUMBER">0</span> <span class="token-Y">y</span>=<span class="token-NUMBER">0</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0</span></td>
-                            <td>G28 / G28 X Y Z</td>
+                            <td><span class="inline-code token-HOME">Home</span> or <span class="inline-code token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-X">x</span>=<span class="token-NUMBER">0</span> <span class="token-Y">y</span>=<span class="token-NUMBER">0</span></td>
+                            <td>Homes the printer. If coordinates are provided, only the specified axes are homed. Without coordinates, all axes are homed.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-MOVE">Move</span></td>
                             <td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">direction</span></td>
                             <td><span class="inline-code token-MOVE">Move</span> <span class="token-DIRECTION">left</span> / <span class="token-DIRECTION">right</span> / <span class="token-DIRECTION">center</span> / <span class="token-DIRECTION">up</span> / <span class="token-DIRECTION">down</span></td>
-                            <td>G1 with directional offset. Iterates 1 mm. <span class="token-DIRECTION">center</span> defaults to X0 Y0</td>
+                            <td>Moves the toolhead 1mm in the specified direction. <span class="token-DIRECTION">center</span> moves to X0 Y0. Directional moves are relative to the current position.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-MOVEEX">MoveTo</span></td>
                             <td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-COORD">coordList</span></td>
                             <td><span class="inline-code token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">100</span> <span class="token-Y">y</span>=<span class="token-NUMBER">100</span> <span class="token-Z">z</span>=<span class="token-NUMBER">0.2</span></td>
-                            <td>G1 X Y Z E</td>
+                            <td>Moves the toolhead to the specified coordinates. Supports X, Y, Z, and E (extrusion) axes. If <code>EnableAutoExtrude</code> is active and no manual E value is provided, extrusion is calculated automatically based on distance traveled and printer settings.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
                             <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
                             <td><span class="inline-code token-ABSOLUTE">Absolute</span></td>
-                            <td>G90</td>
+                            <td>Sets positioning to absolute mode. All coordinates are relative to the origin (0,0,0). This is the default mode.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-RELATIVE">Relative</span></td>
                             <td><span class="inline-code token-RELATIVE">Relative</span></td>
                             <td><span class="inline-code token-RELATIVE">Relative</span></td>
-                            <td>G91</td>
+                            <td>Sets positioning to relative mode. All coordinates are offsets from the current position. Essential for creating flowing, iterative shapes in loops.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-HEAT">Heat</span></td>
                             <td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-HEAT">Heat</span> <span class="token-TARGET">extruder</span>=<span class="token-NUMBER">200</span></td>
-                            <td>Sets temperature and <strong>waits until it is reached</strong>. <br>
-                            Extruder → M109, Bed → M190, Chamber → M141</td>
+                            <td>Sets the temperature of the specified heater and <strong>waits</strong> until the target temperature is reached. Targets: extruder, bed, chamber. This blocks further execution until the temperature is stable.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span></td>
                             <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">target</span>=<span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_HEATER">Set_Heater_Temperature</span> <span class="token-TARGET">bed</span>=<span class="token-NUMBER">60</span></td>
-                            <td>Sets temperature but <strong>does NOT wait</strong>. <br>
-                            Extruder → M104, Bed → M140, Chamber → M141</td>
+                            <td>Sets the temperature of the specified heater but <strong>does NOT wait</strong> for it to reach the target. Execution continues immediately. Targets: extruder, bed, chamber.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span></td>
                             <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">target</span></td>
                             <td><span class="inline-code token-WAITFORTEMP">WaitForTemp</span> <span class="token-TARGET">extruder</span></td>
-                            <td>Waits until the target reaches its current set temperature. <br>
-                            Does <strong>not change</strong> the temperature. <br>
-                            Extruder → M109, Bed → M190, Chamber → M141</td>
+                            <td>Waits until the specified heater reaches its currently set temperature. Does <strong>not change</strong> the temperature. Useful after a <code>Set_Heater_Temperature</code> command to pause execution until heating completes.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-COOLDOWN">Cooldown</span></td>
-                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">target</span> (optional)</td>
-                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span> or just <span class="inline-code token-COOLDOWN">Cooldown</span></td>
-                            <td>M104 S0 / M140 S0 / TURN_OFF_HEATERS. If target omitted, turns off all heaters.</td>
+                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">[target]</span></td>
+                            <td><span class="inline-code token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span><br>
+                                <span class="inline-code token-COOLDOWN">Cooldown</span> (no target = all)
+                            </td>
+                            <td>Turns off heaters. With a target, turns off only that specific heater (extruder, bed, chamber). Without a target, turns off all heaters. This is a safety command to prevent overheating after a print or macro completes.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-TIMEOUT_SET">TimeoutSet</span></td>
                             <td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">seconds</span></td>
                             <td><span class="inline-code token-TIMEOUT_SET">TIMEOUT_SET</span> <span class="token-NUMBER">300</span></td>
-                            <td>Set idle timeout (seconds). Maps to Klipper's <code>SET_IDLE_TIMEOUT TIMEOUT=300</code> (ignored in Marlin).</td>
+                            <td>Sets the idle timeout in seconds. After this period of inactivity, the printer will automatically disable motors and heaters to save power and prevent wear. Set to 0 to disable the timeout.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-PAUSE">Pause</span></td>
                             <td><span class="inline-code token-PAUSE">Pause</span></td>
                             <td><span class="inline-code token-PAUSE">Pause</span></td>
-                            <td>PAUSE (Klipper) / M0 (Marlin)</td>
+                            <td>Pauses the current print or macro execution. Useful for filament changes, manual interventions, or waiting for user input. Can be resumed with <code>Resume</code>.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-RESUME">Resume</span></td>
                             <td><span class="inline-code token-RESUME">Resume</span></td>
                             <td><span class="inline-code token-RESUME">Resume</span></td>
-                            <td>RESUME (Klipper) / M108 (Marlin)</td>
+                            <td>Resumes a paused print or macro execution. Continues from where the pause occurred.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-RESPOND">Respond</span></td>
                             <td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"text"</span></td>
                             <td><span class="inline-code token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Print complete"</span></td>
-                            <td>RESPOND MSG="text" (Klipper) / M117 (Marlin)</td>
+                            <td>Sends a message to the printer's display or console log. Useful for status updates, notifications, or debugging.</td>
                         </tr>
 
-                        <!--  SET_SPEED -->
                         <tr>
                             <td><span class="inline-code token-SET_SPEED">SetSpeed</span></td>
                             <td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">100</span></td>
-                            <td>G1 F#</td>
+                            <td>Sets the movement speed in mm/min for all subsequent moves. This affects travel moves, extrusion moves, and any coordinated motion.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_FAN">SetFan</span></td>
                             <td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_FAN">SetFan</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">255</span></td>
-                            <td>SET_FAN SPEED=# (Klipper) / M106 S# (Marlin)</td>
+                            <td>Sets the cooling fan speed. Value range depends on firmware (typically 0-255 or 0-100%). 0 turns the fan off, maximum value runs the fan at full speed.</td>
                         </tr>
 
-                        <!-- NEW PRINTER SETTINGS COMMANDS  -->
                         <tr>
                             <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span></td>
                             <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_NOZZLE">SetNozzle</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.6</span></td>
-                            <td>Sets the nozzle diameter (mm) for extrusion calculations. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                            <td>Sets the nozzle diameter (mm) for extrusion calculations. This affects the volume of filament extruded during auto-extrusion. Default is taken from the printer profile UI. <strong>Compile-time only:</strong> This is a compiler setting, not a G-code command.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_FILAMENT">SetFilament</span></td>
                             <td><span class="inline-code token-SET_FILAMENT">SetFilament</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_FILAMENT">SetFilament</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">2.85</span></td>
-                            <td>Sets the filament diameter (mm) for extrusion calculations. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                            <td>Sets the filament diameter (mm) for extrusion calculations. This affects the volume of filament extruded during auto-extrusion. Default is taken from the printer profile UI. <strong>Compile-time only:</strong> This is a compiler setting, not a G-code command.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span></td>
                             <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_LAYER_HEIGHT">SetLayerHeight</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.3</span></td>
-                            <td>Sets the layer height (mm) for extrusion calculations and the <code>Layer</code> command. Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                            <td>Sets the layer height (mm) for extrusion calculations and the <code>Layer</code> command. This affects the Z increment per layer and the volume of filament extruded. Default is taken from the printer profile UI. <strong>Compile-time only:</strong> This is a compiler setting, not a G-code command.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span></td>
                             <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_EXTRUSION">SetExtrusionMultiplier</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">0.95</span></td>
-                            <td>Adjusts the extrusion multiplier (flow rate compensation). Modifies <code>PrinterSettings</code> for the current macro. Default is taken from the printer profile UI.</td>
+                            <td>Adjusts the extrusion multiplier (flow rate compensation). Values below 1.0 reduce extrusion, values above 1.0 increase extrusion. Default is taken from the printer profile UI. <strong>Compile-time only:</strong> This is a compiler setting, not a G-code command.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span></td>
                             <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">1</span>|<span class="token-NUMBER">0</span></td>
                             <td><span class="inline-code token-ENABLE_AUTO">EnableAutoExtrude</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">1</span></td>
-                            <td>Enables (<code>1</code>) or disables (<code>0</code>) automatic extrusion calculation for <code>MoveTo</code> commands. Manual <code>e=...</code> overrides auto‑extrusion.</td>
+                            <td>Enables (<code>1</code>) or disables (<code>0</code>) automatic extrusion calculation for <code>MoveTo</code> commands. When enabled, extrusion is calculated based on distance traveled and printer settings (nozzle diameter, filament diameter, layer height, extrusion multiplier). Manual <code>e=...</code> in a <code>MoveTo</code> command overrides auto‑extrusion. <strong>Compile-time only:</strong> This is a compiler setting, not a G-code command.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-LAYER">Layer</span></td>
                             <td><span class="inline-code token-LAYER">Layer</span> <span class="token-NUMBER">number</span> ... <span class="token-END">end</span></td>
                             <td><span class="inline-code token-LAYER">Layer</span> <span class="token-NUMBER">5</span> ... <span class="token-END">end</span></td>
-                            <td>Repeats the enclosed block for the specified number of layers, automatically raising Z by the current <code>LayerHeight</code> after each layer.</td>
+                            <td>Repeats the enclosed block for the specified number of layers, automatically raising Z by the current <code>LayerHeight</code> after each layer. This is useful for creating multi-layer structures procedurally. <strong>Note:</strong> Z-axis movement is not allowed inside Layer blocks - the Layer command manages Z automatically.</td>
                         </tr>
-                        
 
                         <tr>
                             <td><span class="inline-code token-PRINTFILE">PrintFile</span></td>
                             <td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"file.gcode"</span></td>
                             <td><span class="inline-code token-PRINTFILE">PRINTFILE</span> <span class="token-STRING">"cube.gcode"</span></td>
-                            <td>SDCARD_PRINT_FILE FILENAME="file.gcode" (Klipper) / M23 (Marlin)</td>
+                            <td>Selects and starts printing the specified G-code file from the printer's SD card or storage. The file must exist on the printer's storage medium.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-CALL">Call Macro</span></td>
                             <td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"MacroName"</span></td>
                             <td><span class="inline-code token-CALL">M.call</span> <span class="token-STRING">"CalibrateBed"</span></td>
-                            <td>Calls another macro (Klipper) / M98 (Marlin)</td>
+                            <td>Calls another macro by name. The called macro must be defined elsewhere in the program. Useful for organizing code into reusable modules.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-IF">If / EndIf</span></td>
                             <td><span class="inline-code token-IF">if</span> condition ... <span class="inline-code token-ENDIF">endif</span></td>
                             <td><span class="inline-code token-IF">if</span> extruder &gt; <span class="token-NUMBER">190</span> ... <span class="inline-code token-ENDIF">endif</span></td>
-                            <td><strong>Klipper only</strong>; compiled to Jinja condition. Not available in Marlin target.</td>
+                            <td>Conditional execution block. The condition evaluates using printer sensor values at runtime. Valid sensors: <code>extruder</code>, <code>bed</code>, <code>chamber</code>. Supports comparison operators: <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code>, <code>!=</code>.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
                             <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
                             <td><span class="inline-code token-RELATIVE">RelativeExtrusion</span></td>
-                            <td>M83</td>
+                            <td>Sets extrusion to relative mode. All E values are treated as increments from the current extruder position. This is useful for consistent extrusion in repeated patterns.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-RESET">ResetExtruder</span></td>
                             <td><span class="inline-code token-RESET">ResetExtruder</span></td>
                             <td><span class="inline-code token-RESET">ResetExtruder</span></td>
-                            <td>G92 E0</td>
+                            <td>Resets the extruder position to zero (G92 E0). This is typically done at the start of a print or after a filament change.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
                             <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
                             <td><span class="inline-code token-BEDMESH">BedMeshCalibrate</span></td>
-                            <td>BED_MESH_CALIBRATE (Klipper) / G29 (Marlin)</td>
+                            <td>Performs bed mesh calibration to map the bed surface and compensate for unevenness. The printer probes multiple points and creates a height map for Z compensation during printing.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-LEVEL">Level</span></td>
                             <td><span class="inline-code token-LEVEL">Level</span></td>
                             <td><span class="inline-code token-LEVEL">Level</span></td>
-                            <td>Alias for BedMeshCalibrate → triggers BED_MESH_CALIBRATE or G29</td>
+                            <td>Alias for BedMeshCalibrate. Performs bed mesh calibration.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
                             <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
                             <td><span class="inline-code token-PROBE">ProbeCalibrate</span></td>
-                            <td>PROBE_CALIBRATE (Klipper) – not available in Marlin</td>
+                            <td>Calibrates the Z-probe offset for accurate first layer height. This adjusts the Z coordinate at which the probe triggers, ensuring the nozzle is at the correct height above the bed.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-LOAD">LoadBedMesh</span></td>
                             <td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"profile"</span></td>
                             <td><span class="inline-code token-LOAD">LoadBedMesh</span> <span class="token-STRING">"default"</span></td>
-                            <td>BED_MESH_PROFILE LOAD=profile (Klipper) – not available in Marlin</td>
+                            <td>Loads a previously saved bed mesh profile by name. This applies the stored height map without re-probing the bed.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span></td>
                             <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">number</span></td>
                             <td><span class="inline-code token-SET_PRESSURE">SetPressureAdvance</span> <span class="token-NUMBER">0.04</span></td>
-                            <td>SET_PRESSURE_ADVANCE ADVANCE=# (Klipper only)</td>
+                            <td>Sets the pressure advance / linear advance value for improved extrusion consistency. This compensates for the delay between extruder movement and actual filament flow.</td>
                         </tr>
 
                         <tr>
                             <td><span class="inline-code token-DWELL">Dwell</span></td>
                             <td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">time</span> <span class="token-S">S</span>|<span class="token-S">ms</span> (optional unit)</td>
                             <td><span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">0.5</span> <span class="token-S">S</span> or <span class="inline-code token-DWELL">Dwell</span> <span class="token-NUMBER">500</span> <span class="token-S">ms</span></td>
-                            <td>G4 P# (P is milliseconds). If unit omitted, defaults to seconds. Example: <code>Dwell 0.5</code> → G4 P500</td>
+                            <td>Pauses execution for the specified duration. If unit is omitted, defaults to seconds. <code>S</code> indicates seconds, <code>ms</code> indicates milliseconds. Example: <code>Dwell 0.5</code> pauses for 0.5 seconds.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -437,8 +431,9 @@
     <h3>1. Parametric Geometry Engine</h3>
     <p>Bellerophon goes beyond simple macro scripts by acting as a <strong>Parametric DSL</strong>. Because the compiler evaluates mathematical expressions at build-time, you can create complex, procedural geometry that scales based on variables or mathematical functions.</p>
     <ul>
-        <li><strong>Global Math:</strong> Use <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code>, <code>sign</code>, <code>^</code>, and <code>pi</code> anywhere an expression is expected (e.g., coordinates, temperatures, or speed).</li>
+        <li><strong>Global Math:</strong> Use <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code>, <code>sign</code>, <code>^</code> (power), and <code>pi</code> anywhere an expression is expected (e.g., coordinates, temperatures, or speed).</li>
         <li><strong>Procedural Motion:</strong> By combining <code>Brepeat</code> loops with trigonometric functions, you can generate spirals, waves, and curves that are impossible to maintain by hand.</li>
+        <li><strong>Expression Evaluation:</strong> All mathematical expressions are evaluated during compilation, not at runtime. This means complex calculations don't burden the printer's controller.</li>
     </ul>
 
     <h3>2. The "Override" System (Auto vs. Manual)</h3>
@@ -446,11 +441,12 @@
     <div class="note">
         <strong>Execution Priority:</strong>
         <ol>
-            <li><strong>Manual Override:</strong> If an <code>e=...</code> value is provided in a <code>MoveTo</code> command, it is <strong>always</strong> prioritized.</li>
-            <li><strong>Automatic Calculation:</strong> If <code>EnableAutoExtrude = 1</code> is active and no manual <code>e</code> is provided, the compiler calculates the required filament volume based on your defined nozzle, filament diameter, and layer height.</li>
+            <li><strong>Manual Override:</strong> If an <code>e=...</code> value is provided in a <code>MoveTo</code> command, it is <strong>always</strong> prioritized. The value is multiplied by the current extrusion multiplier.</li>
+            <li><strong>Automatic Calculation:</strong> If <code>EnableAutoExtrude = 1</code> is active and no manual <code>e</code> is provided, the compiler calculates the required filament volume based on your defined nozzle diameter, filament diameter, and layer height. The formula used is: <code>E = distance * (nozzle_diameter² / filament_diameter²) * extrusion_multiplier</code>.</li>
             <li><strong>Travel Move:</strong> If <code>EnableAutoExtrude = 0</code> and no <code>e</code> is provided, the printer performs a pure travel move (no extrusion).</li>
         </ol>
     </div>
+    <p>The extrusion calculation uses the current printer settings (nozzle diameter, filament diameter, layer height, extrusion multiplier). These can be overridden in the macro using <code>SetNozzle</code>, <code>SetFilament</code>, <code>SetLayerHeight</code>, and <code>SetExtrusionMultiplier</code>.</p>
 
     <h3>3. Procedural Layering (<span class="inline-code token-LAYER">Layer</span>)</h3>
     <p>The <span class="inline-code token-LAYER">Layer</span> command automates vertical iteration. The Layer command executes a block once per printed layer and automatically advances the Z-axis using the configured <code>LayerHeight</code>.</p>
@@ -460,10 +456,53 @@
 <span class="lines">    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=120 <span class="token-Y">y</span>=50</span>
 <span class="line"><span class="token-END">end</span></span>
     </div>
+    <div class="note">
+        <strong>Important:</strong> Z-axis movement is not allowed inside Layer blocks. The Layer command manages Z automatically by incrementing the Z position by <code>LayerHeight</code> at the start of each layer.
+    </div>
     <p>This is beneficial for procedural planar slicing, allowing you to build up volume automatically without manually managing Z-heights.</p>
 
-    <h3>4. Variable Scoping</h3>
-    <p>Variables are defined via <code>name = expression</code>. They are <strong>local to the macro</strong>. This prevents variable name collisions across different macros, ensuring your code remains modular and safe for inclusion in larger printer config files.</p>
+    <h3>4. Compile-Time vs Run-Time</h3>
+    <p>Understanding when things happen is crucial:</p>
+    <ul>
+        <li><strong>Compile-Time (Bellerophon Compiler):</strong> Math expressions, variable assignment, loop unrolling, auto-extrusion calculations, and printer setting modifications all happen during compilation. The output G-code contains pre-calculated values.</li>
+        <li><strong>Run-Time (Printer Firmware):</strong> Only G-code commands are executed. The printer does not know about Bellerophon variables or expressions.</li>
+    </ul>
+    <div class="note">
+        <strong>Why this matters:</strong> This design offloads computational weight from your printer's controller, ensuring fluid motion even for complex procedural geometry. The printer only receives pre-calculated movement commands.
+    </div>
+
+    <h3>5. Thermal Management (Cooldown)</h3>
+    <p>The <span class="inline-code token-COOLDOWN">Cooldown</span> command provides flexible temperature control:</p>
+    <div class="code-block">
+<span class="token-COMMENT"># Turn off all heaters</span>
+<span class="line"><span class="token-COOLDOWN">Cooldown</span></span>
+<span class="line"><span class="token-COMMENT"># or explicitly:</span></span>
+<span class="line"><span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">all</span></span>
+
+<span class="token-COMMENT"># Turn off specific heaters</span>
+<span class="line"><span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span></span>
+<span class="line"><span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">bed</span></span>
+<span class="line"><span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">chamber</span></span>
+    </div>
+    <p><strong>Behavior:</strong></p>
+    <ul>
+        <li><strong>No target</strong> → Turns off all heaters (extruder, bed, chamber)</li>
+        <li><strong>Specific target</strong> → Only turns off that specific heater</li>
+    </ul>
+
+    <h3>6. Variable Scoping</h3>
+    <p>Variables are defined via <code>name = expression</code>. They are <strong>local to the macro</strong>. This prevents variable name collisions across different macros, ensuring your code remains modular and safe for inclusion in larger printer config files. Variables are not accessible outside the macro they are defined in.</p>
+
+    <h3>7. Assignment Operators</h3>
+    <p>Operators allow for precise control during movement and variable assignment:</p>
+    <ul>
+        <li><span class="inline-code token-EQUALS">=</span> Direct Assignment - sets a variable to a specific value</li>
+        <li><span class="inline-code token-PLUSEQ">+=</span> Add to current - adds a value to the current variable</li>
+        <li><span class="inline-code token-MINUSEQ">-=</span> Subtract from current - subtracts a value from the current variable</li>
+        <li><span class="inline-code token-MULTEQ">*=</span> Multiply current - multiplies the current variable by a value</li>
+        <li><span class="inline-code token-DIVEQ">/=</span> Divide current - divides the current variable by a value</li>
+    </ul>
+    <p>These operators work on both variables and coordinates in <code>MoveTo</code> commands.</p>
 </section>
 
             <section class="section">
@@ -527,18 +566,8 @@
                     <strong>Key observation:</strong> In absolute mode, <span class="inline-code">x+=5</span> calculates a new absolute position (10+5=15, then 15+5=20, etc.). In relative mode, it adds 5 to the current position each time, creating equal-sized steps from wherever the previous move ended.
                 </div>
 
-                <h3>Assignment Operators</h3>
-                <p>Operators allow for precise control during movement:</p>
-                <ul>
-                    <li><span class="inline-code token-EQUALS">=</span> Direct Assignment</li>
-                    <li><span class="inline-code token-PLUSEQ">+=</span> Add to current</li>
-                    <li><span class="inline-code token-MINUSEQ">-=</span> Subtract from current</li>
-                    <li><span class="inline-code token-MULTEQ">*=</span> Multiply current</li>
-                    <li><span class="inline-code token-DIVEQ">/=</span> Divide current</li>
-                </ul>
-
                 <h3>1. Static Repeat (<span class="inline-code token-REPEAT">repeat</span>)</h3>
-                <p>The <span class="inline-code token-REPEAT">repeat</span> command simply duplicates the enclosed G-code commands a specified number of times during compilation.</p>
+                <p>The <span class="inline-code token-REPEAT">repeat</span> command simply duplicates the enclosed G-code commands a specified number of times during compilation. The value must be a constant number, not a variable or expression.</p>
 
                 <div class="code-block">
 <span class="line"><span class="token-REPEAT">repeat</span> <span class="token-NUMBER">3</span></span>
@@ -556,7 +585,7 @@
 <span class="line">  G1 X30.0 Y30.0</span>
 <span class="line">  RESPOND MSG="Moving..."</span>
                 </div>
-                <p class="note">The commands are physically duplicated in the output G-code. Great for simple, fixed repetitions.</p>
+                <p class="note">The commands are physically duplicated in the output G-code. Great for simple, fixed repetitions where the number of iterations is known at compile-time.</p>
 
                 <h3>2. Dynamic Loop (<span class="inline-code token-JREPEAT">Brepeat</span>)</h3>
                 <p>The <span class="inline-code token-JREPEAT">Brepeat</span> command creates a loop that supports arithmetic expressions and mathematical functions. Unlike <span class="inline-code token-REPEAT">repeat</span>, this loop exposes an iterator variable <span class="inline-code">i</span> which increments each iteration starting from 0. Expressions are evaluated during compilation, producing numeric G-code values.</p>
@@ -631,7 +660,18 @@
                         <li><span class="inline-code">i*0.1</span> controls the radius growth (spiral expands outward slowly)</li>
                         <li>The product creates a spiral that grows in radius as it rotates</li>
                         <li>Using <strong>Relative</strong> mode means each move is an offset from the previous position</li>
+                        <li>This creates a smooth, continuous spiral path</li>
                     </ul>
+                </div>
+
+                <h3>Nested Brepeat Loops</h3>
+                <p>Bellerophon supports nested <code>Brepeat</code> loops. Each nested loop has its own iterator <code>i</code> that is scoped to that loop. This allows for complex 2D and 3D patterns:</p>
+                <div class="code-block">
+<span class="line"><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span></span>
+<span class="lines">    <span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span></span>
+<span class="lines">        <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>*10 <span class="token-Y">y</span>=<span class="token-ID">i</span>*10</span>
+<span class="lines">    <span class="token-END">end</span></span>
+<span class="line"><span class="token-END">end</span></span>
                 </div>
             </section>
 

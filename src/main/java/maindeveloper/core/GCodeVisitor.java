@@ -872,27 +872,27 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         System.out.println("VISITOR LOG: Source file path set to: " + path);
     }
 
-    protected File resolveFilePath(String filePath) {
-        File absoluteFile = new File(filePath);
-        if (absoluteFile.isAbsolute() && absoluteFile.exists()) {
-            return absoluteFile;
-        }
 
-        if (sourceFilePath != null) {
-            File sourceFile = new File(sourceFilePath);
-            File relativeFile = new File(sourceFile.getParent(), filePath);
-            if (relativeFile.exists()) {
-                return relativeFile;
-            }
-        }
-
-        File cwdFile = new File(filePath);
-        if (cwdFile.exists()) {
-            return cwdFile;
-        }
-
-        return absoluteFile.exists() ? absoluteFile : new File(filePath);
+      protected File resolveFilePath(String filePath) {
+    File absoluteFile = new File(filePath);
+    if (absoluteFile.isAbsolute() && absoluteFile.exists()) {
+        return absoluteFile;
     }
+
+    if (sourceFilePath != null) {
+        File folderFile = new File(sourceFilePath, filePath);
+        if (folderFile.exists()) {
+            return folderFile;
+        }
+    }
+
+    File cwdFile = new File(filePath);
+    if (cwdFile.exists()) {
+        return cwdFile;
+    }
+
+    return absoluteFile.exists() ? absoluteFile : new File(filePath);
+}
 
     protected String visitInsertGCode(String filePath, boolean asReference) {
         String cleanPath = filePath.replace("\"", "");

@@ -1106,3 +1106,42 @@ body {
   background: transparent;
   color: #5c6370;
 }
+
+.folder-manual-input {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  align-items: center;
+}
+
+.folder-path-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #2c313a;
+  border: 1px solid #3e4451;
+  border-radius: 4px;
+  color: #abb2bf;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+
+.folder-path-input:focus {
+  border-color: #61afef;
+  outline: none;
+}
+
+.save-folder-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  background: #61afef;
+  color: #282c34;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.save-folder-btn:hover {
+  background: #528bff;
+}
