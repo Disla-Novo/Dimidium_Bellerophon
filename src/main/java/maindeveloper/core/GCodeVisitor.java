@@ -10,6 +10,11 @@ import java.util.Map;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+// 6/28/2026
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+
 import jupitore.gen.*;
 
 public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
@@ -38,7 +43,13 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
+  
     // ---- ABSTRACT FIRMWARE METHODS ----
+    // NOTE: Some method names are Klipper-centric for historical reasons,
+    // but their implementation intent is completely generic. They can be 
+    // mapped to emit the correct G-code syntax for any target dialect 
+    // (Marlin, RepRap, Klipper, etc.) without altering the core visitor logic.
+    // -------------------------------------------------------------------
     protected abstract String emitMacroHeader(String macroName);
     protected abstract String emitHeat(String target, double value, boolean wait);
     protected abstract String emitSetHeater(String target, double value);
@@ -74,6 +85,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected abstract String emitLayerStart(int layer);
     protected abstract String emitLayerEnd();
 
+    // sourceFilePath for insert gcode
+    protected String sourceFilePath = null; // Track the .bph file being compiled
+
     public void setEnablePaging(boolean enable) {
         System.out.println("VISITOR LOG: Paging has been set to: " + enable);
         this.enablePaging = enable;
@@ -91,8 +105,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
     }
 
-    // 4/10/2026 adding paging support to the visitor! lets see if this actually
-    // works
+    // 4/10/2026 adding paging support to the visitor! lets see if this actually works
     @Override
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
 
@@ -389,6 +402,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return visit(ctx.layer_statement());
         }
 
+        // ---- 6/28/2026: INSERT G-CODE HANDLING ----
+        if (ctx.insert_gcode_statement() != null) {
+            JupitoreParser.Insert_gcode_statementContext insertCtx = ctx.insert_gcode_statement();
+            String filePath = insertCtx.STRING().getText();
+            boolean asReference = insertCtx.AS_REF() != null;
+            return visitInsertGCode(filePath, asReference);
+        }
+        // -------------------------------------------
+
         System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
         return "";
     }
@@ -468,7 +490,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
         int layers = Integer.parseInt(ctx.NUMBER().getText());
         StringBuilder sb = new StringBuilder();
-        
+         
         for (int layer = 0; layer < layers; layer++) {
             sb.append(emitLayerStart(layer));
             for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
@@ -479,7 +501,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             sb.append(emitLayerEnd());
         }
-        
+         
         return sb.toString();
     }
 
@@ -516,7 +538,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
-        
+         
         if (!Double.isNaN(targetX)) {
             sb.append(" X").append(String.format("%.3f", targetX));
             isMove = true;
@@ -564,7 +586,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (axis.equals("E")) {
             if (ctx.expr() != null) {
-                String op = ctx.getChild(1).getText();
                 String exprText = ctx.expr().getText();
                 boolean isInLoop = !iterationStack.isEmpty();
                 if (!isInLoop && exprText.matches(".*\\bi\\b.*")) {
@@ -688,5 +709,77 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         variables.put(varName, value);
         System.out.println("ASSIGN: " + varName + " = " + value);
         return "";
+    }
+
+    // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
+    public void setSourceFilePath(String path) {
+        this.sourceFilePath = path;
+        System.out.println("VISITOR LOG: Source file path set to: " + path);
+    }
+
+    protected File resolveFilePath(String filePath) {
+        File absoluteFile = new File(filePath);
+        if (absoluteFile.isAbsolute() && absoluteFile.exists()) {
+            return absoluteFile;
+        }
+
+        if (sourceFilePath != null) {
+            File folderFile = new File(sourceFilePath, filePath);
+            if (folderFile.exists()) {
+                return folderFile;
+            }
+        }
+
+        File cwdFile = new File(filePath);
+        if (cwdFile.exists()) {
+            return cwdFile;
+        }
+
+        return absoluteFile.exists() ? absoluteFile : new File(filePath);
+    }
+
+    protected String visitInsertGCode(String filePath, boolean asReference) {
+        String cleanPath = filePath.replace("\"", "");
+
+        if (asReference) {
+            return emitPrintFile(cleanPath);
+        }
+
+        File gcodeFile = resolveFilePath(cleanPath);
+
+        if (!gcodeFile.exists()) {
+            throw new RuntimeException(
+                    "InsertGCode ERROR: File not found: " + cleanPath + "\n" +
+                            "  Tried: " + gcodeFile.getAbsolutePath() + "\n" +
+                            "  Source file: " + (sourceFilePath != null ? sourceFilePath : "unknown"));
+        }
+
+        if (gcodeFile.isDirectory()) {
+            throw new RuntimeException(
+                    "InsertGCode ERROR: Path is a directory, not a file: " + cleanPath);
+        }
+
+        if (!cleanPath.toLowerCase().endsWith(".gcode") &&
+                !cleanPath.toLowerCase().endsWith(".g") &&
+                !cleanPath.toLowerCase().endsWith(".gc")) {
+            System.out.println("WARNING: InsertGCode file doesn't have standard G-code extension: " + cleanPath);
+        }
+
+        if (gcodeFile.length() == 0) {
+            System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
+            return "";
+        }
+
+        try {
+            String content = Files.readString(gcodeFile.toPath());
+            if (!content.endsWith("\n")) {
+                content += "\n";
+            }
+            return content;
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "InsertGCode ERROR: Failed to read file: " + cleanPath + "\n" +
+                            "  " + e.getMessage());
+        }
     }
 }

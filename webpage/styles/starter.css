@@ -760,7 +760,7 @@ body {
   border-color: #bd8127cb;
 }
 
-/* adding the settings 
+/* adding the settings -------------------------------------------------------------------------------------
 
 /* Settings Modal */
 .settings-modal {
@@ -860,4 +860,311 @@ body {
 
 .close-settings-modal:hover {
   color: #e94560;
+}
+
+#themeSelector {
+  scrollbar-width: thin;
+  scrollbar-color: #666 #1a1a1a;
+}
+
+#themeSelector::-webkit-scrollbar {
+  width: 8px;
+}
+
+#themeSelector::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+#themeSelector::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 4px;
+}
+
+#themeSelector::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* this is for gcode ui */
+/* G-Code Folder Settings */
+.gcode-folder-setting {
+  padding: 10px 0;
+}
+
+.folder-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.folder-status {
+  flex: 1;
+}
+
+.folder-active {
+  color: #a8b2c1;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  background: rgba(44, 49, 58, 0.5);
+  border: 1px solid rgba(82, 139, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-inactive {
+  color: #5c6370;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.folder-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.browse-folder-btn {
+  padding: 7px 18px;
+  background: transparent;
+  border: 1px solid #528bff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #528bff;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.browse-folder-btn:hover {
+  background: rgba(82, 139, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(82, 139, 255, 0.15);
+}
+
+.remove-folder-btn {
+  padding: 7px 18px;
+  background: transparent;
+  border: 1px solid #e06c75;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #e06c75;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.remove-folder-btn:hover {
+  background: rgba(224, 108, 117, 0.1);
+  box-shadow: 0 2px 8px rgba(224, 108, 117, 0.15);
+}
+
+.folder-file-count {
+  margin: 4px 0 10px 0;
+}
+
+.file-count {
+  color: #79a664;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.file-count-empty {
+  color: #c75a63;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/*  list with scrollable dropdown */
+.gcode-file-list-container {
+  position: relative;
+  margin-top: 4px;
+}
+
+.gcode-file-list-toggle {
+  background: #21252b;
+  border: 1px solid #3e4451;
+  border-radius: 6px;
+  color: #abb2bf;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.gcode-file-list-toggle:hover {
+  background: #282c34;
+  border-color: #528bff;
+}
+
+.gcode-file-list-toggle .arrow {
+  transition: transform 0.2s ease;
+  font-size: 10px;
+  color: #5c6370;
+}
+
+.gcode-file-list-toggle .arrow.open {
+  transform: rotate(180deg);
+}
+
+.gcode-file-list-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #21252b;
+  border: 1px solid #3e4451;
+  border-radius: 6px;
+  margin-top: 6px;
+  display: none;
+  z-index: 100;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.gcode-file-list-dropdown.open {
+  display: block;
+}
+
+.gcode-file-list-dropdown .file-item {
+  padding: 8px 14px;
+  color: #abb2bf;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  cursor: default;
+  border-bottom: 1px solid rgba(62, 68, 81, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s ease;
+}
+
+.gcode-file-list-dropdown .file-item:hover {
+  background: #2c313a;
+  color: #d7dae0;
+}
+
+.gcode-file-list-dropdown .file-item:last-child {
+  border-bottom: none;
+}
+
+.gcode-file-list-dropdown .file-item .file-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.gcode-file-list-dropdown .file-item .file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gcode-file-list-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gcode-file-list-dropdown::-webkit-scrollbar-track {
+  background: #21252b;
+  border-radius: 0 6px 6px 0;
+}
+
+.gcode-file-list-dropdown::-webkit-scrollbar-thumb {
+  background: #3e4451;
+  border-radius: 4px;
+  border: 2px solid #21252b; 
+}
+
+.gcode-file-list-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #5c6370;
+}
+
+/* Autocomplete Suggestion Box */
+.gcode-suggestion-box {
+  position: fixed;
+  background: #21252b;
+  border: 1px solid #3e4451;
+  border-radius: 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+  max-height: 220px;
+  overflow-y: auto;
+  min-width: 220px;
+  z-index: 9999;
+  padding: 6px 0;
+}
+
+.gcode-suggestion-box .suggestion-item {
+  padding: 8px 16px;
+  color: #abb2bf;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gcode-suggestion-box .suggestion-item:hover {
+  background: #2c313a;
+  color: #61afef; 
+}
+
+.gcode-suggestion-box .suggestion-item.no-files {
+  color: #5c6370;
+  font-style: italic;
+  cursor: default;
+}
+
+.gcode-suggestion-box .suggestion-item.no-files:hover {
+  background: transparent;
+  color: #5c6370;
+}
+
+.folder-manual-input {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  align-items: center;
+}
+
+.folder-path-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #2c313a;
+  border: 1px solid #3e4451;
+  border-radius: 4px;
+  color: #abb2bf;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+
+.folder-path-input:focus {
+  border-color: #61afef;
+  outline: none;
+}
+
+.save-folder-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  background: #61afef;
+  color: #282c34;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.save-folder-btn:hover {
+  background: #528bff;
 }

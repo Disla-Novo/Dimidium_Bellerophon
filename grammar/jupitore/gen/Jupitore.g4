@@ -62,8 +62,15 @@ statement
     | SET_FAN EQUALS expr NEWLINE     // Added        // Added - FIXED: removed SPEED token
     | PRINTFILE STRING NEWLINE             // Added - prints a G-code file via SD card
     | assignment   // new rule for variable assignment 6/17/2026
+    | insert_gcode_statement  // NEW: separate rule for InsertGCode
     ;
 
+
+// new rule for InsertGCode - supports both orders
+insert_gcode_statement
+    : INSERT_GCODE STRING (AS_REF)? NEWLINE          // InsertGCode "file.gcode" reference
+    | INSERT_GCODE AS_REF STRING NEWLINE            // InsertGCode reference "file.gcode"
+    ;
 
 // new rule 6/17/26
  assignment
@@ -178,6 +185,7 @@ ENDIF      : 'endif';
 REPEAT     : 'repeat';
 BREPEAT    : 'Brepeat';
 END        : 'end';
+INSERT_GCODE : 'InsertGCode' | 'InsertGcode' | 'insertGcode'; 
 
 SIN        : 'sin';
 COS        : 'cos';
@@ -198,6 +206,7 @@ MOVEEX      : 'MoveTo';
 MSG         : 'MSG';
 ABSOLUTE    : 'Absolute';
 ARROW       : '->';
+AS_REF      : 'reference';
 RELATIVE    : 'Relative';
 TIMEOUT_SET : 'TIMEOUT_SET';
 RELATIVEEXTRUSION : 'RelativeExtrusion';

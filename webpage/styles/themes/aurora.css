@@ -1,0 +1,128 @@
+.theme-aurora body {
+  background-color: #0a0a12;
+  color: #e0e0e0;
+}
+
+.theme-aurora #jupitore-app {
+  background: #0a0a12;
+}
+
+.theme-aurora .sidebar {
+  background: #12121f;
+  border-right: 1px solid #1a1a2e;
+}
+
+.theme-aurora #line-numbers {
+  color: #4a4a5a;
+  background: rgba(10, 10, 18, 0.9);
+  border-right: 1px solid #1a1a2e;
+}
+
+.theme-aurora .brand .logo-box {
+  color: #64ffda;
+}
+
+.theme-aurora .sidebar-btn {
+  background: #12121f;
+  color: #8888aa;
+  border: 1px solid #1a1a2e;
+}
+
+.theme-aurora .sidebar-btn:hover {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-color: #64ffda;
+}
+
+.theme-aurora .toolbar {
+  background: #12121f;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.theme-aurora .run-btn {
+  background: #64ffda;
+  color: #0a0a12;
+}
+
+.theme-aurora .run-btn:hover {
+  background: #7cffea;
+}
+
+.theme-aurora .clear-btn {
+  background: #12121f;
+  color: #8888aa;
+  border: 1px solid #1a1a2e;
+}
+
+.theme-aurora .clear-btn:hover {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.theme-aurora .settings-btn {
+  background: #12121f;
+  color: #8888aa;
+  border: 1px solid #1a1a2e;
+}
+
+.theme-aurora .settings-btn:hover {
+  border-color: #64ffda;
+  color: #e0e0e0;
+}
+
+.theme-aurora .pane {
+  background: #0a0a12;
+}
+
+.theme-aurora .pane-label {
+  background: #12121f;
+  color: #4a4a5a;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.theme-aurora #code-overlay {
+  color: #e0e0e0;
+}
+
+.theme-aurora #code-input {
+  caret-color: #64ffda;
+}
+
+.theme-aurora .output-view {
+  background: #0a0a12;
+  color: #e0e0e0;
+}
+
+.theme-aurora .console {
+  background: #12121f;
+  border-top: 1px solid #1a1a2e;
+  color: #8888aa;
+}
+
+.theme-aurora #console-log .log-entry {
+  color: #8888aa;
+}
+
+.theme-aurora #console-log .log-entry.error {
+  color: #ff6b6b;
+}
+
+.theme-aurora #console-log .log-entry.success {
+  color: #64ffda;
+}
+
+.theme-aurora .modal-content {
+  background: #12121f;
+  color: #e0e0e0;
+  border: 1px solid #1a1a2e;
+}
+
+.theme-aurora .modal-content input {
+  background: #0a0a12;
+  color: #e0e0e0;
+  border: 1px solid #1a1a2e;
+}
+
+.theme-aurora .modal-content input:focus {
+  border-color: #64ffda;
+}

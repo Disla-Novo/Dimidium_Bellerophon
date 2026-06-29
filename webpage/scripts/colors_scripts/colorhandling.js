@@ -88,6 +88,13 @@ window.applyTheme = function (themeKey) {
 
   tokenColors = { ...theme.tokens };
 
+  document.body.className = document.body.className
+    .split(' ')
+    .filter(cls => !cls.startsWith('theme-'))
+    .join(' ');
+
+  document.body.classList.add(`theme-${themeKey}`);
+
   let link = document.getElementById("theme-css");
 
   if (!link) {

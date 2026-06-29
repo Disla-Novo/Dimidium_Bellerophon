@@ -1,0 +1,128 @@
+.theme-candy body {
+  background-color: #1a1420;
+  color: #e0c8e8;
+}
+
+.theme-candy #jupitore-app {
+  background: #1a1420;
+}
+
+.theme-candy .sidebar {
+  background: #241e2a;
+  border-right: 1px solid #3a2a44;
+}
+
+.theme-candy #line-numbers {
+  color: #8a6a9a;
+  background: rgba(26, 20, 32, 0.9);
+  border-right: 1px solid #5a3a6a;
+}
+
+.theme-candy .brand .logo-box {
+  color: #ff6b9d;
+}
+
+.theme-candy .sidebar-btn {
+  background: #241e2a;
+  color: #b8a0c8;
+  border: 1px solid #3a2a44;
+}
+
+.theme-candy .sidebar-btn:hover {
+  background: #3a2a44;
+  color: #e0c8e8;
+  border-color: #ff6b9d;
+}
+
+.theme-candy .toolbar {
+  background: #241e2a;
+  border-bottom: 1px solid #3a2a44;
+}
+
+.theme-candy .run-btn {
+  background: #ff6b9d;
+  color: #1a1420;
+}
+
+.theme-candy .run-btn:hover {
+  background: #ff7bae;
+}
+
+.theme-candy .clear-btn {
+  background: #241e2a;
+  color: #b8a0c8;
+  border: 1px solid #3a2a44;
+}
+
+.theme-candy .clear-btn:hover {
+  background: #3a2a44;
+  color: #e0c8e8;
+}
+
+.theme-candy .settings-btn {
+  background: #241e2a;
+  color: #b8a0c8;
+  border: 1px solid #3a2a44;
+}
+
+.theme-candy .settings-btn:hover {
+  border-color: #ff6b9d;
+  color: #e0c8e8;
+}
+
+.theme-candy .pane {
+  background: #1a1420;
+}
+
+.theme-candy .pane-label {
+  background: #241e2a;
+  color: #8a6a9a;
+  border-bottom: 1px solid #3a2a44;
+}
+
+.theme-candy #code-overlay {
+  color: #e0c8e8;
+}
+
+.theme-candy #code-input {
+  caret-color: #ff6b9d;
+}
+
+.theme-candy .output-view {
+  background: #1a1420;
+  color: #e0c8e8;
+}
+
+.theme-candy .console {
+  background: #241e2a;
+  border-top: 1px solid #3a2a44;
+  color: #b090c0;
+}
+
+.theme-candy #console-log .log-entry {
+  color: #b090c0;
+}
+
+.theme-candy #console-log .log-entry.error {
+  color: #ff4757;
+}
+
+.theme-candy #console-log .log-entry.success {
+  color: #6bffb8;
+}
+
+.theme-candy .modal-content {
+  background: #241e2a;
+  color: #e0c8e8;
+  border: 1px solid #3a2a44;
+}
+
+.theme-candy .modal-content input {
+  background: #1a1420;
+  color: #e0c8e8;
+  border: 1px solid #3a2a44;
+}
+
+.theme-candy .modal-content input:focus {
+  border-color: #ff6b9d;
+}

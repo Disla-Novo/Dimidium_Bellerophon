@@ -1,0 +1,128 @@
+.theme-mono body {
+  background-color: #121212;
+  color: #d0d0d0;
+}
+
+.theme-mono #jupitore-app {
+  background: #121212;
+}
+
+.theme-mono .sidebar {
+  background: #1a1a1a;
+  border-right: 1px solid #2a2a2a;
+}
+
+.theme-mono #line-numbers {
+  color: #6a6a6a;
+  background: rgba(18, 18, 18, 0.9);
+  border-right: 1px solid #2a2a2a;
+}
+
+.theme-mono .brand .logo-box {
+  color: #aaaaaa;
+}
+
+.theme-mono .sidebar-btn {
+  background: #1a1a1a;
+  color: #aaaaaa;
+  border: 1px solid #2a2a2a;
+}
+
+.theme-mono .sidebar-btn:hover {
+  background: #2a2a2a;
+  color: #d0d0d0;
+  border-color: #aaaaaa;
+}
+
+.theme-mono .toolbar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.theme-mono .run-btn {
+  background: #aaaaaa;
+  color: #121212;
+}
+
+.theme-mono .run-btn:hover {
+  background: #d0d0d0;
+}
+
+.theme-mono .clear-btn {
+  background: #1a1a1a;
+  color: #aaaaaa;
+  border: 1px solid #2a2a2a;
+}
+
+.theme-mono .clear-btn:hover {
+  background: #2a2a2a;
+  color: #d0d0d0;
+}
+
+.theme-mono .settings-btn {
+  background: #1a1a1a;
+  color: #aaaaaa;
+  border: 1px solid #2a2a2a;
+}
+
+.theme-mono .settings-btn:hover {
+  border-color: #aaaaaa;
+  color: #d0d0d0;
+}
+
+.theme-mono .pane {
+  background: #121212;
+}
+
+.theme-mono .pane-label {
+  background: #1a1a1a;
+  color: #6a6a6a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.theme-mono #code-overlay {
+  color: #d0d0d0;
+}
+
+.theme-mono #code-input {
+  caret-color: #aaaaaa;
+}
+
+.theme-mono .output-view {
+  background: #121212;
+  color: #d0d0d0;
+}
+
+.theme-mono .console {
+  background: #1a1a1a;
+  border-top: 1px solid #2a2a2a;
+  color: #aaaaaa;
+}
+
+.theme-mono #console-log .log-entry {
+  color: #aaaaaa;
+}
+
+.theme-mono #console-log .log-entry.error {
+  color: #cc4444;
+}
+
+.theme-mono #console-log .log-entry.success {
+  color: #d0d0d0;
+}
+
+.theme-mono .modal-content {
+  background: #1a1a1a;
+  color: #d0d0d0;
+  border: 1px solid #2a2a2a;
+}
+
+.theme-mono .modal-content input {
+  background: #121212;
+  color: #d0d0d0;
+  border: 1px solid #2a2a2a;
+}
+
+.theme-mono .modal-content input:focus {
+  border-color: #aaaaaa;
+}

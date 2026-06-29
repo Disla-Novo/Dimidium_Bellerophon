@@ -12,6 +12,135 @@ const codeInput = document.getElementById("code-input");
 // adding mode state here
 window.currentMode = "klipper";
 
+// ---------- G-Code Autocomplete ----------
+let gcodeSuggestionBox = null;
+let gcodeAutocompleteTimeout = null;
+
+function createGcodeSuggestionBox() {
+  if (gcodeSuggestionBox) return;
+  gcodeSuggestionBox = document.createElement("div");
+  gcodeSuggestionBox.className = "gcode-suggestion-box";
+  gcodeSuggestionBox.style.display = "none";
+  document.body.appendChild(gcodeSuggestionBox);
+}
+
+function positionGcodeSuggestionBox(textarea) {
+  if (!gcodeSuggestionBox) return;
+  const rect = textarea.getBoundingClientRect();
+  const cursorPos = textarea.selectionStart;
+  
+  const textBefore = textarea.value.substring(0, cursorPos);
+  const lines = textBefore.split('\n');
+  const currentLine = lines.length;
+  const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
+  
+  gcodeSuggestionBox.style.left = (rect.left + 10) + 'px';
+  gcodeSuggestionBox.style.top = (rect.top + (currentLine * lineHeight) + 10) + 'px';
+}
+
+function showGcodeSuggestions(files, prefix) {
+  createGcodeSuggestionBox();
+  
+  const matching = files.filter(f => 
+    f.toLowerCase().startsWith(prefix.toLowerCase())
+  );
+
+  if (matching.length === 0 || prefix === "") {
+    gcodeSuggestionBox.style.display = "none";
+    return;
+  }
+
+  gcodeSuggestionBox.innerHTML = '';
+  matching.forEach(file => {
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
+    item.textContent = file;
+    
+    item.addEventListener("click", () => {
+      insertGcodeFileName(file);
+      gcodeSuggestionBox.style.display = "none";
+    });
+    
+    gcodeSuggestionBox.appendChild(item);
+  });
+
+  gcodeSuggestionBox.style.display = "block";
+  positionGcodeSuggestionBox(document.getElementById("code-input"));
+}
+
+function insertGcodeFileName(fileName) {
+  const textarea = document.getElementById("code-input");
+  const cursorPos = textarea.selectionStart;
+  const text = textarea.value;
+  
+  let quoteStart = -1;
+  for (let i = cursorPos - 1; i >= 0; i--) {
+    if (text[i] === '"') {
+      quoteStart = i;
+      break;
+    }
+  }
+  
+  if (quoteStart === -1) return;
+  
+  let quoteEnd = text.indexOf('"', cursorPos);
+  if (quoteEnd === -1) quoteEnd = cursorPos;
+  
+  const beforeQuote = text.substring(0, quoteStart + 1);
+  const afterQuote = text.substring(quoteEnd);
+  textarea.value = beforeQuote + fileName + afterQuote;
+  
+  const newPos = quoteStart + 1 + fileName.length;
+  textarea.selectionStart = newPos;
+  textarea.selectionEnd = newPos;
+  
+  textarea.focus();
+  updateLines();
+}
+
+function checkForGcodeAutocomplete() {
+  const textarea = document.getElementById("code-input");
+  const cursorPos = textarea.selectionStart;
+  const text = textarea.value;
+  
+  const lines = text.substring(0, cursorPos).split('\n');
+  const currentLine = lines[lines.length - 1] || '';
+  
+  const insertMatch = currentLine.match(/InsertGCode|insertGcode|INSERTGCODE/i);
+  if (!insertMatch) {
+    if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
+    return;
+  }
+  
+  const lastQuote = currentLine.lastIndexOf('"');
+  if (lastQuote === -1) {
+    if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
+    return;
+  }
+  
+  const remaining = text.substring(cursorPos);
+  const hasClosingQuote = remaining.indexOf('"') !== -1;
+  if (hasClosingQuote) {
+    if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
+    return;
+  }
+  
+  const prefix = currentLine.substring(lastQuote + 1);
+  const files = window.gcodeFileList || [];
+  
+  if (files.length === 0) {
+    createGcodeSuggestionBox();
+    gcodeSuggestionBox.innerHTML = '<div class="suggestion-item no-files">No G-code files found. Set folder in Settings.</div>';
+    gcodeSuggestionBox.style.display = "block";
+    positionGcodeSuggestionBox(textarea);
+    return;
+  }
+  
+  showGcodeSuggestions(files, prefix);
+}
+
+// ---------- End G-Code Autocomplete ----------
+
 // ---------- Profile Management ----------
 let currentProfile = null;
 
@@ -149,9 +278,38 @@ function syncScroll() {
 
 // Single set of listeners
 if (input) {
-  input.addEventListener("input", updateLines);
+  input.addEventListener("input", function(e) {
+    updateLines();
+    clearTimeout(gcodeAutocompleteTimeout);
+    gcodeAutocompleteTimeout = setTimeout(checkForGcodeAutocomplete, 200);
+  });
   input.addEventListener("scroll", syncScroll);
+  input.addEventListener("keydown", function(e) {
+    if (e.ctrlKey && e.key === ' ') {
+      e.preventDefault();
+      checkForGcodeAutocomplete();
+    }
+    if (e.key === 'Escape') {
+      if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
+    }
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+      this.selectionStart = this.selectionEnd = start + 2;
+      updateLines();
+    }
+  });
 }
+
+// Click outside to close suggestion box
+document.addEventListener("click", function(e) {
+  const textarea = document.getElementById("code-input");
+  if (gcodeSuggestionBox && !gcodeSuggestionBox.contains(e.target) && e.target !== textarea) {
+    gcodeSuggestionBox.style.display = "none";
+  }
+});
 
 // this is references
 let savedRefs = JSON.parse(localStorage.getItem("jupitoreRefs")) || [];

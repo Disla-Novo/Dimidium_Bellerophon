@@ -1,0 +1,128 @@
+.theme-ember body {
+  background-color: #1a0e0a;
+  color: #f5e6d3;
+}
+
+.theme-ember #jupitore-app {
+  background: #1a0e0a;
+}
+
+.theme-ember .sidebar {
+  background: #2a1a12;
+  border-right: 1px solid #3a2a1e;
+}
+
+.theme-ember #line-numbers {
+  color: #6a4a3a;
+  background: rgba(26, 14, 10, 0.9);
+  border-right: 1px solid #3a2a1e;
+}
+
+.theme-ember .brand .logo-box {
+  color: #ff6b35;
+}
+
+.theme-ember .sidebar-btn {
+  background: #2a1a12;
+  color: #b89070;
+  border: 1px solid #3a2a1e;
+}
+
+.theme-ember .sidebar-btn:hover {
+  background: #3a2a1e;
+  color: #f5e6d3;
+  border-color: #ff6b35;
+}
+
+.theme-ember .toolbar {
+  background: #2a1a12;
+  border-bottom: 1px solid #3a2a1e;
+}
+
+.theme-ember .run-btn {
+  background: #ff6b35;
+  color: #1a0e0a;
+}
+
+.theme-ember .run-btn:hover {
+  background: #ff7a4a;
+}
+
+.theme-ember .clear-btn {
+  background: #2a1a12;
+  color: #b89070;
+  border: 1px solid #3a2a1e;
+}
+
+.theme-ember .clear-btn:hover {
+  background: #3a2a1e;
+  color: #f5e6d3;
+}
+
+.theme-ember .settings-btn {
+  background: #2a1a12;
+  color: #b89070;
+  border: 1px solid #3a2a1e;
+}
+
+.theme-ember .settings-btn:hover {
+  border-color: #ff6b35;
+  color: #f5e6d3;
+}
+
+.theme-ember .pane {
+  background: #1a0e0a;
+}
+
+.theme-ember .pane-label {
+  background: #2a1a12;
+  color: #6a4a3a;
+  border-bottom: 1px solid #3a2a1e;
+}
+
+.theme-ember #code-overlay {
+  color: #f5e6d3;
+}
+
+.theme-ember #code-input {
+  caret-color: #ff6b35;
+}
+
+.theme-ember .output-view {
+  background: #1a0e0a;
+  color: #f5e6d3;
+}
+
+.theme-ember .console {
+  background: #2a1a12;
+  border-top: 1px solid #3a2a1e;
+  color: #b89070;
+}
+
+.theme-ember #console-log .log-entry {
+  color: #b89070;
+}
+
+.theme-ember #console-log .log-entry.error {
+  color: #e63946;
+}
+
+.theme-ember #console-log .log-entry.success {
+  color: #ffd93d;
+}
+
+.theme-ember .modal-content {
+  background: #2a1a12;
+  color: #f5e6d3;
+  border: 1px solid #3a2a1e;
+}
+
+.theme-ember .modal-content input {
+  background: #1a0e0a;
+  color: #f5e6d3;
+  border: 1px solid #3a2a1e;
+}
+
+.theme-ember .modal-content input:focus {
+  border-color: #ff6b35;
+}
