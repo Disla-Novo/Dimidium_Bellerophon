@@ -1,7 +1,3 @@
-// this program is the heart of the compiler. it traverses the parse tree and generates G-code based on the rules defined in the visitor methods. 
-// each method corresponds to a specific rule in the grammar and is responsible for translating that rule into G-code. 
-// the visitor pattern allows us to separate the logic of code generation from the structure of the parse tree
-//  making it easier to maintain and extend in the future.
 package maindeveloper.core;
 
 import java.io.BufferedWriter;
@@ -35,6 +31,48 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected boolean insideLayer = false;
     // Hardware safety limiter: enforces axis bounds at compile time.
     protected HardwareLimiter limiter;
+    protected Stack<Integer> iterationStack = new Stack<>();
+    protected boolean relativeMode = false;
+    protected double currentX = 0;
+    protected double currentY = 0;
+    protected double currentZ = 0;
+    protected boolean insideJrepeat = false;
+
+    // ---- ABSTRACT FIRMWARE METHODS ----
+    protected abstract String emitMacroHeader(String macroName);
+    protected abstract String emitHeat(String target, double value, boolean wait);
+    protected abstract String emitSetHeater(String target, double value);
+    protected abstract String emitCooldown(String target);
+    protected abstract String emitWaitForTemp(String target);
+    protected abstract String emitHome(String coordList);
+    protected abstract String emitMove(String direction);
+    protected abstract String emitMoveTo(String coordList);
+    protected abstract String emitSetSpeed(double value);
+    protected abstract String emitSetFan(double value);
+    protected abstract String emitAbsolute();
+    protected abstract String emitRelative();
+    protected abstract String emitRelativeExtrusion();
+    protected abstract String emitResetExtruder();
+    protected abstract String emitPause();
+    protected abstract String emitResume();
+    protected abstract String emitDwell(double milliseconds);
+    protected abstract String emitTimeoutSet(double seconds);
+    protected abstract String emitRespond(String message);
+    protected abstract String emitPrintFile(String filename);
+    protected abstract String emitMacroCall(String macroName);
+    protected abstract String emitBedMeshCalibrate();
+    protected abstract String emitLoadBedMesh(String profile);
+    protected abstract String emitProbeCalibrate();
+    protected abstract String emitSetPressureAdvance(double value);
+    protected abstract String emitSetNozzle(double value);
+    protected abstract String emitSetFilament(double value);
+    protected abstract String emitSetLayerHeight(double value);
+    protected abstract String emitSetExtrusionMultiplier(double value);
+    protected abstract String emitEnableAutoExtrude(boolean enabled);
+    protected abstract String emitIfStart(String condition);
+    protected abstract String emitIfEnd();
+    protected abstract String emitLayerStart(int layer);
+    protected abstract String emitLayerEnd();
 
     public void setEnablePaging(boolean enable) {
         System.out.println("VISITOR LOG: Paging has been set to: " + enable);
@@ -53,63 +91,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
     }
 
-    // -------------------------------------------------------------------------
-    // ABSTRACT FIRMWARE METHODS
-    // Each firmware adapter (KlipperVisitor, MarlinVisitor, etc.) implements
-    // these methods to produce the correct G-code for that target.
-    // 
-    // NOTE: Some method names are Klipper-centric for historical reasons.
-    // Their INTENT is generic (e.g., "load a bed mesh", "probe calibration"),
-    // even if the name reflects Klipper's command. Future refactoring could
-    // rename these to be more firmware-agnostic without changing the logic.
-    // -------------------------------------------------------------------------
-
-    protected abstract String emitMacroHeader(String macroName);
-
-    protected abstract String emitHeat(String target, double value, boolean wait);
-
-    protected abstract String emitSetHeater(String target, double value);
-
-    protected abstract String emitPause();
-
-    protected abstract String emitResume();
-
-    protected abstract String emitRespond(String message);
-
-    protected abstract String emitCooldown(String target); // null = all off
-
-    protected abstract String emitTimeoutSet(double seconds);
-
-    // Klipper-centric name — intent: load a bed mesh profile
-    protected abstract String emitLoadBedMesh(String profile);
-
-    // Klipper-centric name — intent: calibrate the probe
-    protected abstract String emitProbeCalibrate();
-
-    // Klipper-centric name — intent: set pressure advance / linear advance
-    protected abstract String emitSetPressureAdvance(double value);
-
-    protected abstract String emitSetFan(double value);
-
-    // Klipper-centric name — intent: call another macro/subroutine
-    protected abstract String emitMacroCall(String macroName);
-
-    protected abstract String emitBedMeshCalibrate(); // LEVEL or BED_MESH_CALIBRATE
-
-    protected abstract String emitPrintFile(String filename);
-
-    // Klipper-centric — intent: start a conditional block (if/endif)
-    protected abstract String emitIfStart(String condition);
-
-    // Klipper-centric — intent: end a conditional block (if/endif)
-    protected abstract String emitIfEnd();
-
-    // -------------------------------------------------------------------------
-
-    /**
-     * @param ctx
-     * @return String
-     */
     // 4/10/2026 adding paging support to the visitor! lets see if this actually
     // works
     @Override
@@ -161,10 +142,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return result.isEmpty() ? "" : result;
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitMacro(JupitoreParser.MacroContext ctx) {
         // Reset positions for independent macro execution
@@ -196,10 +173,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return gcode.toString();
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitStatement(JupitoreParser.StatementContext ctx) {
         // ---- 6/17/2026: handle assignments ----
@@ -207,14 +180,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             System.out.println("DEBUG: Found assignment, calling visitAssignment");
             return visit(ctx.assignment());
         }
-        // System.out.println("DEBUG: Visiting statement: " + ctx.getText());
 
         if (ctx.HOME() != null) {
             if (ctx.coordList() != null) {
-                return "G28 " + visit(ctx.coordList()) + "\n";
+                return emitHome(visit(ctx.coordList()));
             }
-            return "G28\n";
+            return emitHome(null);
         }
+
         if (ctx.repeat_statement() != null) {
             return visit(ctx.repeat_statement());
         }
@@ -226,32 +199,13 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.if_statement() != null) {
             return visit(ctx.if_statement());
         }
-        if (ctx.MOVE() != null) {
-            StringBuilder gcode = new StringBuilder("G1 ");
-            if (ctx.DIRECTION() != null) {
-                switch (ctx.DIRECTION().getText()) {
-                    case "left":
-                        gcode.append("X-1");
-                        break;
-                    case "right":
-                        gcode.append("X1");
-                        break;
-                    case "center":
-                        gcode.append("X0 Y0");
-                        break;
-                    case "up":
-                        gcode.append("Z1");
-                        break;
-                    case "down":
-                        gcode.append("Z-1");
-                        break;
-                }
-            }
 
-            return gcode.toString() + "\n";
+        if (ctx.MOVE() != null) {
+            if (ctx.DIRECTION() != null) {
+                return emitMove(ctx.DIRECTION().getText());
+            }
         }
 
-        // SET_HEATER: set temperature without waiting.
         if (ctx.SET_HEATER() != null) {
             if (ctx.TARGET() != null && ctx.expr() != null) {
                 String target = ctx.TARGET().getText().toLowerCase();
@@ -261,7 +215,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
         }
 
-        // HEAT: set temperature and wait.
         if (ctx.HEAT() != null) {
             if (ctx.TARGET() != null && ctx.expr() != null) {
                 String target = ctx.TARGET().getText().toLowerCase();
@@ -273,15 +226,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (ctx.MOVEEX() != null) {
             if (ctx.coordList() != null) {
-                return "G1 " + visit(ctx.coordList()) + "\n";
+                return emitMoveTo(visit(ctx.coordList()));
             }
         }
 
         if (ctx.PAUSE() != null) {
             return emitPause();
         }
-        if (ctx.RESUME() != null) {
 
+        if (ctx.RESUME() != null) {
             return emitResume();
         }
 
@@ -291,97 +244,67 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                 return emitRespond(message);
             }
         }
-        // Track relative mode for coordinate handling
+
         if (ctx.ABSOLUTE() != null) {
             relativeMode = false;
-            return "G90\n";
+            return emitAbsolute();
         }
 
         if (ctx.RELATIVE() != null) {
             relativeMode = true;
-            return "G91\n";
+            return emitRelative();
         }
 
-        // add the rest here
-
-        // klipper macro caller
         if (ctx.CALL() != null && ctx.STRING() != null) {
             String macroName = ctx.STRING().getText().replace("\"", "");
             return emitMacroCall(macroName);
         }
-        // this is just testing
-
-        // not to be confused with heat. this one waits for an existing temperature
-        // Note: COOLDOWN does not change printer state for subsequent statements
 
         if (ctx.WAITFORTEMP() != null && ctx.TARGET() != null) {
             String target = ctx.TARGET().getText().toLowerCase();
-            switch (target) {
-                case "extruder":
-                    return "M109\n";
-                case "bed":
-                    return "M190\n";
-                case "chamber":
-                    return "M141\n"; // Wait for chamber
-
-            }
+            return emitWaitForTemp(target);
         }
 
-        // semantic different but the same. for convenience. might change later.
         if (ctx.LEVEL() != null || ctx.BED_MESH_CALIBRATE() != null) {
             return emitBedMeshCalibrate();
         }
 
-        // timeout
         if (ctx.TIMEOUT_SET() != null && ctx.expr() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double value = compute.visit(ctx.expr());
             return emitTimeoutSet(value);
         }
 
-        // RELATIVE EXTRUSION check documentation
         if (ctx.RELATIVEEXTRUSION() != null) {
-
-            return "M83\n";
+            return emitRelativeExtrusion();
         }
 
-        // LOADING MESH
         if (ctx.LOAD_BED_MESH() != null && ctx.STRING() != null) {
             String pr = ctx.STRING().getText().replace("\"", "");
             return emitLoadBedMesh(pr);
-
         }
-        // reeset extruder
+
         if (ctx.RESET_EXTRUDER() != null) {
-            return "G92 E0\n";
-
+            return emitResetExtruder();
         }
 
-        // PROBE CALIBRATE
         if (ctx.PROBE_CALIBRATE() != null) {
             return emitProbeCalibrate();
-
         }
 
-        // cooldown
-
         if (ctx.COOLDOWN() != null) {
-            // no target? turn off all heaters plz
             if (ctx.TARGET() == null) {
                 return emitCooldown(null);
             }
-
-            // target exists? handle specific heater
             String t = ctx.TARGET().getText().toLowerCase();
             return emitCooldown(t);
         }
-        // dwell
+
         if (ctx.DWELL() != null && ctx.expr() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double value = compute.visit(ctx.expr());
 
-            // unit
-            String unit = "ms"; // default
+            String unit = "ms";
             for (int i = 0; i < ctx.getChildCount(); i++) {
                 ParseTree child = ctx.getChild(i);
                 if (child instanceof TerminalNode) {
@@ -394,17 +317,16 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
 
             if (unit.equals("s")) {
-                value *= 1000; // convert seconds to milliseconds
+                value *= 1000;
             }
 
-            return "G4 P" + ((int) value) + "\n";
+            return emitDwell(value);
         }
 
-        // Set speed (6/17/26: supports user-defined variables)
         if (ctx.SET_SPEED() != null && ctx.expr() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double speed = compute.visit(ctx.expr());
-            return "G1 F" + (int) speed + "\n";
+            return emitSetSpeed(speed);
         }
 
         if (ctx.PRINTFILE() != null && ctx.STRING() != null) {
@@ -428,28 +350,31 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setNozzleDiameter(val);
-            return "";
+            return emitSetNozzle(val);
         }
+
         if (ctx.SET_FILAMENT() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setFilamentDiameter(val);
             System.out.println("DEBUG: Filament diameter set to " + val);
-            return "";
+            return emitSetFilament(val);
         }
+
         if (ctx.SET_LAYER_HEIGHT() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setLayerHeight(val);
             System.out.println("DEBUG: Layer height set to " + val);
-            return "";
+            return emitSetLayerHeight(val);
         }
+
         if (ctx.SET_EXTRUSION_MULTIPLIER() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setExtrusionMultiplier(val);
             System.out.println("DEBUG: Extrusion multiplier set to " + val);
-            return "";
+            return emitSetExtrusionMultiplier(val);
         }
 
         if (ctx.ENABLE_AUTO_EXTRUDE() != null) {
@@ -457,81 +382,54 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             double val = compute.visit(ctx.expr());
             autoExtrudeEnabled = (val != 0.0);
             System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
-            return "";
+            return emitEnableAutoExtrude(autoExtrudeEnabled);
         }
-        // added 6/24/26
+
         if (ctx.layer_statement() != null) {
             return visit(ctx.layer_statement());
         }
 
-        // -------------------------------------------
-
-        // end
         System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
         return "";
-
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitRepeat_statement(JupitoreParser.Repeat_statementContext ctx) {
         int times = Integer.parseInt(ctx.NUMBER().getText());
         StringBuilder sb = new StringBuilder();
 
-        // repeat does not allow 'i' or functions
         boolean oldInsideJrepeat = insideJrepeat;
         insideJrepeat = false;
 
         for (int iteration = 0; iteration < times; iteration++) {
             for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
-                // temporarily disable 'i' and function usage checks
                 sb.append(visit(stmt));
             }
         }
 
-        // restore previous state just in case
         insideJrepeat = oldInsideJrepeat;
-
         return sb.toString();
     }
 
-    // we want to nest iterators so im going to test a stack set up
-    protected Stack<Integer> iterationStack = new Stack<>();
-    // protected int currentIteration = 0; // current "i" for Jrepeat
-
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
-
         int times = Integer.parseInt(ctx.NUMBER().getText());
         StringBuilder sb = new StringBuilder();
 
-        // Save state
         double oldCenterX = centerX;
         double oldCenterY = centerY;
         double oldX = currentX;
         double oldY = currentY;
 
-        // Set Jrepeat center
         centerX = currentX;
         centerY = currentY;
-        // stack added 4/7/2026 to support nested Brepeats.
-        for (int i = 0; i < times; i++) {
 
-            // currentIteration = i;
+        for (int i = 0; i < times; i++) {
             iterationStack.push(i);
             insideJrepeat = true;
 
             for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
-
                 String stmtCode = visit(stmt);
-
                 if (stmtCode != null && !stmtCode.isBlank()) {
                     sb.append(stmtCode);
                 }
@@ -540,21 +438,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         insideJrepeat = !iterationStack.isEmpty();
-        // fixed 4/6/2026
-        // Restore state
         centerX = oldCenterX;
         centerY = oldCenterY;
-        // currentX = oldX;
-        // currentY = oldY;
-        // do not restore current x and y in this case. so the tracker stays at the
-        // final position
         return sb.toString();
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitIf_statement(JupitoreParser.If_statementContext ctx) {
         String condition = visit(ctx.condition());
@@ -576,18 +464,25 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return sb.toString();
     }
 
-    // Handle LAYER block
     @Override
     public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
         int layers = Integer.parseInt(ctx.NUMBER().getText());
-        LayerHandler layerHandler = new LayerHandler(this, settings);
-        return layerHandler.handleLayer(layers, ctx.statement_block());
+        StringBuilder sb = new StringBuilder();
+        
+        for (int layer = 0; layer < layers; layer++) {
+            sb.append(emitLayerStart(layer));
+            for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+                String stmtCode = visit(stmt);
+                if (stmtCode != null && !stmtCode.isBlank()) {
+                    sb.append(stmtCode);
+                }
+            }
+            sb.append(emitLayerEnd());
+        }
+        
+        return sb.toString();
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitCondition(JupitoreParser.ConditionContext ctx) {
         String target = ctx.TARGET().getText();
@@ -607,27 +502,21 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return sensor + " " + op + " " + value;
     }
 
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitCoordList(JupitoreParser.CoordListContext ctx) {
-        // Reset temporary storage
         targetX = Double.NaN;
         targetY = Double.NaN;
         targetZ = Double.NaN;
         hasManualE = false;
         manualEValue = 0.0;
 
-        // First pass: collect all coordinates
         for (JupitoreParser.CoordContext coordCtx : ctx.coord()) {
             visit(coordCtx);
         }
 
-        // Build the output string
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
+        
         if (!Double.isNaN(targetX)) {
             sb.append(" X").append(String.format("%.3f", targetX));
             isMove = true;
@@ -641,11 +530,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             isMove = true;
         }
 
-        // Decide about extrusion
         if (hasManualE) {
             sb.append(" E").append(String.format("%.3f", manualEValue));
         } else if (autoExtrudeEnabled && isMove) {
-            // Auto‑extrude: compute distance from current position to target
             double dx = Double.isNaN(targetX) ? 0 : targetX - currentX;
             double dy = Double.isNaN(targetY) ? 0 : targetY - currentY;
             double dz = Double.isNaN(targetZ) ? 0 : targetZ - currentZ;
@@ -653,9 +540,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             double autoE = settings.calculateExtrusion(distance);
             sb.append(" E").append(String.format("%.3f", autoE));
         }
-        // else: no extrusion (travel move)
 
-        // Update current position
         if (!Double.isNaN(targetX))
             currentX = targetX;
         if (!Double.isNaN(targetY))
@@ -666,17 +551,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return sb.toString().trim();
     }
 
-    protected boolean relativeMode = false;
-
-    protected double currentX = 0;
-    protected double currentY = 0;
-    protected double currentZ = 0;
-    protected boolean insideJrepeat = false;
-
-    /**
-     * @param ctx
-     * @return String
-     */
     @Override
     public String visitCoord(JupitoreParser.CoordContext ctx) {
         String axis = ctx.X() != null ? "X"
@@ -687,10 +561,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                     "ERROR: Z-axis movement is not allowed inside Layer blocks. " +
                             "Layer automatically manages Z-height.");
         }
-        // Handle E axis separately
+
         if (axis.equals("E")) {
             if (ctx.expr() != null) {
-                // Manual extrusion value
                 String op = ctx.getChild(1).getText();
                 String exprText = ctx.expr().getText();
                 boolean isInLoop = !iterationStack.isEmpty();
@@ -704,12 +577,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                 hasManualE = true;
                 manualEValue = finalE;
             }
-            // If there is no expression, we ignore (auto‑extrude will be handled later if
-            // enabled)
             return "";
         }
 
-        // For X, Y, Z axes
         String op = ctx.getChild(1).getText();
         String exprText = ctx.expr().getText();
         boolean isInLoop = !iterationStack.isEmpty();
@@ -724,10 +594,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         double newPos;
 
         if (relativeMode) {
-            // In relative mode, the expression gives the delta to add
             double delta = value;
-            // Apply operation (though for relative, =, +=, -= are usually the same as
-            // delta)
             switch (op) {
                 case "=":
                 case "+=":
@@ -743,11 +610,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             newPos = currentPos + delta;
         } else {
-            // Absolute mode: apply operation (e.g., +=, =, etc.) to current position
             newPos = applyOp(currentPos, op, value);
         }
 
-        // Store the target position (do NOT update currentX/Y/Z yet)
         switch (axis) {
             case "X":
                 targetX = newPos;
@@ -759,20 +624,17 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                 targetZ = newPos;
                 break;
         }
-        // After updating current position, check limits
+
         if (!Double.isNaN(targetX))
             limiter.checkAndMove("X", targetX);
         if (!Double.isNaN(targetY))
             limiter.checkAndMove("Y", targetY);
         if (!Double.isNaN(targetZ))
             limiter.checkAndMove("Z", targetZ);
+
         return "";
     }
 
-    /**
-     * @param axis
-     * @return double
-     */
     private double getCurrent(String axis) {
         switch (axis) {
             case "X":
@@ -787,17 +649,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return 0;
     }
 
-    /**
-     * @param current
-     * @param op
-     * @param value
-     * @return double
-     */
-    // Helper to apply the operation and update current position
     private double applyOp(double current, String op, double value) {
         switch (op) {
             case "=":
-                return value; // Set the value
+                return value;
             case "+=":
                 return current + value;
             case "-=":
@@ -811,19 +666,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
     }
 
-    /**
-     * @return String
-     */
     @Override
     protected String defaultResult() {
         return "";
     }
 
-    /**
-     * @param aggregate
-     * @param nextResult
-     * @return String
-     */
     @Override
     protected String aggregateResult(String aggregate, String nextResult) {
         if (aggregate == null)
@@ -842,5 +689,4 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         System.out.println("ASSIGN: " + varName + " = " + value);
         return "";
     }
-
 }
