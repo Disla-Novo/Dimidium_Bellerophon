@@ -29,7 +29,7 @@ jobs:
         cache: maven
         
     - name: Compile, test, and package
-     run: ./mvnw -B clean package --file pom.xml
+      run: ./mvnw -B clean package --file pom.xml
       # changed clean test to clean package.
     # Optional: Uploads the full dependency graph to GitHub for security alerts
    
