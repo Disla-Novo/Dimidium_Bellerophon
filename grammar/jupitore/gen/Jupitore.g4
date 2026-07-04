@@ -144,6 +144,7 @@ coord
     | expr op=('+'|'-') expr          # addSub    // Addition/Subtraction
     | NUMBER                          # number    
     | 'i'                             # iterator  //The loop variable
+    | PI                              # pi        // The mathematical constant π
     | ID                              # variable  // Variable reference 6/17/2026
     ;
 
