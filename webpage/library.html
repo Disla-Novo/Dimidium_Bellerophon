@@ -1,137 +1,255 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bellerophon | Library & Interactive Docs</title>
-    <link rel="stylesheet" href="/styles/library.css">
-</head>
-<body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bellerophon | Interactive Library</title>
+    <link rel="stylesheet" href="/styles/library.css" />
+  </head>
+  <body>
     <div class="top-logo">
-        <a href="ide.html" class="logo-link">
-            <div class="logo-box">BELLEROPHON</div>
-        </a>
+      <a href="ide.html" class="logo-link">
+        <div class="logo-box">BELLEROPHON</div>
+      </a>
     </div>
 
     <div class="docs-container">
-
-        <!-- ===== SIDEBAR: Grammar Reference ===== -->
-        <aside class="docs-sidebar">
-            <h3>Grammar Reference</h3>
-            <div id="grammar-list">
-                <!-- Macro Structure -->
-                <div class="grammar-category">
-                    <h4>Macro Structure</h4>
-                    <div class="grammar-item">M.title <span>"Macro Name"</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item">M.call <span>"MacroName"</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item">M.end <span>end macro</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Motion -->
-                <div class="grammar-category">
-                    <h4>Motion</h4>
-                    <div class="grammar-item" data-command="home">Home <span>or Home -> x= y= z=</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="move">Move <span>left | right | center</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="moveto">MoveTo <span>x= y= z= e=;</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="absolute">Absolute <span>G90 positioning</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="relative">Relative <span>G91 positioning</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="relativeextrusion">RelativeExtrusion <span>M83</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="resetextruder">ResetExtruder <span>G92 E0</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Temperature -->
-                <div class="grammar-category">
-                    <h4>Temperature</h4>
-                    <div class="grammar-item" data-command="heat">Heat <span>bed|extruder|chamber = temp (waits)</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="set-heater">Set_Heater_Temperature <span>bed|extruder|chamber = temp (no wait)</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="waitfortemp">WaitForTemp <span>bed|extruder|chamber</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="cooldown">Cooldown <span>all | bed | extruder | chamber</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Printer Control -->
-                <div class="grammar-category">
-                    <h4>Printer Control</h4>
-                    <div class="grammar-item" data-command="setspeed">SetSpeed <span>= value</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="setfan">SetFan <span>= speed</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="timeout">TIMEOUT_SET <span>seconds</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="dwell">Dwell <span>number (s | ms)</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="pause">Pause <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="resume">Resume <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Calibration -->
-                <div class="grammar-category">
-                    <h4>Calibration</h4>
-                    <div class="grammar-item" data-command="level">Level <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="bedmesh">BedMeshCalibrate <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="loadbedmesh">LoadBedMesh <span>"profile"</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="probe">ProbeCalibrate <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="pressureadvance">SetPressureAdvance <span>value</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Flow Control -->
-                <div class="grammar-category">
-                    <h4>Flow Control & Loops</h4>
-                    <div class="grammar-item" data-command="if">if condition <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="endif">endif <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="repeat">repeat count <span>…</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="brepeat">brepeat count <span>uses i</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="end">end <span>end loop</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="respond">Respond MSG <span>"message"</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- Expressions -->
-                <div class="grammar-category">
-                    <h4>Expressions</h4>
-                    <div class="grammar-item">Functions <span>sin | cos | tan | sqrt | abs | sign</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item">Constants <span>pi | i (iterator)</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item">Operators <span>+ - * / ^</span> <a href="#" class="add-btn">+</a></div>
-                </div>
-
-                <!-- File Execution -->
-                <div class="grammar-category">
-                    <h4>File Execution</h4>
-                    <div class="grammar-item" data-command="printfile">PRINTFILE <span>"file.gcode"</span> <a href="#" class="add-btn">+</a></div>
-                    <div class="grammar-item" data-command="insertgcode">InsertGCode <span>"file.gcode" [reference]</span> <a href="#" class="add-btn">+</a></div>
-                </div>
+      <aside class="docs-sidebar">
+        <h3>Grammar Reference</h3>
+        <div id="grammar-list">
+          <div class="grammar-category">
+            <h4>Macro Structure</h4>
+            <div class="grammar-item" data-command="m-title">
+              M.title <span>"Macro Name"</span>
+              <a href="#" class="add-btn">+</a>
             </div>
-        </aside>
-
-        <!-- ===== MAIN: Interactive Demo ===== -->
-        <main class="docs-main">
-            <div class="demo-panel">
-                <div class="demo-header">
-                    <h2 id="demo-title">Select a command</h2>
-                    <p id="demo-description">Click any command on the left to see an example and compile it.</p>
-                </div>
-
-                <div class="demo-editor">
-                    <div class="editor-header">
-                        <span>Example</span>
-                        <button class="btn-ide" id="open-in-ide" style="display:none;">Open in IDE</button>
-                    </div>
-                    <textarea id="demo-input" spellcheck="false" readonly></textarea>
-                </div>
-
-                <div class="demo-actions">
-                    <button class="btn-compile" id="demo-compile">Compile Example</button>
-                    <span class="demo-status" id="demo-status">Ready</span>
-                </div>
-
-                <div class="demo-output">
-                    <div class="output-header">
-                        <span>Generated Output (Klipper)</span>
-                    </div>
-                    <pre id="demo-output-content"><span class="placeholder">Compile to see output</span></pre>
-                </div>
+            <div class="grammar-item" data-command="m-call">
+              M.call <span>"MacroName"</span> <a href="#" class="add-btn">+</a>
             </div>
-        </main>
+            <div class="grammar-item" data-command="m-end">
+              M.end <span>end macro</span> <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
 
+          <div class="grammar-category">
+            <h4>Motion</h4>
+            <div class="grammar-item" data-command="home">
+              Home <span>homes all axes</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="home-coord">
+              Home with Coordinates <span>Home -> x= y= z=</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="move">
+              Move <span>left | right | center</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="moveto">
+              MoveTo <span>x= y= z= e=</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="absolute">
+              Absolute <span>G90 positioning</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="relative">
+              Relative <span>G91 positioning</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="relativeextrusion">
+              RelativeExtrusion <span>M83</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="resetextruder">
+              ResetExtruder <span>G92 E0</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Temperature</h4>
+            <div class="grammar-item" data-command="heat">
+              Heat <span>bed|extruder|chamber = temp (waits)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="set-heater">
+              Set_Heater_Temperature
+              <span>bed|extruder|chamber = temp (no wait)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="waitfortemp">
+              WaitForTemp <span>bed|extruder|chamber</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="cooldown">
+              Cooldown <span>all | bed | extruder | chamber</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Printer Control</h4>
+            <div class="grammar-item" data-command="setspeed">
+              SetSpeed <span>= value</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="setfan">
+              SetFan <span>= speed</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="timeout">
+              TIMEOUT_SET <span>seconds</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="dwell">
+              Dwell <span>number (s | ms)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="pause">
+              Pause <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="resume">
+              Resume <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Calibration</h4>
+            <div class="grammar-item" data-command="level">
+              Level <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="bedmesh">
+              BedMeshCalibrate <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="loadbedmesh">
+              LoadBedMesh <span>"profile"</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="probe">
+              ProbeCalibrate <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="pressureadvance">
+              SetPressureAdvance <span>value</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Flow Control & Loops</h4>
+            <div class="grammar-item" data-command="if">
+              if condition <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="endif">
+              endif <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="repeat">
+              repeat count <span>…</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="brepeat">
+              Brepeat count <span>uses i</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="end">
+              end <span>end loop</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="respond">
+              Respond MSG <span>"message"</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Expressions</h4>
+            <div class="grammar-item" data-command="functions">
+              Functions <span>sin | cos | tan | sqrt | abs | sign</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="constants">
+              Constants <span>pi | i (iterator)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="operators">
+              Operators <span>+ - * / ^</span> <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>Compile-Time Settings</h4>
+            <div class="grammar-item" data-command="setnozzle">
+              SetNozzle <span>= value</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="setfilament">
+              SetFilament <span>= value</span> <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="setlayerheight">
+              SetLayerHeight <span>= value</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="setextrusionmultiplier">
+              SetExtrusionMultiplier <span>= value</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="enableautoextrude">
+              EnableAutoExtrude <span>= 1 | 0</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="layer">
+              Layer <span>count ... end</span> <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
+            <h4>File Execution</h4>
+            <div class="grammar-item" data-command="printfile">
+              PRINTFILE <span>"file.gcode"</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="insertgcode-embed">
+              InsertGCode (Embed) <span>"file.gcode"</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="insertgcode-reference">
+              InsertGCode (Reference) <span>"file.gcode" reference</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="docs-main">
+        <div class="demo-panel">
+          <div class="demo-header">
+            <h2 id="demo-title">Select a command</h2>
+            <p id="demo-description">
+              Click any command on the left to see an example and compile it.
+            </p>
+          </div>
+
+          <div class="demo-editor">
+            <div class="editor-header">
+              <span>Example</span>
+              <span class="editor-hint">Ctrl+Enter to compile</span>
+            </div>
+            <textarea id="demo-input" spellcheck="false"></textarea>
+          </div>
+
+          <div class="demo-actions">
+            <button class="btn-compile" id="demo-compile">
+              Compile Example
+            </button>
+            <span class="demo-status" id="demo-status">Ready</span>
+          </div>
+
+          <div class="demo-output">
+            <div class="output-header">
+              <span>Generated Output (Klipper)</span>
+            </div>
+            <pre
+              id="demo-output-content"
+            ><span class="placeholder">Compile to see output</span></pre>
+          </div>
+        </div>
+      </main>
     </div>
 
     <script src="/scripts/ide_scripts/firmware.js"></script>
     <script src="/scripts/ide_scripts/mscript.js"></script>
     <script src="/scripts/reference_scripts/library.js"></script>
-</body>
+  </body>
 </html>
