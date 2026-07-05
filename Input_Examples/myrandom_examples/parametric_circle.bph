@@ -1,0 +1,16 @@
+M.title "Parametric Circle"
+    Absolute
+    SetSpeed = 1500
+    Home
+    radius = 50
+    center_x = 100
+    center_y = 100
+    angle = 0
+    Brepeat 360
+        pos_x = center_x + radius * cos(angle)
+        pos_y = center_y + radius * sin(angle)
+        MoveTo x=pos_x y=pos_y z=0.2
+        angle = angle + 1
+    end
+    Home
+M.end
