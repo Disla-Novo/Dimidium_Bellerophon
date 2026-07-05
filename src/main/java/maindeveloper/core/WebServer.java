@@ -170,11 +170,11 @@ public class WebServer {
 
     }
 
-    /**
-     * @param code
-     * @return String
-     * @throws Exception
-     */
+   /**
+ * @param input the compilation request containing code, mode, and printer profile
+ * @return String G-code output
+ * @throws Exception if compilation fails
+ */
     // ---- Compile Jupitore to G-code ---- YES
     // using Pages method to circumvent the data issue where it crashes if we have
     // too many lines of output
