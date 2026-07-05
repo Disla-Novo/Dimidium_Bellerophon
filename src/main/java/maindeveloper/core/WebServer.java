@@ -86,7 +86,7 @@ public class WebServer {
                 String message = e.getMessage();
                 String hint = "";
 
-                //  helpful hints for common errors
+                // helpful hints for common errors
                 if (message != null) {
                     if (message.contains("out of bounds")) {
                         hint = " → Check your PrinterProfile boundary values.";
@@ -140,15 +140,13 @@ public class WebServer {
             ScanRequest request = gson.fromJson(req.body(), ScanRequest.class);
             ScanResponse response = new ScanResponse();
             response.files = new ArrayList<>();
-            
+
             if (request.folderPath != null && !request.folderPath.isEmpty()) {
                 File folder = new File(request.folderPath);
                 if (folder.exists() && folder.isDirectory()) {
-                    File[] gcodeFiles = folder.listFiles((dir, name) -> 
-                        name.toLowerCase().endsWith(".gcode") || 
-                        name.toLowerCase().endsWith(".g") ||
-                        name.toLowerCase().endsWith(".gc")
-                    );
+                    File[] gcodeFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".gcode") ||
+                            name.toLowerCase().endsWith(".g") ||
+                            name.toLowerCase().endsWith(".gc"));
                     if (gcodeFiles != null) {
                         for (File f : gcodeFiles) {
                             response.files.add(f.getName());
@@ -165,18 +163,18 @@ public class WebServer {
                 response.success = false;
                 response.error = "No folder path provided";
             }
-            
+
             res.type("application/json");
             return gson.toJson(response);
         });
 
     }
 
-    /**
-     * @param code
-     * @return String
-     * @throws Exception
-     */
+   /**
+ * @param input the compilation request containing code, mode, and printer profile
+ * @return String G-code output
+ * @throws Exception if compilation fails
+ */
     // ---- Compile Jupitore to G-code ---- YES
     // using Pages method to circumvent the data issue where it crashes if we have
     // too many lines of output
@@ -185,9 +183,14 @@ public class WebServer {
     // performance.
     private static String compileJupitore(CompileRequest input) throws Exception {
 
+        // added null check to prevent NPE when input.code is missing
+        if (input == null || input.code == null) {
+            throw new IllegalArgumentException("Compilation request must contain code.");
+        }
+
         System.out.println("=== DEBUG: Compile Request ===");
         System.out.println("Mode: " + input.mode);
-        System.out.println("Code length: " + (input.code != null ? input.code.length() : 0));
+        System.out.println("Code length: " + input.code.length());
         System.out.println("Profile received: " + (input.profile != null ? "YES" : "NULL"));
         if (input.profile != null) {
             System.out.println("  maxX = " + input.profile.getMaxX());

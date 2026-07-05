@@ -75,10 +75,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected abstract String emitLoadBedMesh(String profile);
     protected abstract String emitProbeCalibrate();
     protected abstract String emitSetPressureAdvance(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetNozzle(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetFilament(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetLayerHeight(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetExtrusionMultiplier(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitEnableAutoExtrude(boolean enabled);
     protected abstract String emitIfStart(String condition);
     protected abstract String emitIfEnd();
@@ -417,7 +422,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitRepeat_statement(JupitoreParser.Repeat_statementContext ctx) {
-        int times = Integer.parseInt(ctx.NUMBER().getText());
+          int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
         StringBuilder sb = new StringBuilder();
 
         boolean oldInsideJrepeat = insideJrepeat;
@@ -435,13 +440,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
-        int times = Integer.parseInt(ctx.NUMBER().getText());
+          int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
         StringBuilder sb = new StringBuilder();
 
         double oldCenterX = centerX;
         double oldCenterY = centerY;
-        double oldX = currentX;
-        double oldY = currentY;
+        
 
         centerX = currentX;
         centerY = currentY;
@@ -488,7 +492,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
-        int layers = Integer.parseInt(ctx.NUMBER().getText());
+         int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
         StringBuilder sb = new StringBuilder();
          
         for (int layer = 0; layer < layers; layer++) {
@@ -787,4 +791,14 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
                             "  " + e.getMessage());
         }
     }
+
+    // added helper method 
+
+    private int parseIntSafe(String value, String context) {
+    try {
+        return Integer.parseInt(value);
+    } catch (NumberFormatException e) {
+        throw new RuntimeException("Invalid number at " + context + ": " + value);
+    }
+}
 }
