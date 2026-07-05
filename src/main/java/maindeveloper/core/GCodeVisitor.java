@@ -75,10 +75,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected abstract String emitLoadBedMesh(String profile);
     protected abstract String emitProbeCalibrate();
     protected abstract String emitSetPressureAdvance(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetNozzle(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetFilament(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetLayerHeight(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitSetExtrusionMultiplier(double value);
+    @SuppressWarnings("unused")
     protected abstract String emitEnableAutoExtrude(boolean enabled);
     protected abstract String emitIfStart(String condition);
     protected abstract String emitIfEnd();
