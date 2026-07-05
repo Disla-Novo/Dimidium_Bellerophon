@@ -27,43 +27,49 @@
     </div>
 
     <script>
-      // DASHBOARD LOGIC
-const params = new URLSearchParams(window.location.search);
-const printerIp = params.get("ip");
-const frame = document.getElementById("printer-frame");
+      const params = new URLSearchParams(window.location.search);
+      const printerIp = params.get("ip");
+      const frame = document.getElementById("printer-frame");
 
-function isValidPrinterUrl(url) {
-  // Must start with http:// or https://
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    return false;
-  }
-  
-  try {
-    const parsed = new URL(url);
-    // Block javascriptXXXXXX
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
+      function isValidPrinterUrl(url) {
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          return false;
+        }
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return false;
+          }
+          return true;
+        } catch {
+          return false;
+        }
+      }
 
-if (printerIp) {
-  // If the user didn't include http, add it automatically
-  let formattedIp = printerIp.startsWith("http") ? printerIp : `http://${printerIp}`;
-  
-  if (isValidPrinterUrl(formattedIp)) {
-    frame.src = formattedIp;
-  } else {
-    alert("Invalid printer IP address.");
-    window.location.href = "hub.html";
-  }
-} else {
-  alert("No printer IP found!");
-  window.location.href = "hub.html";
-}
+      if (printerIp) {
+        let formattedIp = printerIp.startsWith("http") ? printerIp : `http://${printerIp}`;
+
+        if (isValidPrinterUrl(formattedIp)) {
+          try {
+            const safeUrl = new URL(formattedIp);
+            if (safeUrl.protocol === "http:" || safeUrl.protocol === "https:") {
+              frame.setAttribute("src", safeUrl.href);
+            } else {
+              alert("Invalid printer IP address.");
+              window.location.replace("hub.html");
+            }
+          } catch {
+            alert("Invalid printer IP address.");
+            window.location.replace("hub.html");
+          }
+        } else {
+          alert("Invalid printer IP address.");
+          window.location.replace("hub.html");
+        }
+      } else {
+        alert("No printer IP found!");
+        window.location.replace("hub.html");
+      }
     </script>
     <script src="/scripts/gravity_scripts/hubfolder.js"></script>
   </body>
