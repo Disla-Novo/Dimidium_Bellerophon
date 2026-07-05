@@ -701,16 +701,21 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return aggregate + nextResult;
     }
 
-    @Override
-    public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
-        String varName = ctx.ID().getText();
-        Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-        double value = compute.visit(ctx.expr());
-        variables.put(varName, value);
-        System.out.println("ASSIGN: " + varName + " = " + value);
-        return "";
+    // added to deal with variable errors 7/2/26
+   @Override
+public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
+    String varName = ctx.ID().getText();
+    if ("x y z e".contains(varName.toLowerCase())) {
+        throw new RuntimeException(
+            "ERROR: '" + varName + "' is a reserved axis name. " +
+            "Use a different variable name (e.g. pos_x, my_x).");
     }
-
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    variables.put(varName, value);
+    System.out.println("ASSIGN: " + varName + " = " + value);
+    return "";
+}
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
     public void setSourceFilePath(String path) {
         this.sourceFilePath = path;

@@ -1,17 +1,20 @@
-body {
+/* dark.css */
+
+body.theme-dark {
   background-color: #0f1115;
   color: #d6d6d6;
 }
 
-#jupitore-app {
+body.theme-dark #jupitore-app {
   background: #0f1115;
 }
 
-.sidebar {
+body.theme-dark .sidebar {
   background: #14161c;
   border-right: 1px solid #23262e;
 }
-#line-numbers {
+
+body.theme-dark #line-numbers {
   position: absolute;
   top: 0;
   left: 0;
@@ -30,117 +33,111 @@ body {
   overflow: hidden;
 }
 
-.brand .logo-box {
+body.theme-dark .brand .logo-box {
   color: #d46a6a;
   letter-spacing: 1px;
 }
 
-.sidebar-btn {
+body.theme-dark .sidebar-btn {
   background: #1a1d24;
   color: #b5b5b5;
   border: 1px solid #23262e;
 }
 
-.sidebar-btn:hover {
+body.theme-dark .sidebar-btn:hover {
   background: #22262f;
   color: #ffffff;
   border-color: #d46a6a;
 }
 
-.toolbar {
+body.theme-dark .toolbar {
   background: #14161c;
   border-bottom: 1px solid #23262e;
 }
 
-.run-btn {
+body.theme-dark .run-btn {
   background: #d46a6a;
   color: #0f1115;
 }
 
-.run-btn:hover {
+body.theme-dark .run-btn:hover {
   background: #e07a7a;
 }
 
-.clear-btn {
+body.theme-dark .clear-btn {
   background: #1a1d24;
   color: #b5b5b5;
   border: 1px solid #23262e;
 }
 
-.clear-btn:hover {
+body.theme-dark .clear-btn:hover {
   background: #232834;
   color: #ffffff;
 }
 
-/* SETTINGS BUTTON */
-.settings-btn {
+body.theme-dark .settings-btn {
   background: #1a1d24;
   color: #b5b5b5;
   border: 1px solid #23262e;
 }
 
-.settings-btn:hover {
+body.theme-dark .settings-btn:hover {
   border-color: #d46a6a;
   color: #ffffff;
 }
 
-#file-name-editable {
+body.theme-dark #file-name-editable {
   color: #e0e0e0;
 }
 
-/* PANES */
-.pane {
+body.theme-dark .pane {
   background: #0f1115;
 }
 
-.pane-label {
+body.theme-dark .pane-label {
   background: #14161c;
   color: #8a8f98;
   border-bottom: 1px solid #23262e;
 }
 
-/* EDITOR AREA */
-#code-overlay {
+body.theme-dark #code-overlay {
   color: #d6d6d6;
 }
 
-#code-input {
+body.theme-dark #code-input {
   caret-color: #d6d6d6;
 }
 
-/* OUTPUT */
-.output-view {
+body.theme-dark .output-view {
   background: #0f1115;
   color: #d6d6d6;
 }
 
-/* CONSOLE */
-.console {
+body.theme-dark .console {
   background: #14161c;
   border-top: 1px solid #23262e;
   color: #a0a0a0;
 }
 
-#console-log .log-entry {
+body.theme-dark #console-log .log-entry {
   color: #a0a0a0;
 }
 
-#console-log .log-entry.error {
+body.theme-dark #console-log .log-entry.error {
   color: #ff5c5c;
 }
 
-#console-log .log-entry.success {
+body.theme-dark #console-log .log-entry.success {
   color: #7bd88f;
 }
 
-/* MODALS */
-.modal-content {
+body.theme-dark .modal-content {
   background: #14161c;
   color: #d6d6d6;
   border: 1px solid #23262e;
 }
 
-.modal-form input {
+body.theme-dark .modal-form input {
   width: 100%;
   padding: 6px;
   background: #0a0a0f;
@@ -148,18 +145,13 @@ body {
   color: #fff;
   border-radius: 4px;
 }
-.modal-content input {
+
+body.theme-dark .modal-content input {
   background: #0f1115;
   color: #ebe5e5;
   border: 1px solid #23262e;
 }
 
-.modal-content input:focus {
+body.theme-dark .modal-content input:focus {
   border-color: #d46a6a;
-}
-
-/* dark.css */
-/* This only applies when theme logic switches to dark */
-body.theme-dark {
-  background-color: #0f0f1f;
 }
