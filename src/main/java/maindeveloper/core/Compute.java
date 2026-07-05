@@ -19,7 +19,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     // number literal
     @Override
     public Double visitNumber(JupitoreParser.NumberContext ctx) {
-        return Double.parseDouble(ctx.NUMBER().getText());
+        return parseDoubleSafe(ctx.NUMBER().getText(), "number literal");
     }
 
     /**
@@ -148,4 +148,13 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         return 0.0;
     }
 
+
+// added helper method 
+    private double parseDoubleSafe(String value, String context) {
+    try {
+        return Double.parseDouble(value);
+    } catch (NumberFormatException e) {
+        throw new RuntimeException("Invalid number at " + context + ": " + value);
+    }
+}
 }
