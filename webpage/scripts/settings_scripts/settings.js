@@ -16,6 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
     window.gcodeFileList = gcodeFileList;
   }
 
+  function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
   function getThemeLabel(key) {
     return window.THEME_MAP?.[key]?.label || key;
   }
@@ -26,12 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.innerHTML = "";
 
-  
     container.style.maxHeight = "400px";
     container.style.overflowY = "auto";
-    container.style.paddingRight = "20px"; 
+    container.style.paddingRight = "20px";
     container.style.scrollbarWidth = "thin";
-container.style.scrollbarColor = "#000000 #d3c9c6";
+    container.style.scrollbarColor = "#000000 #d3c9c6";
 
     Object.entries(window.THEME_MAP).forEach(([key, theme]) => {
       const div = document.createElement("div");
@@ -42,7 +48,7 @@ container.style.scrollbarColor = "#000000 #d3c9c6";
 
       div.innerHTML = `
                 <div class="theme-preview" style="background-color: ${previewColor};"></div>
-                <span>${theme.label}</span>
+                <span>${escapeHtml(theme.label)}</span>
             `;
 
       div.addEventListener("click", () => {
@@ -69,7 +75,7 @@ container.style.scrollbarColor = "#000000 #d3c9c6";
   }
 
   function renderGcodeSettings() {
-    //  from storage every render so the list survives page refresh
+    // from storage every render so the list survives page refresh
     const savedFiles = localStorage.getItem("bellerophon-gcode-files");
     if (savedFiles && gcodeFileList.length === 0) {
       gcodeFileList = JSON.parse(savedFiles);
@@ -83,54 +89,70 @@ container.style.scrollbarColor = "#000000 #d3c9c6";
     const hasFiles = gcodeFileList && gcodeFileList.length > 0;
     const fileCount = gcodeFileList.length;
 
+    const escapedPath = escapeHtml(gcodeFolderPath);
+
     container.innerHTML = `
       <div class="gcode-folder-setting">
         <div class="folder-status-row">
           <div class="folder-status">
-            ${hasFolder ? 
-              `<span class="folder-active">${gcodeFolderPath}</span>` : 
-              `<span class="folder-inactive">No folder selected</span>`
+            ${
+              hasFolder
+                ? `<span class="folder-active">${escapedPath}</span>`
+                : `<span class="folder-inactive">No folder selected</span>`
             }
           </div>
           <div class="folder-actions">
-            ${hasFolder ? `<button id="removeFolderBtn" class="remove-folder-btn">✕ Remove</button>` : ''}
+            ${hasFolder ? `<button id="removeFolderBtn" class="remove-folder-btn">✕ Remove</button>` : ""}
           </div>
         </div>
         
         <!-- Manual path input -->
         <div class="folder-manual-input">
           <input type="text" id="manualFolderPath" 
-                 value="${gcodeFolderPath}" 
+                 value="${escapedPath}" 
                  placeholder="Paste full path: D:/gcode_folder or /home/user/gcode"
                  class="folder-path-input" />
           <button id="saveManualFolderBtn" class="save-folder-btn">Save Path</button>
         </div>
         
-        ${hasFolder ? `
+        ${
+          hasFolder
+            ? `
           <div class="folder-file-count">
-            ${hasFiles ? 
-              `<span class="file-count">${fileCount} .gcode files found</span>` : 
-              `<span class="file-count-empty">No .gcode files in this folder</span>`
+            ${
+              hasFiles
+                ? `<span class="file-count">${escapeHtml(String(fileCount))} .gcode files found</span>`
+                : `<span class="file-count-empty">No .gcode files in this folder</span>`
             }
           </div>
-        ` : ''}
+        `
+            : ""
+        }
         
-        ${hasFolder && hasFiles ? `
+        ${
+          hasFolder && hasFiles
+            ? `
           <div class="gcode-file-list-container">
             <button id="gcodeFileToggle" class="gcode-file-list-toggle">
-              <span>📄 Show Files (${fileCount})</span>
-              <span class="arrow ${fileListOpen ? 'open' : ''}">▼</span>
+              <span>📄 Show Files (${escapeHtml(String(fileCount))})</span>
+              <span class="arrow ${fileListOpen ? "open" : ""}">▼</span>
             </button>
-            <div id="gcodeFileDropdown" class="gcode-file-list-dropdown ${fileListOpen ? 'open' : ''}">
-              ${gcodeFileList.map(f => `
+            <div id="gcodeFileDropdown" class="gcode-file-list-dropdown ${fileListOpen ? "open" : ""}">
+              ${gcodeFileList
+                .map(
+                  (f) => `
                 <div class="file-item">
                   <span class="file-icon"></span>
-                  <span class="file-name">${f}</span>
+                  <span class="file-name">${escapeHtml(f)}</span>
                 </div>
-              `).join('')}
+              `,
+                )
+                .join("")}
             </div>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
     `;
 
@@ -173,40 +195,45 @@ container.style.scrollbarColor = "#000000 #d3c9c6";
     gcodeFolderPath = "";
     gcodeFileList = [];
     fileListOpen = false;
-    
+
     localStorage.removeItem("bellerophon-gcode-folder");
     localStorage.removeItem("bellerophon-gcode-files");
-    
+
     window.gcodeFileList = [];
-    
+
     renderGcodeSettings();
-    
+
     addLogMessage("G-code folder removed.");
   }
 
   // Backend scan for manual path
   function scanFolderViaBackend(folderPath) {
-    fetch('/scan-folder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ folderPath })
+    fetch("/scan-folder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folderPath }),
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        gcodeFileList = data.files;
-        localStorage.setItem("bellerophon-gcode-files", JSON.stringify(gcodeFileList));
-        updateGcodeAutocomplete(gcodeFileList);
-        renderGcodeSettings();
-        addLogMessage(`Found ${gcodeFileList.length} .gcode files in "${folderPath}"`);
-      } else {
-        addLogMessage("Error scanning folder: " + data.error);
-      }
-    })
-    .catch(err => {
-      console.error("Error scanning folder:", err);
-      addLogMessage("Error scanning folder: " + err.message);
-    });
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          gcodeFileList = data.files;
+          localStorage.setItem(
+            "bellerophon-gcode-files",
+            JSON.stringify(gcodeFileList),
+          );
+          updateGcodeAutocomplete(gcodeFileList);
+          renderGcodeSettings();
+          addLogMessage(
+            `Found ${gcodeFileList.length} .gcode files in "${folderPath}"`,
+          );
+        } else {
+          addLogMessage("Error scanning folder: " + data.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error scanning folder:", err);
+        addLogMessage("Error scanning folder: " + err.message);
+      });
   }
 
   function updateGcodeAutocomplete(files) {
@@ -216,7 +243,7 @@ container.style.scrollbarColor = "#000000 #d3c9c6";
   function open() {
     modal.style.display = "block";
 
-    //  folder path and file list from storage every time the modal opens
+    // folder path and file list from storage every time the modal opens
     gcodeFolderPath = localStorage.getItem("bellerophon-gcode-folder") || "";
     const savedFiles = localStorage.getItem("bellerophon-gcode-files");
     if (savedFiles) {

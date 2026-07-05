@@ -32,6 +32,18 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         return (double) iteration;
     }
 
+    
+    /**
+     * @param ctx
+     * @return Double
+     */
+    // pi constant
+    @Override
+    public Double visitPi(JupitoreParser.PiContext ctx) {
+        return Math.PI;
+    }
+
+    
     /**
      * @param ctx
      * @return Double

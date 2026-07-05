@@ -40,3 +40,11 @@ jobs:
       # changed clean test to clean package.
     # Optional: Uploads the full dependency graph to GitHub for security alerts
    
+    - name: Generate JaCoCo coverage report
+      run: mvn jacoco:report
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: target/site/jacoco/
