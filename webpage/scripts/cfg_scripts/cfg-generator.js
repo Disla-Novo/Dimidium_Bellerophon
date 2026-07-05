@@ -84,6 +84,7 @@ const boards = {
   },
 };
 
+// Generate based on form inputs
 function generateConfig() {
   const boardKey = document.getElementById("board").value;
   const driverType = document.getElementById("driver").value;
@@ -137,6 +138,7 @@ function generateConfig() {
   cfg += `position_max: ${bedY}\n`;
   cfg += `homing_speed: 50\n\n`;
 
+  // Stepper Z section — depends on whether a probe is used
   if (probeType !== "none") {
     cfg += `[stepper_z]\n`;
     cfg += `step_pin: ${board.z_step}\n`;
@@ -158,7 +160,8 @@ function generateConfig() {
     cfg += `position_endstop: 0\n`;
     cfg += `position_max: ${bedZ}\n\n`;
   }
-  // Stepper driver configuration
+
+  // TMC2209 driver configuration (SKR E3 Turbo uses per-axis UART pins)
   if (driverType === "tmc2209") {
     if (boardKey === "skr-e3-turbo") {
       cfg += `[tmc2209 stepper_x]\nuart_pin: ${board.uart_pin_x}\nuart_address: ${board.uart_addr_x}\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
@@ -171,6 +174,7 @@ function generateConfig() {
     }
   }
 
+  // Extruder configuration
   cfg += `[extruder]\n`;
   if (boardKey === "skr-e3-turbo") {
     cfg += `step_pin: ${board.e_step}\ndir_pin: ${board.e_dir}\nenable_pin: ${board.e_enable}\n`;
@@ -179,6 +183,7 @@ function generateConfig() {
   }
   cfg += `microsteps: 16\nrotation_distance: 33.500\nnozzle_diameter: 0.400\nfilament_diameter: 1.750\nheater_pin: PC8\nsensor_type: EPCOS 100K B57560G104F\nsensor_pin: PA0\ncontrol: pid\npid_Kp: 21.527\npid_Ki: 1.063\npid_Kd: 108.982\nmin_temp: 0\nmax_temp: 250\n\n`;
 
+  // TMC2209 extruder
   if (driverType === "tmc2209") {
     if (boardKey === "skr-e3-turbo") {
       cfg += `[tmc2209 extruder]\nuart_pin: ${board.uart_pin_e}\nuart_address: ${board.uart_addr_e}\nrun_current: 0.650\nstealthchop_threshold: 999999\n\n`;
@@ -187,17 +192,20 @@ function generateConfig() {
     }
   }
 
+  // Heater bed
   cfg += `[heater_bed]\nheater_pin: PC9\nsensor_type: ATC Semitec 104GT-2\nsensor_pin: PC4\ncontrol: pid\npid_Kp: 54.027\npid_Ki: 0.770\npid_Kd: 948.182\nmin_temp: 0\nmax_temp: 130\n\n`;
   cfg += `[heater_fan controller_fan]\npin: PB15\nheater: heater_bed\nheater_temp: 45.0\n\n`;
   cfg += `[heater_fan nozzle_cooling_fan]\npin: PC7\n\n`;
   cfg += `[fan]\npin: PC6\n\n`;
 
+  // BLTouch / CR-Touch support
   if (probeType === "bltouch") {
     cfg += `[bltouch]\nsensor_pin: ^PC14\ncontrol_pin: PA1\nx_offset: -40\ny_offset: -10\nz_offset: 2.0\n\n`;
   } else if (probeType === "cr-touch") {
     cfg += `[cr_touch]\nsensor_pin: ^PC14\ncontrol_pin: PA1\nx_offset: -40\ny_offset: -10\nz_offset: 2.0\n\n`;
   }
 
+  // Safe Z home and bed mesh (probe required)
   if (probeType !== "none") {
     const centerX = Math.floor(parseInt(bedX) / 2);
     const centerY = Math.floor(parseInt(bedY) / 2);
@@ -205,12 +213,14 @@ function generateConfig() {
     cfg += `[bed_mesh]\nspeed: 150\nhorizontal_move_z: 5\nmesh_min: 30,30\nmesh_max: ${parseInt(bedX) - 30},${parseInt(bedY) - 30}\nprobe_count: 5,5\n\n`;
   }
 
+  // Board pins, display, and other hardware
   cfg += `[board_pins]\naliases:\n    EXP1_1=PB5, EXP1_3=PA9, EXP1_5=PA10, EXP1_7=PB8, EXP1_9=<GND>,\n    EXP1_2=PA15, EXP1_4=<RST>, EXP1_6=PB9, EXP1_8=PD6, EXP1_10=<5V>\n\n`;
   cfg += `[display]\nlcd_type: emulated_st7920\nspi_software_miso_pin: PD8\nspi_software_mosi_pin: PD6\nspi_software_sclk_pin: PB9\nen_pin: PB8\nencoder_pins: ^PA10, ^PA9\nclick_pin: ^!PA15\n\n`;
   cfg += `[output_pin beeper]\npin: PB5\n\n`;
   cfg += `[virtual_sdcard]\npath: ~/printer_data/gcodes\n\n`;
   cfg += `[pause_resume]\n\n[respond]\n\n[display_status]\n`;
 
+  // SKR E3 Turbo standby pins
   if (board.needs_standby_pins) {
     cfg += `\n[static_digital_output tmc_standby_pins]\npins: ${board.standby_pins}\n`;
   }
@@ -218,6 +228,7 @@ function generateConfig() {
   return cfg;
 }
 
+// Session saving and loading
 function saveSession() {
   const formData = {
     board: document.getElementById("board").value,
@@ -253,6 +264,7 @@ function loadSession() {
   }
 }
 
+// Auto-save on any form input change
 function attachAutoSave() {
   ["board", "driver", "probe", "bedX", "bedY", "bedZ", "mcuSerial"].forEach(
     (id) => {
@@ -264,6 +276,7 @@ function attachAutoSave() {
   if (textarea) textarea.addEventListener("input", saveSession);
 }
 
+// Buttons
 function handleGenerate() {
   const newConfig = generateConfig();
   document.getElementById("outputCfg").value = newConfig;
@@ -328,10 +341,18 @@ function handleClearUpload() {
   }
 }
 
-// BOUNDARY CHECKER FUNCTIONS BELOW.
-// gonna create a line here
-//---------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------
+// ESCAPE HTML
+function escapeHtml(text) {
+  if (text == null) return "";
+  const div = document.createElement("div");
+  div.textContent = String(text);
+  return div.innerHTML;
+}
 
+// ---------------------------------------------------------------------------------
+// BOUNDARY CHECKER FUNCTIONS BELOW.
+// ---------------------------------------------------------------------------------
 let syncEnabled = false;
 
 function toggleBoundaryChecker() {
@@ -418,7 +439,7 @@ function handleCfgUpload(file) {
     }
 
     const resultsDiv = document.getElementById("checkerResults");
-    resultsDiv.innerHTML = `<div class="checker-summary pass">Loaded printer.cfg (${dim.bedX || "?"} x ${dim.bedY || "?"} x ${dim.bedZ || "?"})</div>`;
+    resultsDiv.innerHTML = `<div class="checker-summary pass">Loaded printer.cfg (${escapeHtml(dim.bedX || "?")} x ${escapeHtml(dim.bedY || "?")} x ${escapeHtml(dim.bedZ || "?")})</div>`;
 
     setTimeout(() => {
       if (document.getElementById("macroInput").value.trim())
@@ -513,7 +534,6 @@ function checkMovesAgainstBed(moves, bedX, bedY, bedZ) {
   return { errors, warnings };
 }
 
-// ----------------------------------------------------------------------------------------
 function drawBedPreview(moves, bedX, bedY) {
   const canvas = document.getElementById("bedCanvas");
   if (!canvas) return;
@@ -542,15 +562,11 @@ function drawBedPreview(moves, bedX, bedY) {
     };
   }
 
-  //  THE BED PLATE
   ctx.fillStyle = "#2a2a3e";
   ctx.fillRect(plateX, plateY, plateW, plateH);
 
-  //  DRAW GRID LINES
   ctx.strokeStyle = "#3a3a55";
   ctx.lineWidth = 0.5;
-
-  // Vertical grid lines
   const gridLines = 5;
   for (let i = 1; i <= gridLines; i++) {
     const x = plateX + (i / gridLines) * plateW;
@@ -559,8 +575,6 @@ function drawBedPreview(moves, bedX, bedY) {
     ctx.lineTo(x, plateY + plateH);
     ctx.stroke();
   }
-
-  // Horizontal grid lines
   for (let i = 1; i <= gridLines; i++) {
     const y = plateY + (i / gridLines) * plateH;
     ctx.beginPath();
@@ -569,12 +583,10 @@ function drawBedPreview(moves, bedX, bedY) {
     ctx.stroke();
   }
 
-  //  DRAW BORDER
   ctx.strokeStyle = "#00ffaa";
   ctx.lineWidth = 2;
   ctx.strokeRect(plateX, plateY, plateW, plateH);
 
-  // DRAW ORIGIN (0,0) MARKER
   const origin = toCanvas(0, 0);
   ctx.beginPath();
   ctx.arc(origin.x, origin.y, 5, 0, Math.PI * 2);
@@ -584,7 +596,6 @@ function drawBedPreview(moves, bedX, bedY) {
   ctx.font = "bold 10px monospace";
   ctx.fillText("Home (0,0)", origin.x + 8, origin.y - 5);
 
-  //  DRAW STARTING POINT. this is the first move
   if (moves && moves.length > 0 && moves[0].x != null && moves[0].y != null) {
     const start = toCanvas(moves[0].x, moves[0].y);
     ctx.beginPath();
@@ -600,7 +611,6 @@ function drawBedPreview(moves, bedX, bedY) {
     ctx.fillText("START", start.x - 18, start.y - 8);
   }
 
-  // DRAW MOVE PATHS
   if (moves && moves.length > 0) {
     for (let i = 1; i < moves.length; i++) {
       const a = moves[i - 1],
@@ -618,7 +628,6 @@ function drawBedPreview(moves, bedX, bedY) {
     }
   }
 
-  //DRAW CENTER MARKER
   const centerX = plateX + plateW / 2;
   const centerY = plateY + plateH / 2;
   ctx.beginPath();
@@ -627,7 +636,6 @@ function drawBedPreview(moves, bedX, bedY) {
   ctx.fill();
 }
 
-//-------------bed stuff--------------------------------------------------------------------
 function runBoundaryCheck() {
   const text = document.getElementById("macroInput").value;
   const x = document.getElementById("checkerBedX").value;
@@ -643,25 +651,23 @@ function runBoundaryCheck() {
   const { errors, warnings } = checkMovesAgainstBed(moves, x, y, z);
   let html = "";
   if (!errors.length && !warnings.length) {
-    html += `<div class="checker-summary pass">SAFE — All ${moves.length} moves are within bounds (0-${x}, 0-${y}, 0-${z})</div>`;
+    html += `<div class="checker-summary pass">SAFE — All ${escapeHtml(moves.length)} moves are within bounds (0-${escapeHtml(x)}, 0-${escapeHtml(y)}, 0-${escapeHtml(z)})</div>`;
   } else if (errors.length) {
-    html += `<div class="checker-summary fail">${errors.length} critical error(s) found</div>`;
+    html += `<div class="checker-summary fail">${escapeHtml(errors.length)} critical error(s) found</div>`;
   } else if (warnings.length) {
-    html += `<div class="checker-summary pass">${warnings.length} warning(s)</div>`;
+    html += `<div class="checker-summary pass">${escapeHtml(warnings.length)} warning(s)</div>`;
   }
   errors.forEach((e) => {
-    html += `<div class="checker-error">Line ${e.line}: ${e.reason}<br><span style="font-size: 11px; opacity: 0.7;">${e.text}</span></div>`;
+    html += `<div class="checker-error">Line ${escapeHtml(e.line)}: ${escapeHtml(e.reason)}<br><span style="font-size: 11px; opacity: 0.7;">${escapeHtml(e.text)}</span></div>`;
   });
   warnings.forEach((w) => {
-    html += `<div class="checker-warning">Line ${w.line}: ${w.reason}<br><span style="font-size: 11px; opacity: 0.7;">${w.text}</span></div>`;
+    html += `<div class="checker-warning">Line ${escapeHtml(w.line)}: ${escapeHtml(w.reason)}<br><span style="font-size: 11px; opacity: 0.7;">${escapeHtml(w.text)}</span></div>`;
   });
   resultsDiv.innerHTML = html;
   drawBedPreview(moves, x, y);
 }
 
-// MACRO FILE UPLOAD FUNCTIONS. new addition since output via text has a bit of friction
-
-let currentMacroMode = "paste"; // 'paste' or 'file'
+let currentMacroMode = "paste";
 let currentExtractedGcode = "";
 
 function setMacroMode(mode) {
@@ -687,6 +693,7 @@ function setMacroMode(mode) {
   }
 }
 
+// MACRO FILE UPLOAD FUNCTIONS. new addition since output via text has a bit of friction
 function parseKlipperMacroFile(content) {
   const lines = content.split("\n");
   const gcodeLines = [];
@@ -694,19 +701,12 @@ function parseKlipperMacroFile(content) {
 
   for (let line of lines) {
     const trimmed = line.trim();
-
     if (trimmed === "") continue;
-
-    // Skip comments here
     if (trimmed.startsWith("#")) continue;
-
-    // Check if it's a Klipper macro
     if (trimmed.startsWith("[gcode_macro")) {
       insideGcode = false;
       continue;
     }
-
-    // Klipper macro gcode: section
     if (trimmed === "gcode:" || trimmed.startsWith("gcode:")) {
       insideGcode = true;
       const afterColon = trimmed.substring(trimmed.indexOf(":") + 1).trim();
@@ -715,8 +715,6 @@ function parseKlipperMacroFile(content) {
       }
       continue;
     }
-
-    // If inside Klipper macro, collect lines
     if (insideGcode) {
       if (
         trimmed.includes("{%") ||
@@ -795,50 +793,45 @@ function runBoundaryCheckWithGcode(gcodeText) {
 
   let html = "";
   if (!errors.length && !warnings.length) {
-    html += `<div class="checker-summary pass">SAFE — All ${moves.length} moves are within bounds (0-${x}, 0-${y}, 0-${z})</div>`;
+    html += `<div class="checker-summary pass">SAFE — All ${escapeHtml(moves.length)} moves are within bounds (0-${escapeHtml(x)}, 0-${escapeHtml(y)}, 0-${escapeHtml(z)})</div>`;
   } else if (errors.length) {
-    html += `<div class="checker-summary fail">${errors.length} critical error(s) found</div>`;
+    html += `<div class="checker-summary fail">${escapeHtml(errors.length)} critical error(s) found</div>`;
   } else if (warnings.length) {
-    html += `<div class="checker-summary pass">${warnings.length} warning(s)</div>`;
+    html += `<div class="checker-summary pass">${escapeHtml(warnings.length)} warning(s)</div>`;
   }
 
   errors.slice(0, MAX_DISPLAY).forEach((e) => {
-    html += `<div class="checker-error">Line ${e.line}: ${e.reason}<br><span style="font-size: 11px; opacity: 0.7;">${e.text}</span></div>`;
+    html += `<div class="checker-error">Line ${escapeHtml(e.line)}: ${escapeHtml(e.reason)}<br><span style="font-size: 11px; opacity: 0.7;">${escapeHtml(e.text)}</span></div>`;
   });
 
   if (errors.length > MAX_DISPLAY) {
-    html += `<div class="checker-error">... and ${errors.length - MAX_DISPLAY} more errors not shown</div>`;
+    html += `<div class="checker-error">... and ${escapeHtml(errors.length - MAX_DISPLAY)} more errors not shown</div>`;
   }
 
-  // WARNINGS WITH CAP
   warnings.slice(0, MAX_DISPLAY).forEach((w) => {
-    html += `<div class="checker-warning">Line ${w.line}: ${w.reason}<br><span style="font-size: 11px; opacity: 0.7;">${w.text}</span></div>`;
+    html += `<div class="checker-warning">Line ${escapeHtml(w.line)}: ${escapeHtml(w.reason)}<br><span style="font-size: 11px; opacity: 0.7;">${escapeHtml(w.text)}</span></div>`;
   });
 
   if (warnings.length > MAX_DISPLAY) {
-    html += `<div class="checker-warning">... and ${warnings.length - MAX_DISPLAY} more warnings not shown</div>`;
+    html += `<div class="checker-warning">... and ${escapeHtml(warnings.length - MAX_DISPLAY)} more warnings not shown</div>`;
   }
 
   if (resultsDiv) resultsDiv.innerHTML = html;
   drawBedPreview(moves, x, y);
 }
 
-// Override original runBoundaryCheck to use current mode
 const originalRunBoundaryCheck = runBoundaryCheck;
 window.runBoundaryCheck = function () {
   const gcodeText = getCurrentMacroGcode();
   runBoundaryCheckWithGcode(gcodeText);
 };
-// ADDED THE  BUTTONS TO UI
 
+// ADDED THE BUTTONS TO UI
 function addClearButtons() {
-  // Add buttons to CONFIGURATION CARD (first card with form)
   const configCard = document.querySelector("#cfgForm")?.closest(".card");
 
   if (configCard) {
     const buttonGroup = configCard.querySelector(".button-group");
-
-    // Clear Generator button (clears output AND bed dimensions to 0) reminder to not touch
     if (buttonGroup && !document.getElementById("clearGeneratorBtn")) {
       const clearGeneratorBtn = document.createElement("button");
       clearGeneratorBtn.id = "clearGeneratorBtn";
@@ -849,7 +842,6 @@ function addClearButtons() {
     }
   }
 
-  // Add buttons to OUTPUT CARD
   const outputCard = document.querySelector("#outputCfg")?.closest(".card");
 
   if (outputCard) {
@@ -870,7 +862,6 @@ function addClearButtons() {
       }
     }
 
-    // Clear Config button (clears only output)
     if (!document.getElementById("clearConfigBtn")) {
       const clearConfigBtn = document.createElement("button");
       clearConfigBtn.id = "clearConfigBtn";
@@ -881,7 +872,6 @@ function addClearButtons() {
     }
   }
 
-  // Clear Upload button for Boundary Checker
   const checkerCard = document.getElementById("boundaryChecker");
   if (checkerCard) {
     const fileUploadGroup = checkerCard.querySelector(
@@ -901,7 +891,6 @@ function addClearButtons() {
 }
 
 // INITIALIZATION
-
 document.addEventListener("DOMContentLoaded", () => {
   const hasSession = loadSession();
   if (!hasSession || !document.getElementById("outputCfg").value.trim()) {
@@ -923,7 +912,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const macroInput = document.getElementById("macroInput");
   const checkerResults = document.getElementById("checkerResults");
 
-  // Mode toggle elements! similar to demo
   const pasteModeBtn = document.getElementById("pasteModeBtn");
   const fileModeBtn = document.getElementById("fileModeBtn");
   const macroFileUpload = document.getElementById("macroFileUpload");
@@ -950,7 +938,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     });
 
-  // Mode toggle listeners
   if (pasteModeBtn) {
     pasteModeBtn.addEventListener("click", () => setMacroMode("paste"));
   }
@@ -983,26 +970,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // CLEAR GENERATOR (clears output and bed dimensions to 0) : changed to "" instead of 0
-
 function handleClearGenerator() {
   if (
     confirm(
       "Clear generator? This will clear the output and reset bed dimensions to 0. Control board and other settings will remain unchanged.",
     )
   ) {
-    // Clear output textarea
     document.getElementById("outputCfg").value =
       "\n# Generate a new config using the form above.";
 
-    // Reset bed dimensions to 0. i changed to ""
     document.getElementById("bedX").value = "";
     document.getElementById("bedY").value = "";
     document.getElementById("bedZ").value = "";
 
-    // Save session to persist cleared state
     saveSession();
 
-    // Visual stuff
     const btn = document.getElementById("clearGeneratorBtn");
     if (btn) {
       const originalText = btn.textContent;
