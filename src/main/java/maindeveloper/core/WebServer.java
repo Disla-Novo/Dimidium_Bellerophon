@@ -89,7 +89,7 @@ public class WebServer {
                 //  helpful hints for common errors
                 if (message != null) {
                     if (message.contains("out of bounds")) {
-                        hint = " → Check your PrinterProfile max values in the CFG Generator.";
+                        hint = " → Check your PrinterProfile boundary values.";
                     } else if (message.contains("iterator") && message.contains("only")) {
                         hint = " → The 'i' variable only works inside Brepeat loops.";
                     } else if (message.contains("Unknown function")) {
