@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+permissions:
+  pull-requests: read   # adjusted permissions
+
 jobs:
   verify-cla:
     name: Verify Legal Checklist
