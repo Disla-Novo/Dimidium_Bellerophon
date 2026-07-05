@@ -445,8 +445,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         double oldCenterX = centerX;
         double oldCenterY = centerY;
-        double oldX = currentX;
-        double oldY = currentY;
+        
 
         centerX = currentX;
         centerY = currentY;
