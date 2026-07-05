@@ -65,17 +65,44 @@ M.end
 8.   MoveTo x=100 y=100 – Returns to the starting point, completing a square path.
 9.   Home – Returns the printer to its origin.
 
+
+## Windows Security Prompts (What to Expect)
+
+
+
+<img width="462" height="343" alt="Screenshot 2026-07-04 202921" src="https://github.com/user-attachments/assets/51dbfb1d-40c8-43fb-825a-30527755cf8d" />
+
+
+*Example of the Windows security warning you may see when running for the first time.*
+
+
+- **First-run firewall popup:** Because the app opens a local web server, Windows may display a "Windows Defender Firewall" dialog asking whether to allow the app to communicate on networks. This is normal! For the official release it is safe to click "Allow access".
+- **SmartScreen / Defender warning:** For unsigned downloads you may see a "Windows protected your PC" SmartScreen message. If you see it, click "More info" then "Run anyway".
+
+*The bundled JRE is runtime-only.*
+
+## Which Release to Pick
+
+| Release | Description | Best For |
+|---------|-------------|----------|
+| **User Release** (recommended) | Prebuilt package with bundled JRE (no system Java required) | End users who just want to run the app |
+| *Devkit* | Includes JRE 19 for local development and building | Contributors who want to build from source |
+
+## Developers
+
+For local development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md#local-development).
+
 ## Quick Start
 
-1. **Download**: Grab the latest release from the [Releases page](https://github.com/Juli132/Dimidium_Bellerophon/releases).
-2. **Run**: Unzip the folder and launch the application:
-   - **Windows**: Double-click `run.bat`
-   - **Mac/Linux**: Run `./run.sh`
-3. **Compile**: 
+1. **Download:** Grab the latest release from the [Releases page](https://github.com/Juli132/Dimidium_Bellerophon/releases).
+2. **Run:** Unzip the folder and launch the application:
+   - **Windows:** Double-click `run.bat`
+   - **Mac/Linux:** Run `./run.sh`
+3. **Compile:**
    - Paste your code into the editor.
    - Select your firmware dialect (**Klipper** or **Marlin**).
    - Click **Compile** to generate your G-code.
-4. **Visualize** (Optional): Use the **CFG Generator** tab to preview your path on the printer bed.
+4. **Visualize (Optional):** Use the **CFG Generator** tab to preview your path on the printer bed.
 
 
 ---
