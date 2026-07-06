@@ -94,7 +94,7 @@ For local development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md#local-
 
 ## Quick Start
 
-1. **Download:** Grab the latest release from the [Releases page](https://github.com/Juli132/Dimidium_Bellerophon/releases).
+1. **Download:** Grab the latest release from the [Releases page](https://github.com/Disla-Novo/Dimidium_Bellerophon/releases).
 2. **Run:** Unzip the folder and launch the application:
    - **Windows:** Double-click `run.bat`
    - **Mac/Linux:** Run `./run.sh`
