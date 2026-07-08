@@ -99,9 +99,12 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   compileBtn.addEventListener("click", async () => {
-    const code = input.value.trim();
+    // don't trim: the gutter numbers lines off the raw textarea value, so
+    // stripping leading blank lines here would shift every reported line
+    // number away from what's actually shown next to the code
+    const code = input.value;
 
-    if (!code) {
+    if (!code.trim()) {
       logMessage(log, "Build failed: Editor is empty.", "error");
       return;
     }
