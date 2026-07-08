@@ -23,11 +23,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up JDK 19
+    # updated to java 25
+    - name: Set up JDK 25  
       uses: actions/setup-java@v4
       with:
-        java-version: '19'
+        java-version: '25' # updated to java 25
         distribution: 'temurin'
         cache: maven
 
