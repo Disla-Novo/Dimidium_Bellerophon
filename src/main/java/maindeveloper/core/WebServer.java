@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import jupitore.gen.*;
 import maindeveloper.dialects.KlipperVisitor;
 import maindeveloper.dialects.MarlinVisitor;
+import maindeveloper.dialects.RepRapVisitor;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -244,6 +245,14 @@ public class WebServer {
 
         if ("marlin".equals(input.mode)) {
             MarlinVisitor visitor = new MarlinVisitor(profile);
+            visitor.setEnablePaging(pagingUse);
+            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
+                visitor.setSourceFilePath(input.gcodeFolder);
+                System.out.println("G-code folder set to: " + input.gcodeFolder);
+            }
+            return visitor.visit(tree);
+        } else if ("reprap".equals(input.mode)) {
+            RepRapVisitor visitor = new RepRapVisitor(profile);
             visitor.setEnablePaging(pagingUse);
             if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
                 visitor.setSourceFilePath(input.gcodeFolder);
