@@ -70,6 +70,14 @@ public class WebServer {
         port(4567); // Spark server port
         staticFiles.externalLocation("webpage"); // serve frontend
 
+        // make sure Jetty actually stops (releases the port/socket) instead of
+        // relying on the JVM dying on its own - on Windows a closed console
+        // window can leave the process running with the port/files still locked
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            stop();
+            awaitStop();
+        }));
+
         Gson gson = new Gson();
 
         // /compile endpoint: parses and compiles Bellerophon code
