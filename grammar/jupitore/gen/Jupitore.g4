@@ -62,6 +62,7 @@ statement
     | SET_FAN EQUALS expr NEWLINE     // Added        // Added - FIXED: removed SPEED token
     | PRINTFILE STRING NEWLINE             // Added - prints a G-code file via SD card
     | assignment   // new rule for variable assignment 6/17/2026
+    | global_assignment  // var x = expr - persists across macros, unlike a plain assignment
     | insert_gcode_statement  // NEW: separate rule for InsertGCode
     ;
 
@@ -75,6 +76,13 @@ insert_gcode_statement
 // new rule 6/17/26
  assignment
     : ID EQUALS expr NEWLINE
+    ;
+
+// var x = expr - a global_assignment declares/updates a variable in the
+// file-global scope, visible from every macro in the compilation unit,
+// as opposed to a plain assignment which is local to the current macro
+global_assignment
+    : VAR ID EQUALS expr NEWLINE
     ;
 
   repeat_statement
@@ -186,6 +194,7 @@ ENDIF      : 'endif';
 REPEAT     : 'repeat';
 BREPEAT    : 'Brepeat';
 END        : 'end';
+VAR        : 'var'; // declares a variable in file-global scope, persisting across macros
 INSERT_GCODE : 'InsertGCode' | 'InsertGcode' | 'insertGcode'; 
 
 SIN        : 'sin';

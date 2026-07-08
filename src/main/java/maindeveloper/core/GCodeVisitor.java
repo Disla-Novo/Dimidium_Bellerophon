@@ -23,7 +23,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected boolean enablePaging = false;
     protected boolean autoExtrudeEnabled = false;
     // 6/17/26
-    protected Map<String, Double> variables = new HashMap<>();
+    // plain "x = expr" assignments - reset at the start of every macro, so a
+    // variable set in one macro doesn't leak into the next
+    protected Map<String, Double> localVariables = new HashMap<>();
+    // "var x = expr" assignments - persist for the whole compilation unit,
+    // visible from every macro
+    protected Map<String, Double> globalVariables = new HashMap<>();
     // Temporary storage for a single move (used in visitCoordList)
     private double targetX = Double.NaN;
     private double targetY = Double.NaN;
@@ -167,6 +172,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         currentY = 0;
         currentZ = 0;
         relativeMode = false; // start in absolute by default
+        localVariables.clear(); // local variables don't carry over between macros
 
         StringBuilder gcode = new StringBuilder();
 
@@ -197,6 +203,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.assignment() != null) {
             System.out.println("DEBUG: Found assignment, calling visitAssignment");
             return visit(ctx.assignment());
+        }
+
+        if (ctx.global_assignment() != null) {
+            System.out.println("DEBUG: Found global assignment, calling visitGlobal_assignment");
+            return visit(ctx.global_assignment());
         }
 
         if (ctx.HOME() != null) {
@@ -716,8 +727,34 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
     }
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
-    variables.put(varName, value);
+    localVariables.put(varName, value);
     System.out.println("ASSIGN: " + varName + " = " + value);
+    return "";
+}
+
+    // var x = expr - same rules as a plain assignment, but stored in global
+    // scope so it's visible from every macro in the file
+   @Override
+public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx) {
+    if (ctx.ID() == null) {
+        // x/y/z/e tokenize as axis letters rather than a generic ID, so they
+        // can never satisfy this rule - the parser leaves ID() unset instead
+        // of throwing, so surface it as the same reserved-name error rather
+        // than letting callers hit a NullPointerException
+        throw new RuntimeException(
+            "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
+            "Use a different variable name (e.g. pos_x, my_x).");
+    }
+    String varName = ctx.ID().getText();
+    if ("x y z e".contains(varName.toLowerCase())) {
+        throw new RuntimeException(
+            "ERROR: '" + varName + "' is a reserved axis name. " +
+            "Use a different variable name (e.g. pos_x, my_x).");
+    }
+    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+    double value = compute.visit(ctx.expr());
+    globalVariables.put(varName, value);
+    System.out.println("ASSIGN (global): " + varName + " = " + value);
     return "";
 }
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----

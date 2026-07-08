@@ -130,7 +130,7 @@ If you are looking for a place to jump in, here are the active development miles
       <h3>2. Variable Support (State Management)</h3>
       <p><b>Goal:</b> Expand the stateful variable system beyond simple procedural geometry.</p>
       <ul>
-        <li><b>Global Variables:</b> Phase 1 (local-scoped variables within macros) is implemented. The next step is transitioning state management to support global, unit-scoped user-defined variables that persist across the entire compilation unit.</li>
+        <li><b>Global Variables:</b> Phase 1 (local-scoped variables within macros) and Phase 2 (global, unit-scoped variables via <code>var name = expr</code>, persisting across the entire compilation unit) are both implemented. A plain <code>name = expr</code> stays local to its macro; a local variable shadows a global one of the same name.</li>
       </ul>
     </td>
     <td valign="top" width="50%">
