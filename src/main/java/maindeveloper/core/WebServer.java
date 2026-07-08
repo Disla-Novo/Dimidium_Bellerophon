@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.io.File;
 
 import com.google.gson.Gson;
@@ -21,6 +22,13 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 public class WebServer {
+
+    // maps a firmware mode string to a visitor constructor - add new firmware
+    // targets here instead of growing an if-else chain
+    private static final Map<String, Function<PrinterProfile, GCodeVisitor>> VISITOR_FACTORIES = Map.of(
+            "klipper", KlipperVisitor::new,
+            "marlin", MarlinVisitor::new
+    );
 
     // tested
     static class TokenHighlight {
@@ -234,22 +242,16 @@ public class WebServer {
             profile = new PrinterProfile(); // default values
         }
 
-        if ("marlin".equals(input.mode)) {
-            MarlinVisitor visitor = new MarlinVisitor(profile);
-            visitor.setEnablePaging(pagingUse);
-            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
-                visitor.setSourceFilePath(input.gcodeFolder);
-                System.out.println("G-code folder set to: " + input.gcodeFolder);
-            }
-            return visitor.visit(tree);
-        } else {
-            KlipperVisitor visitor = new KlipperVisitor(profile);
-            visitor.setEnablePaging(pagingUse);
-            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
-                visitor.setSourceFilePath(input.gcodeFolder);
-                System.out.println("G-code folder set to: " + input.gcodeFolder);
-            }
-            return visitor.visit(tree);
+        String mode = input.mode == null ? "" : input.mode.toLowerCase();
+        GCodeVisitor visitor = VISITOR_FACTORIES
+                .getOrDefault(mode, KlipperVisitor::new)
+                .apply(profile);
+
+        visitor.setEnablePaging(pagingUse);
+        if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
+            visitor.setSourceFilePath(input.gcodeFolder);
+            System.out.println("G-code folder set to: " + input.gcodeFolder);
         }
+        return visitor.visit(tree);
     }
 }
