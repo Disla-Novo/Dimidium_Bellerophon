@@ -29,21 +29,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Set up JDK 19
+      # updated to java 25 
+    - name: Set up JDK 25
       uses: actions/setup-java@v4
       with:
-        java-version: '19'
+        java-version: '25'  # updated to java 25
         distribution: 'temurin'
         cache: maven
 
     - name: Build the JAR with Maven
       run: mvn -B clean package --file pom.xml
-
+      # added java 25 dependencies
     - name: Create custom JRE with jlink
       run: |
         jlink --module-path $JAVA_HOME/jmods \
-              --add-modules java.base,java.logging,java.sql,java.desktop \
+              --add-modules java.base,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.prefs,java.security.jgss,java.security.sasl,java.sql,java.transaction.xa,java.xml \
               --output custom-jre \
               --compress=2 \
               --no-header-files \
