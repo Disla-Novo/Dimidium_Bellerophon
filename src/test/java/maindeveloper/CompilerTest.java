@@ -1,6 +1,8 @@
 package maindeveloper;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -147,5 +149,79 @@ public class CompilerTest {
         var tree = TestUtils.parse(source);
         var visitor = new KlipperVisitor(new PrinterProfile());
         assertDoesNotThrow(() -> visitor.visit(tree));
+    }
+
+    @Test
+    void plainAssignmentDoesNotLeakAcrossMacros() {
+        String source = """
+                M.title "first"
+                speed = 3000
+                Heat extruder = speed
+                M.end
+
+                M.title "second"
+                Heat extruder = speed + 10
+                M.end
+                """;
+
+        var tree = TestUtils.parse(source);
+        var visitor = new KlipperVisitor(new PrinterProfile());
+        String output = visitor.visit(tree);
+
+        assertTrue(output.contains("M109 S3000"), "first macro should see its own local speed");
+        // second macro never set 'speed', so it should read as 0, not the first macro's 3000
+        assertTrue(output.contains("M109 S10"), "second macro should NOT inherit the first macro's local variable");
+        assertFalse(output.contains("M109 S3010"), "local variables must not leak between macros");
+    }
+
+    @Test
+    void globalVariablePersistsAcrossMacros() {
+        String source = """
+                M.title "first"
+                var speed = 3000
+                Heat extruder = speed
+                M.end
+
+                M.title "second"
+                Heat extruder = speed + 10
+                M.end
+                """;
+
+        var tree = TestUtils.parse(source);
+        var visitor = new KlipperVisitor(new PrinterProfile());
+        String output = visitor.visit(tree);
+
+        assertTrue(output.contains("M109 S3000"), "first macro should see the global speed it just set");
+        assertTrue(output.contains("M109 S3010"), "second macro should see the global speed from the first macro");
+    }
+
+    @Test
+    void localAssignmentShadowsGlobalOfSameName() {
+        String source = """
+                M.title "first"
+                var speed = 3000
+                Heat extruder = speed
+                M.end
+
+                M.title "second"
+                speed = 100
+                Heat extruder = speed
+                M.end
+
+                M.title "third"
+                Heat extruder = speed
+                M.end
+                """;
+
+        var tree = TestUtils.parse(source);
+        var visitor = new KlipperVisitor(new PrinterProfile());
+        String output = visitor.visit(tree);
+
+        assertTrue(output.contains("M109 S3000"), "first macro reads the global");
+        assertTrue(output.contains("M109 S100"), "second macro's local assignment shadows the global");
+        // third macro never reassigned locally, so it should fall through to the
+        // global (still 3000) rather than keeping the second macro's local 100
+        long occurrencesOf3000 = output.lines().filter(line -> line.contains("M109 S3000")).count();
+        assertTrue(occurrencesOf3000 == 2, "third macro should see the unmodified global again, not the second macro's local value");
     }
 }

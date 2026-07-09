@@ -1,12 +1,18 @@
 // Data Retrieval
 const urlParams = new URLSearchParams(window.location.search);
-const groupId = parseInt(urlParams.get("id"));
+const groupId = urlParams.get("id");
 let groups = JSON.parse(localStorage.getItem("gravity_groups")) || [];
-let currentGroup = groups[groupId];
+let currentGroup = groups.find((group) => group.id === groupId);
 
 // Redirect if something goes wrong
 if (!currentGroup) {
   window.location.href = "hub.html";
+}
+
+function persistGroups() {
+  const index = groups.findIndex((group) => group.id === groupId);
+  groups[index] = currentGroup;
+  localStorage.setItem("gravity_groups", JSON.stringify(groups));
 }
 
 // UI Elements
@@ -53,8 +59,7 @@ function renderPrinters() {
 function deletePrinter(index) {
   if (confirm("Delete this printer?")) {
     currentGroup.printers.splice(index, 1); // Remove from array
-    groups[groupId] = currentGroup; // Update master list
-    localStorage.setItem("gravity_groups", JSON.stringify(groups)); // Save
+    persistGroups(); // Update master list and save
     renderPrinters(); // Refresh UI
   }
 }
@@ -68,24 +73,57 @@ document.getElementById("close-printer-modal").onclick = () => {
   modal.style.display = "none";
 };
 
+// dash.html's own check (does this jam into a URL object?) turns out to
+// accept almost anything, since the URL spec just percent-encodes garbage
+// into the host instead of rejecting it - "not a valid ip!!" parses to
+// http://not%20a%20valid%20ip!!/ without throwing. Actually validate that
+// the host looks like an IPv4 address or a plausible hostname, with an
+// optional :port and an optional http(s):// prefix.
+function isValidPrinterAddress(value) {
+  const withoutScheme = value.replace(/^https?:\/\//i, "");
+  const hostPort = withoutScheme.split(/[/?#]/)[0];
+
+  const match = hostPort.match(/^([^:]+)(?::(\d+))?$/);
+  if (!match) return false;
+
+  const [, host, port] = match;
+  if (port !== undefined) {
+    const portNum = Number(port);
+    if (portNum < 1 || portNum > 65535) return false;
+  }
+
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host)) {
+    return host.split(".").every((octet) => Number(octet) <= 255);
+  }
+
+  const hostnameLabel = "(?!-)[A-Za-z0-9-]{1,63}(?<!-)";
+  const hostnamePattern = new RegExp(`^${hostnameLabel}(\\.${hostnameLabel})*$`);
+  return hostnamePattern.test(host);
+}
+
 // Saving Logic
 document.getElementById("save-printer-btn").onclick = () => {
   const pName = document.getElementById("printer-name-input").value.trim();
   const pIp = document.getElementById("printer-ip-input").value.trim();
 
-  if (pName && pIp) {
-    currentGroup.printers.push({ name: pName, ip: pIp });
-    groups[groupId] = currentGroup;
-    localStorage.setItem("gravity_groups", JSON.stringify(groups));
-
-    renderPrinters();
-
-    modal.style.display = "none";
-    document.getElementById("printer-name-input").value = "";
-    document.getElementById("printer-ip-input").value = "";
-  } else {
+  if (!pName || !pIp) {
     alert("Enter a name and IP.");
+    return;
   }
+
+  if (!isValidPrinterAddress(pIp)) {
+    alert("Enter a valid IP address or URL (e.g. 192.168.1.50 or http://192.168.1.50).");
+    return;
+  }
+
+  currentGroup.printers.push({ name: pName, ip: pIp });
+  persistGroups();
+
+  renderPrinters();
+
+  modal.style.display = "none";
+  document.getElementById("printer-name-input").value = "";
+  document.getElementById("printer-ip-input").value = "";
 };
 
 renderPrinters();

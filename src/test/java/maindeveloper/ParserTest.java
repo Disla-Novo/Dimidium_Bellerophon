@@ -54,4 +54,41 @@ public class ParserTest {
 
         assertDoesNotThrow(() -> TestUtils.parse(source));
     }
+
+    @Test
+    void parsesMultipleStatementsOnOneLineWithSemicolon() {
+        String source = """
+                M.title "test"
+                Absolute; Home
+                M.end
+                """;
+
+        assertDoesNotThrow(() -> TestUtils.parseStrict(source));
+    }
+
+    @Test
+    void parsesBlankLineBetweenStatements() {
+        String source = """
+                M.title "test"
+                Absolute
+
+                Home
+                M.end
+                """;
+
+        assertDoesNotThrow(() -> TestUtils.parseStrict(source));
+    }
+
+    @Test
+    void parsesCommentOnlyLineBetweenStatements() {
+        String source = """
+                M.title "test"
+                Absolute
+                # a comment on its own line
+                Home
+                M.end
+                """;
+
+        assertDoesNotThrow(() -> TestUtils.parseStrict(source));
+    }
 }

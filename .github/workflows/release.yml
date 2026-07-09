@@ -52,9 +52,10 @@ jobs:
     - name: Prepare Release Package
       run: |
         mkdir release-package
-        cp target/SyntaxN.jar release-package/ 
+        cp target/SyntaxN.jar release-package/
         cp run.bat release-package/
         cp run.sh release-package/
+        cp config.properties release-package/
         cp -r webpage release-package/
         cp -r custom-jre release-package/jre
 
