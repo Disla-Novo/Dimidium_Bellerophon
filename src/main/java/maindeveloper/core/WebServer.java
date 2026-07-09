@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import jupitore.gen.*;
 import maindeveloper.dialects.KlipperVisitor;
 import maindeveloper.dialects.MarlinVisitor;
+import maindeveloper.dialects.RepRapVisitor;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -30,7 +31,8 @@ public class WebServer {
     // targets here instead of growing an if-else chain
     private static final Map<String, Function<PrinterProfile, GCodeVisitor>> VISITOR_FACTORIES = Map.of(
             "klipper", KlipperVisitor::new,
-            "marlin", MarlinVisitor::new
+            "marlin", MarlinVisitor::new,
+            "reprap", RepRapVisitor::new  // added reprap to factory map
     );
     private static final String CONFIG_FILE = "config.properties";
     private static final int DEFAULT_PORT = 4567;

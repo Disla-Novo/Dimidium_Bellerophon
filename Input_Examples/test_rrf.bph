@@ -1,0 +1,4 @@
+M.title "test_rrf"
+Heat extruder = 200
+MoveTo x=10 y=10
+M.end
