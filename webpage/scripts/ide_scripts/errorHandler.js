@@ -68,6 +68,7 @@ const keywords = new Set([
   "LAYER",
   "PRINTFILE",
   "INSERTGCODE",
+  "VAR",
   "LEFT",
   "RIGHT",
   "CENTER",
