@@ -2,7 +2,7 @@
 
 This document is a companion to [`CONTRIBUTING.md`](./CONTRIBUTING.md). It provides a **file‑by‑file breakdown** of the Dimidium frontend — the IDE, CFG Generator, and Gravity Hub.
 
-If you want to modify the UI, add a new theme, or understand how the frontend works, read on. For backend/engine details, see [`GUTS.md`](./GUTS.md).
+If you want to modify the UI, add a new theme, or understand how the frontend works, read on. For backend/engine details, see [`guts.md`](./guts.md).
 
 ---
 

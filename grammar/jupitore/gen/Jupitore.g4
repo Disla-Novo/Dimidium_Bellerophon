@@ -9,7 +9,7 @@ grammar Jupitore;
 // this should be how it looks
    macro
     : TITLE STRING (NEWLINE | WS)+
-      statement*
+      (statement | NEWLINE)*
      MEND (NEWLINE | WS)*
   ;
 //macro
@@ -24,58 +24,64 @@ grammar Jupitore;
 // defining the statements or actions below
 // | this means its an option
 statement
-    :HOME (ARROW coordList SEMICOLON?)? NEWLINE // ? means optional. Home or Home->x=0
-    | MOVE DIRECTION (ARROW coordList (SEMICOLON)?)? NEWLINE  // semicolon optional
-    | HEAT TARGET EQUALS expr NEWLINE  // heat extruder: 200 like m140 s60 ; bed
-    | LEVEL NEWLINE // level
-    | CALL STRING NEWLINE // m.call "Macro Name". so you can call a macros in a macros
+    :HOME (ARROW coordList)? stmtTerm // ? means optional. Home or Home->x=0
+    | MOVE DIRECTION (ARROW coordList)? stmtTerm  // can be terminated by ; or a newline
+    | HEAT TARGET EQUALS expr stmtTerm  // heat extruder: 200 like m140 s60 ; bed
+    | LEVEL stmtTerm // level
+    | CALL STRING stmtTerm // m.call "Macro Name". so you can call a macros in a macros
                    // | REPEAT NUMBER NEWLINE (statement)* END (NEWLINE | EOF)  // <--- new trying out repeat blocks 3/12/2026
                   //| IF condition NEWLINE statement* ENDIF NEWLINE // for conditional statements - FIXED: NEWLINE instead of SEMICOLON
-    | SET_NOZZLE EQUALS expr NEWLINE
-    | SET_FILAMENT EQUALS expr NEWLINE
-    | SET_LAYER_HEIGHT EQUALS expr NEWLINE
-    | SET_EXTRUSION_MULTIPLIER EQUALS expr NEWLINE
+    | SET_NOZZLE EQUALS expr stmtTerm
+    | SET_FILAMENT EQUALS expr stmtTerm
+    | SET_LAYER_HEIGHT EQUALS expr stmtTerm
+    | SET_EXTRUSION_MULTIPLIER EQUALS expr stmtTerm
     | layer_statement   // new
-    | ENABLE_AUTO_EXTRUDE EQUALS expr NEWLINE
+    | ENABLE_AUTO_EXTRUDE EQUALS expr stmtTerm
     | repeat_statement    // testing
     | if_statement        // testing
     | brepeat_statement  // testing
-    | PAUSE NEWLINE
-    | RESPOND MSG STRING NEWLINE // to print a message
-    | RESUME NEWLINE
-    | SET_HEATER TARGET EQUALS expr NEWLINE // set to target temp. m600 more advanced
-    | WAITFORTEMP TARGET NEWLINE // wait for target temp m109
-    | COOLDOWN (TARGET)? NEWLINE // added here
-    | MOVEEX coordList SEMICOLON? NEWLINE // moves or extrude with the given coords G1 - FIXED: optional semicolon
-    | ABSOLUTE NEWLINE   // outputs G90 which is an absolute positioning
-    | RELATIVE NEWLINE   // outputs G91 which is a relative positioning
-    | TIMEOUT_SET expr NEWLINE                        // Set idle timeout
-    | RELATIVEEXTRUSION NEWLINE // this is command M83
-    | LOAD_BED_MESH STRING NEWLINE            // BED_MESH_PROFILE LOAD=default
-    | SET_PRESSURE_ADVANCE expr NEWLINE     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
-    | RESET_EXTRUDER NEWLINE                  // G92 E0
-    | DWELL expr ( 'S' | 's' | 'MS' | 'ms' )? NEWLINE// new 
-    | BED_MESH_CALIBRATE NEWLINE    // BED_MESH_CALIBRATE command
-    | PROBE_CALIBRATE NEWLINE    // PROBE_CALIBRATE
-       // Added - FIXED: lowercase 'cooldown' deleted cooldown. 
-    | SET_SPEED EQUALS expr NEWLINE // 6/17/26  changed to expr to test for user defined variables. 
-    | SET_FAN EQUALS expr NEWLINE     // Added        // Added - FIXED: removed SPEED token
-    | PRINTFILE STRING NEWLINE             // Added - prints a G-code file via SD card
+    | PAUSE stmtTerm
+    | RESPOND MSG STRING stmtTerm // to print a message
+    | RESUME stmtTerm
+    | SET_HEATER TARGET EQUALS expr stmtTerm // set to target temp. m600 more advanced
+    | WAITFORTEMP TARGET stmtTerm // wait for target temp m109
+    | COOLDOWN (TARGET)? stmtTerm // added here
+    | MOVEEX coordList stmtTerm // moves or extrude with the given coords G1
+    | ABSOLUTE stmtTerm   // outputs G90 which is an absolute positioning
+    | RELATIVE stmtTerm   // outputs G91 which is a relative positioning
+    | TIMEOUT_SET expr stmtTerm                        // Set idle timeout
+    | RELATIVEEXTRUSION stmtTerm // this is command M83
+    | LOAD_BED_MESH STRING stmtTerm            // BED_MESH_PROFILE LOAD=default
+    | SET_PRESSURE_ADVANCE expr stmtTerm     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
+    | RESET_EXTRUDER stmtTerm                  // G92 E0
+    | DWELL expr ( 'S' | 's' | 'MS' | 'ms' )? stmtTerm// new
+    | BED_MESH_CALIBRATE stmtTerm    // BED_MESH_CALIBRATE command
+    | PROBE_CALIBRATE stmtTerm    // PROBE_CALIBRATE
+       // Added - FIXED: lowercase 'cooldown' deleted cooldown.
+    | SET_SPEED EQUALS expr stmtTerm // 6/17/26  changed to expr to test for user defined variables.
+    | SET_FAN EQUALS expr stmtTerm     // Added        // Added - FIXED: removed SPEED token
+    | PRINTFILE STRING stmtTerm             // Added - prints a G-code file via SD card
     | assignment   // new rule for variable assignment 6/17/2026
     | global_assignment  // var x = expr - persists across macros, unlike a plain assignment
     | insert_gcode_statement  // NEW: separate rule for InsertGCode
     ;
 
+// a statement ends either with a newline (as before) or a semicolon -
+// the semicolon lets another statement start right after on the same line
+stmtTerm
+    : SEMICOLON
+    | NEWLINE
+    ;
 
 // new rule for InsertGCode - supports both orders
 insert_gcode_statement
-    : INSERT_GCODE STRING (AS_REF)? NEWLINE          // InsertGCode "file.gcode" reference
-    | INSERT_GCODE AS_REF STRING NEWLINE            // InsertGCode reference "file.gcode"
+    : INSERT_GCODE STRING (AS_REF)? stmtTerm          // InsertGCode "file.gcode" reference
+    | INSERT_GCODE AS_REF STRING stmtTerm            // InsertGCode reference "file.gcode"
     ;
 
 // new rule 6/17/26
  assignment
-    : ID EQUALS expr NEWLINE
+    : ID EQUALS expr stmtTerm
     ;
 
 // var x = expr - a global_assignment declares/updates a variable in the
@@ -96,7 +102,7 @@ global_assignment
     : LAYER NUMBER NEWLINE statement_block END (NEWLINE | EOF)
     ;
 statement_block
-    : statement+
+    : (statement | NEWLINE)+
     ;
 
 if_statement
