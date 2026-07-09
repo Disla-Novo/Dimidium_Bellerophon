@@ -243,9 +243,16 @@ public class WebServer {
         }
 
         String mode = input.mode == null ? "" : input.mode.toLowerCase();
-        GCodeVisitor visitor = VISITOR_FACTORIES
-                .getOrDefault(mode, KlipperVisitor::new)
-                .apply(profile);
+        Function<PrinterProfile, GCodeVisitor> factory = VISITOR_FACTORIES.get(mode);
+        if (factory == null) {
+            String requested = (input.mode == null || input.mode.isBlank())
+                    ? "(none specified)"
+                    : "'" + input.mode + "'";
+            String supported = String.join(", ", VISITOR_FACTORIES.keySet());
+            throw new IllegalArgumentException(
+                    "Unsupported firmware mode: " + requested + ". Supported modes are: " + supported);
+        }
+        GCodeVisitor visitor = factory.apply(profile);
 
         visitor.setEnablePaging(pagingUse);
         if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
