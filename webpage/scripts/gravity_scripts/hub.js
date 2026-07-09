@@ -1,4 +1,21 @@
 let groups = JSON.parse(localStorage.getItem("gravity_groups")) || [];
+
+// Groups used to be addressed by array index (group.html?id=<index>), which
+// silently pointed at the wrong group as soon as an earlier group was
+// deleted - any group after it shifted down and inherited its old index.
+// Give every group a stable id, backfilling any older saved data that
+// doesn't have one yet.
+let needsMigration = false;
+groups.forEach((group) => {
+  if (!group.id) {
+    group.id = crypto.randomUUID();
+    needsMigration = true;
+  }
+});
+if (needsMigration) {
+  localStorage.setItem("gravity_groups", JSON.stringify(groups));
+}
+
 const dashboard = document.getElementById("hub-dashboard");
 const modal = document.getElementById("group-modal");
 
@@ -18,7 +35,7 @@ function renderGroups() {
         `;
 
     // Card Click: Enter Group
-    card.onclick = () => (window.location.href = `group.html?id=${index}`);
+    card.onclick = () => (window.location.href = `group.html?id=${group.id}`);
 
     // Delete Logic
     const delBtn = card.querySelector(".delete-btn");
@@ -62,6 +79,7 @@ document.getElementById("save-group-btn").onclick = () => {
 
   if (nameInput.value) {
     groups.push({
+      id: crypto.randomUUID(),
       name: nameInput.value,
       type: typeInput.value,
       printers: [],
