@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.Properties;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import com.google.gson.Gson;
 
@@ -21,6 +25,46 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 public class WebServer {
+
+    // maps a firmware mode string to a visitor constructor - add new firmware
+    // targets here instead of growing an if-else chain
+    private static final Map<String, Function<PrinterProfile, GCodeVisitor>> VISITOR_FACTORIES = Map.of(
+            "klipper", KlipperVisitor::new,
+            "marlin", MarlinVisitor::new
+    );
+    private static final String CONFIG_FILE = "config.properties";
+    private static final int DEFAULT_PORT = 4567;
+
+    // reads server.port from config.properties next to the jar; falls back to
+    // DEFAULT_PORT if the file is missing, unreadable, or the value isn't a
+    // usable port number
+    private static int loadServerPort() {
+        Properties config = new Properties();
+
+        try (FileInputStream in = new FileInputStream(CONFIG_FILE)) {
+            config.load(in);
+        } catch (IOException e) {
+            System.out.println(CONFIG_FILE + " not found or unreadable, using default port " + DEFAULT_PORT);
+            return DEFAULT_PORT;
+        }
+
+        String portValue = config.getProperty("server.port");
+        if (portValue == null || portValue.isBlank()) {
+            return DEFAULT_PORT;
+        }
+
+        try {
+            int port = Integer.parseInt(portValue.trim());
+            if (port < 1 || port > 65535) {
+                System.out.println("server.port=" + portValue + " is out of range, using default port " + DEFAULT_PORT);
+                return DEFAULT_PORT;
+            }
+            return port;
+        } catch (NumberFormatException e) {
+            System.out.println("server.port=" + portValue + " is not a valid number, using default port " + DEFAULT_PORT);
+            return DEFAULT_PORT;
+        }
+    }
 
     // tested
     static class TokenHighlight {
@@ -67,7 +111,7 @@ public class WebServer {
     public static void main(String[] args) {
 
         ipAddress("127.0.0.1"); // Bind to localhost only
-        port(4567); // Spark server port
+        port(loadServerPort()); // Spark server port
         staticFiles.externalLocation("webpage"); // serve frontend
 
         // make sure Jetty actually stops (releases the port/socket) instead of
@@ -242,22 +286,23 @@ public class WebServer {
             profile = new PrinterProfile(); // default values
         }
 
-        if ("marlin".equals(input.mode)) {
-            MarlinVisitor visitor = new MarlinVisitor(profile);
-            visitor.setEnablePaging(pagingUse);
-            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
-                visitor.setSourceFilePath(input.gcodeFolder);
-                System.out.println("G-code folder set to: " + input.gcodeFolder);
-            }
-            return visitor.visit(tree);
-        } else {
-            KlipperVisitor visitor = new KlipperVisitor(profile);
-            visitor.setEnablePaging(pagingUse);
-            if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
-                visitor.setSourceFilePath(input.gcodeFolder);
-                System.out.println("G-code folder set to: " + input.gcodeFolder);
-            }
-            return visitor.visit(tree);
+        String mode = input.mode == null ? "" : input.mode.toLowerCase();
+        Function<PrinterProfile, GCodeVisitor> factory = VISITOR_FACTORIES.get(mode);
+        if (factory == null) {
+            String requested = (input.mode == null || input.mode.isBlank())
+                    ? "(none specified)"
+                    : "'" + input.mode + "'";
+            String supported = String.join(", ", VISITOR_FACTORIES.keySet());
+            throw new IllegalArgumentException(
+                    "Unsupported firmware mode: " + requested + ". Supported modes are: " + supported);
         }
+        GCodeVisitor visitor = factory.apply(profile);
+
+        visitor.setEnablePaging(pagingUse);
+        if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
+            visitor.setSourceFilePath(input.gcodeFolder);
+            System.out.println("G-code folder set to: " + input.gcodeFolder);
+        }
+        return visitor.visit(tree);
     }
 }
