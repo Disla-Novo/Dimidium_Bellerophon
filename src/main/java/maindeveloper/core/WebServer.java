@@ -257,7 +257,7 @@ public class WebServer {
         System.gc(); // suggest garbage collection before we check memory, to get a more accurate
                      // reading
 
-        // do not touch this
+       // Standard ANTLR pipeline initialization: feeds raw string input into the target lexer token stream.
         CharStream charStream = CharStreams.fromString(input.code);
         JupitoreLexer lexer = new JupitoreLexer(charStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
