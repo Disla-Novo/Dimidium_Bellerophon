@@ -8,7 +8,7 @@
 - Currently, only these two adapters are implemented. New firmware targets require extending `GCodeVisitor` (see [CONTRIBUTING.md](CONTRIBUTING.md#adding-firmware-support)).
 
 ### Macro & Loop Constraints
-- **Variable scope**: All variables are global within a macro. No local scoping.
+- **Variable scope**: A plain `name = expr` assignment is local to its macro and does not carry over to the next one. Use `var name = expr` to declare a variable in global scope, visible from every macro in the file; a local variable shadows a global one of the same name.
 - **Macro recursion**: Calling a macro from itself is not supported.
 
 ### Geometry & Hardware
@@ -78,7 +78,7 @@ M.end
 
 ## Planned Improvements
 
-- [ ] Local variable scoping (vs global-only)
+- [x] Local variable scoping, plus `var` for global/unit-scoped variables
 - [ ] Macro recursion safety checks 
 - [ ] RepRap firmware support
 - [ ] Gravity Hub job queuing 

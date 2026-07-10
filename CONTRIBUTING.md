@@ -16,11 +16,19 @@ The CLA grants permission for your contributions to be used in both:
 - the open-source Dimidium ecosystem (AGPL v3.0)
 - proprietary and commercial components of the Dimidium Ecosystem
 
-This CLA does not transfer ownership of your contribution.
+*This CLA does not transfer ownership of your contribution.*
 
 See [`CLA.md`](./CLA.md) for full terms.
 
-If you do not agree, please do not submit a pull request.
+For each PR, please be sure to strictly have the following at the top or bottom of the description (not in comments):
+
+```text
+- [ ] I have read and agree to the CLA (CLA.md)
+- [ ] This code is my original work or I have rights to submit it
+- [ ] I am not knowingly submitting copied or unlicensed code
+```
+
+__If you do not agree, please do not submit a pull request.__
 
 ## Project Context
 
@@ -34,25 +42,39 @@ Dimidium is a self-contained ecosystem for additive manufacturing tooling. It in
 
 ### Local Development
 
-> **Prerequisite:** This source code requires **Java 19** (JDK) to compile and run. The release versions bundle their own JRE, but source-code development relies on your local Java installation. We have the bundle in the [dev-kit-0.1.0](https://github.com/Juli132/Dimidium_Bellerophon/releases/tag/dev-kit-0.1.0) for your convenience.
+> [!IMPORTANT]
+> This source code requires **Java 25 (LTS)** to compile and run. 
 
-__Before submitting a PR, Please verify your code passes all tests as our automated pipeline will run these checks:__
+> [!NOTE]
+> We no longer provide bundled JREs/DevKits. Developers should manage their local JDK installation; required JRE dependencies for the build pipeline can be referenced in `.github/workflows/release.yml`.
 
-`./mvnw clean test`       # PowerShell / Mac / Linux
+#### 1. Testing
+Before submitting a PR, verify your code passes all automated tests:
 
-`.\mvnw.cmd clean test`   # Command Prompt (cmd)
+| Environment | Command |
+| :--- | :--- |
+| **PowerShell / Mac / Linux** | `./mvnw clean test` |
+| **Command Prompt (cmd)** | `.\mvnw.cmd clean test` |
 
-The `./run.sh` and `.\run.bat` scripts are intended only for the packaged release version and will not work with the source tree unless you have the JRE bundle from the dev kit and generated the .jar. You must generate a .jar via `./mvnw clean package`  # PowerShell / Mac / Linux or `.\mvnw.cmd clean package`  # Command Prompt (cmd) and move it to the root folder. 
-Otherwise, you may also run directly from the file as long as you have **Java 19**: 
-1. **Run the `WebServer` class**  
-   The entry point is `maindeveloper.core.WebServer`, located at  
-   `src/main/java/maindeveloper/core/WebServer.java`.
+#### 2. Running the Application
 
-   - **Using an IDE**:  
-     Open the project in your IDE and run the `main` method of `WebServer.java`.
+**Method A: IDE Execution (Fastest)**
+1. Open the project in your IDE.
+2. Locate entry point: `src/main/java/maindeveloper/core/WebServer.java`.
+3. Run the `main` method.
 
-2. Open `http://localhost:4567` in your browser.
+**Method B: Run the Packaged JAR (Using System Java)**
+1. Build the JAR: `./mvnw clean package` (or `.\mvnw.cmd clean package`).
+2. Copy `target/SyntaxN.jar` to the project root.
+3. Run: `java -jar SyntaxN.jar` 
+   *(Note: The `run.bat` and `run.sh` scripts are reserved for the official packaged release and require a bundled JRE.)*
 
+**Method C: Direct Class Execution**
+1. Compile: `./mvnw compile` (or `.\mvnw.cmd compile`).
+2. Run: `java -cp target/classes maindeveloper.core.WebServer`
+
+---
+*Access the application at `http://localhost:<PORT>` (defaults to `4567` unless overridden in `config.properties`).*
 
 ## 🌱 How You Can Help (Beginner Friendly!)
 
@@ -130,7 +152,7 @@ If you are looking for a place to jump in, here are the active development miles
       <h3>2. Variable Support (State Management)</h3>
       <p><b>Goal:</b> Expand the stateful variable system beyond simple procedural geometry.</p>
       <ul>
-        <li><b>Global Variables:</b> Phase 1 (local-scoped variables within macros) is implemented. The next step is transitioning state management to support global, unit-scoped user-defined variables that persist across the entire compilation unit.</li>
+        <li><b>Global Variables:</b> Phase 1 (local-scoped variables within macros) and Phase 2 (global, unit-scoped variables via <code>var name = expr</code>, persisting across the entire compilation unit) are both implemented. A plain <code>name = expr</code> stays local to its macro; a local variable shadows a global one of the same name.</li>
       </ul>
     </td>
     <td valign="top" width="50%">
@@ -200,8 +222,14 @@ When filing a bug, include:
 - Console logs or Spark server stack traces.
 
 ### Pull Requests
-
 - Fork the repo and create a branch named `feature/xxx` or `fix/yyy`.
+> At the top or bottom of each PR (descriptions only, not comments) copy and 'x' this checklist:
+```text
+- [ ] I have read and agree to the CLA (CLA.md)
+- [ ] This code is my original work or I have rights to submit it
+- [ ] I am not knowingly submitting copied or unlicensed code
+```
+
 - Keep PRs focused and small.
 - Describe what changed, why it changed, and the impact on Bellerophon, CFG Generator, or Gravity Hub.
 - If your PR includes graphical or UI changes (HTML/CSS) to the IDE or Gravity Hub, you **must** include Before and After screenshots or a short GIF in your PR description.
@@ -230,4 +258,4 @@ Because Bellerophon generates physical motion commands, safety is our top priori
 
 - Maintain existing Java and frontend style.
 - Prefer incremental, reviewable changes.
-- Test the server and verify the app opens at `http://localhost:4567`.
+- verify the app opens at the configured port.

@@ -136,9 +136,10 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     @Override
     public Double visitVariable(JupitoreParser.VariableContext ctx) {
         String varName = ctx.ID().getText();
-        // TODO: Currently a flat global scope. Will need a Stack<Map> if local function
-        // variables are added.
-        Double value = visitor.variables.getOrDefault(varName, 0.0);
+        // a macro-local variable shadows a global one of the same name
+        Double value = visitor.localVariables.containsKey(varName)
+                ? visitor.localVariables.get(varName)
+                : visitor.globalVariables.getOrDefault(varName, 0.0);
         System.out.println("READ VAR: " + varName + " = " + value);
         return value;
     }

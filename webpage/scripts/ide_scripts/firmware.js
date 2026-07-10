@@ -10,10 +10,9 @@ const TARGET_CONFIG = {
     ext: ".gcode",
     downloadLabel: "Download .gcode",
   },
-  // To add a new target:
-  // reprap: {
-  //     label: 'RepRap',
-  //     ext: '.gcode',
-  //     downloadLabel: 'Download .gcode'
-  // }
+  reprap: {
+    label: "RepRap",
+    ext: ".gcode",
+    downloadLabel: "Download .gcode",
+  },
 };
