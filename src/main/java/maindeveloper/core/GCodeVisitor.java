@@ -210,6 +210,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return visit(ctx.global_assignment());
         }
 
+        if (ctx.invalid_assignment() != null) {
+            return visit(ctx.invalid_assignment());
+        }
+
         if (ctx.HOME() != null) {
             if (ctx.coordList() != null) {
                 return emitHome(visit(ctx.coordList()));
@@ -734,6 +738,20 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
     System.out.println("ASSIGN: " + varName + " = " + value);
     return "";
 }
+
+    // x/y/z/e = expr - a plain assignment can never actually bind one of
+    // these names (they tokenize as axis letters, not a generic ID), which
+    // used to mean the whole statement was silently dropped by the parser's
+    // error recovery before this visitor ever ran. This rule exists purely
+    // to catch that and raise the same clear error as the other two cases.
+    // See issue #51.
+    @Override
+    public String visitInvalid_assignment(JupitoreParser.Invalid_assignmentContext ctx) {
+        String varName = ctx.getChild(0).getText();
+        throw new RuntimeException(
+            "ERROR: '" + varName + "' is a reserved axis name. " +
+            "Use a different variable name (e.g. pos_x, my_x).");
+    }
 
     // var x = expr - same rules as a plain assignment, but stored in global
     // scope so it's visible from every macro in the file
