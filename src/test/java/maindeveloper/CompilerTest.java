@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import maindeveloper.core.PrinterProfile;
 import maindeveloper.dialects.KlipperVisitor;
+import maindeveloper.dialects.MarlinVisitor;
+import maindeveloper.dialects.RepRapVisitor;
+
 
 public class CompilerTest {
 
@@ -224,4 +227,67 @@ public class CompilerTest {
         long occurrencesOf3000 = output.lines().filter(line -> line.contains("M109 S3000")).count();
         assertTrue(occurrencesOf3000 == 2, "third macro should see the unmodified global again, not the second macro's local value");
     }
+@Test
+void relativeModeOutputsRelativeCoordinatesForKlipper() {
+    String source = """
+            M.title "relative_test_klipper"
+            Absolute
+            MoveTo x=50 y=50
+            Relative
+            MoveTo x=20 y=20
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new KlipperVisitor(new PrinterProfile());
+    String output = visitor.visit(tree);
+
+    assertTrue(output.contains("G1 X20.000 Y20.000"),
+            "Klipper: Relative move should output X20.000 Y20.000 (offset)");
+    assertFalse(output.contains("G1 X70.000 Y70.000"),
+            "Klipper: Should NOT output absolute coordinate X70.000 Y70.000 in relative mode");
+}
+
+@Test
+void relativeModeOutputsRelativeCoordinatesForMarlin() {
+    String source = """
+            M.title "relative_test_marlin"
+            Absolute
+            MoveTo x=50 y=50
+            Relative
+            MoveTo x=20 y=20
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new MarlinVisitor(new PrinterProfile());
+    String output = visitor.visit(tree);
+
+    assertTrue(output.contains("G1 X20.000 Y20.000"),
+            "Marlin: Relative move should output X20.000 Y20.000 (offset)");
+    assertFalse(output.contains("G1 X70.000 Y70.000"),
+            "Marlin: Should NOT output absolute coordinate X70.000 Y70.000 in relative mode");
+}
+
+@Test
+void relativeModeOutputsRelativeCoordinatesForRepRap() {
+    String source = """
+            M.title "relative_test_reprap"
+            Absolute
+            MoveTo x=50 y=50
+            Relative
+            MoveTo x=20 y=20
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new RepRapVisitor(new PrinterProfile());
+    String output = visitor.visit(tree);
+
+    assertTrue(output.contains("G1 X20.000 Y20.000"),
+            "RepRap: Relative move should output X20.000 Y20.000 (offset)");
+    assertFalse(output.contains("G1 X70.000 Y70.000"),
+            "RepRap: Should NOT output absolute coordinate X70.000 Y70.000 in relative mode");
+}
+    
 }

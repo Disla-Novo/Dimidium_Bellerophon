@@ -48,51 +48,83 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
-  
     // ---- ABSTRACT FIRMWARE METHODS ----
     // NOTE: Some method names are Klipper-centric for historical reasons,
-    // but their implementation intent is completely generic. They can be 
-    // mapped to emit the correct G-code syntax for any target dialect 
+    // but their implementation intent is completely generic. They can be
+    // mapped to emit the correct G-code syntax for any target dialect
     // (Marlin, RepRap, Klipper, etc.) without altering the core visitor logic.
     // -------------------------------------------------------------------
     protected abstract String emitMacroHeader(String macroName);
+
     protected abstract String emitHeat(String target, double value, boolean wait);
+
     protected abstract String emitSetHeater(String target, double value);
+
     protected abstract String emitCooldown(String target);
+
     protected abstract String emitWaitForTemp(String target);
+
     protected abstract String emitHome(String coordList);
+
     protected abstract String emitMove(String direction);
+
     protected abstract String emitMoveTo(String coordList);
+
     protected abstract String emitSetSpeed(double value);
+
     protected abstract String emitSetFan(double value);
+
     protected abstract String emitAbsolute();
+
     protected abstract String emitRelative();
+
     protected abstract String emitRelativeExtrusion();
+
     protected abstract String emitResetExtruder();
+
     protected abstract String emitPause();
+
     protected abstract String emitResume();
+
     protected abstract String emitDwell(double milliseconds);
+
     protected abstract String emitTimeoutSet(double seconds);
+
     protected abstract String emitRespond(String message);
+
     protected abstract String emitPrintFile(String filename);
+
     protected abstract String emitMacroCall(String macroName);
+
     protected abstract String emitBedMeshCalibrate();
+
     protected abstract String emitLoadBedMesh(String profile);
+
     protected abstract String emitProbeCalibrate();
+
     protected abstract String emitSetPressureAdvance(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetNozzle(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetFilament(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetLayerHeight(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetExtrusionMultiplier(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitEnableAutoExtrude(boolean enabled);
+
     protected abstract String emitIfStart(String condition);
+
     protected abstract String emitIfEnd();
+
     protected abstract String emitLayerStart(int layer);
+
     protected abstract String emitLayerEnd();
 
     // sourceFilePath for insert gcode
@@ -115,7 +147,8 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
     }
 
-    // 4/10/2026 adding paging support to the visitor! lets see if this actually works
+    // 4/10/2026 adding paging support to the visitor! lets see if this actually
+    // works
     @Override
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
 
@@ -433,7 +466,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitRepeat_statement(JupitoreParser.Repeat_statementContext ctx) {
-          int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
         StringBuilder sb = new StringBuilder();
 
         boolean oldInsideJrepeat = insideJrepeat;
@@ -451,12 +484,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
-          int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
         StringBuilder sb = new StringBuilder();
 
         double oldCenterX = centerX;
         double oldCenterY = centerY;
-        
 
         centerX = currentX;
         centerY = currentY;
@@ -503,9 +535,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
-         int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
+        int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
         StringBuilder sb = new StringBuilder();
-         
+
         for (int layer = 0; layer < layers; layer++) {
             sb.append(emitLayerStart(layer));
             for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
@@ -516,7 +548,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             sb.append(emitLayerEnd());
         }
-         
+
         return sb.toString();
     }
 
@@ -553,17 +585,20 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
-         
+
         if (!Double.isNaN(targetX)) {
-            sb.append(" X").append(String.format("%.3f", targetX));
+            double emitX = relativeMode ? targetX - currentX : targetX;
+            sb.append(" X").append(String.format("%.3f", emitX));
             isMove = true;
         }
         if (!Double.isNaN(targetY)) {
-            sb.append(" Y").append(String.format("%.3f", targetY));
+            double emitY = relativeMode ? targetY - currentY : targetY;
+            sb.append(" Y").append(String.format("%.3f", emitY));
             isMove = true;
         }
         if (!Double.isNaN(targetZ)) {
-            sb.append(" Z").append(String.format("%.3f", targetZ));
+            double emitZ = relativeMode ? targetZ - currentZ : targetZ;
+            sb.append(" Z").append(String.format("%.3f", emitZ));
             isMove = true;
         }
 
@@ -717,46 +752,47 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     }
 
     // added to deal with variable errors 7/2/26
-   @Override
-public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
-    String varName = ctx.ID().getText();
-    if ("x y z e".contains(varName.toLowerCase())) {
-        throw new RuntimeException(
-            "ERROR: '" + varName + "' is a reserved axis name. " +
-            "Use a different variable name (e.g. pos_x, my_x).");
+    @Override
+    public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
+        String varName = ctx.ID().getText();
+        if ("x y z e".contains(varName.toLowerCase())) {
+            throw new RuntimeException(
+                    "ERROR: '" + varName + "' is a reserved axis name. " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        double value = compute.visit(ctx.expr());
+        localVariables.put(varName, value);
+        System.out.println("ASSIGN: " + varName + " = " + value);
+        return "";
     }
-    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-    double value = compute.visit(ctx.expr());
-    localVariables.put(varName, value);
-    System.out.println("ASSIGN: " + varName + " = " + value);
-    return "";
-}
 
     // var x = expr - same rules as a plain assignment, but stored in global
     // scope so it's visible from every macro in the file
-   @Override
-public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx) {
-    if (ctx.ID() == null) {
-        // x/y/z/e tokenize as axis letters rather than a generic ID, so they
-        // can never satisfy this rule - the parser leaves ID() unset instead
-        // of throwing, so surface it as the same reserved-name error rather
-        // than letting callers hit a NullPointerException
-        throw new RuntimeException(
-            "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
-            "Use a different variable name (e.g. pos_x, my_x).");
+    @Override
+    public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx) {
+        if (ctx.ID() == null) {
+            // x/y/z/e tokenize as axis letters rather than a generic ID, so they
+            // can never satisfy this rule - the parser leaves ID() unset instead
+            // of throwing, so surface it as the same reserved-name error rather
+            // than letting callers hit a NullPointerException
+            throw new RuntimeException(
+                    "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        String varName = ctx.ID().getText();
+        if ("x y z e".contains(varName.toLowerCase())) {
+            throw new RuntimeException(
+                    "ERROR: '" + varName + "' is a reserved axis name. " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        double value = compute.visit(ctx.expr());
+        globalVariables.put(varName, value);
+        System.out.println("ASSIGN (global): " + varName + " = " + value);
+        return "";
     }
-    String varName = ctx.ID().getText();
-    if ("x y z e".contains(varName.toLowerCase())) {
-        throw new RuntimeException(
-            "ERROR: '" + varName + "' is a reserved axis name. " +
-            "Use a different variable name (e.g. pos_x, my_x).");
-    }
-    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-    double value = compute.visit(ctx.expr());
-    globalVariables.put(varName, value);
-    System.out.println("ASSIGN (global): " + varName + " = " + value);
-    return "";
-}
+
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
     public void setSourceFilePath(String path) {
         this.sourceFilePath = path;
@@ -829,13 +865,13 @@ public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx
         }
     }
 
-    // added helper method 
+    // added helper method
 
     private int parseIntSafe(String value, String context) {
-    try {
-        return Integer.parseInt(value);
-    } catch (NumberFormatException e) {
-        throw new RuntimeException("Invalid number at " + context + ": " + value);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid number at " + context + ": " + value);
+        }
     }
-}
 }
