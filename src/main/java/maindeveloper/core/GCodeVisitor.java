@@ -554,16 +554,19 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
          
-        if (!Double.isNaN(targetX)) {
-            sb.append(" X").append(String.format("%.3f", targetX));
+          if (!Double.isNaN(targetX)) {
+            double emitX = relativeMode ? targetX - currentX : targetX;
+            sb.append(" X").append(String.format("%.3f", emitX));
             isMove = true;
         }
         if (!Double.isNaN(targetY)) {
-            sb.append(" Y").append(String.format("%.3f", targetY));
+            double emitY = relativeMode ? targetY - currentY : targetY;
+            sb.append(" Y").append(String.format("%.3f", emitY));
             isMove = true;
         }
         if (!Double.isNaN(targetZ)) {
-            sb.append(" Z").append(String.format("%.3f", targetZ));
+            double emitZ = relativeMode ? targetZ - currentZ : targetZ;
+            sb.append(" Z").append(String.format("%.3f", emitZ));
             isMove = true;
         }
 
