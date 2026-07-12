@@ -71,13 +71,15 @@ public class ArcInterpolationTest {
 
     @Test
     void splitsAFullyClosedLoopIntoTwoHalfArcs() {
-        // 5 points at 90 degree steps (0, 90, 180, 270, 360) closes exactly
-        // back onto the first point
+        // Nine sampled points (0°..360° inclusive at 45° intervals).
+        // This satisfies the minimum point requirement for arc detection
+        // while still producing a closed loop that should be emitted as
+        // two half-circle G2/G3 commands.
         String source = """
                 M.title "closed_loop"
                 Absolute
-                Brepeat 5
-                    MoveTo x=100+50*cos(i*90) y=100+50*sin(i*90)
+                Brepeat 9
+                    MoveTo x=100+50*cos(i*45) y=100+50*sin(i*45)
                 end
                 M.end
                 """;
@@ -115,10 +117,12 @@ public class ArcInterpolationTest {
 
     @Test
     void doesNotTreatCollinearPointsAsAnArc() {
+        // 10 points so this genuinely exercises the collinear/degenerate-fit
+        // rejection rather than just being caught by the minimum-point gate
         String source = """
                 M.title "straight_line"
                 Absolute
-                Brepeat 5
+                Brepeat 10
                     MoveTo x=i*10 y=0
                 end
                 M.end
@@ -130,7 +134,33 @@ public class ArcInterpolationTest {
 
         assertFalse(output.lines().anyMatch(l -> l.trim().matches("G[23] .*")));
         long g1Count = output.lines().filter(l -> l.trim().matches("G1 .*")).count();
-        assertEquals(5, g1Count);
+        assertEquals(10, g1Count);
+    }
+
+    @Test
+    void doesNotTreatSmallSmoothCurvesAsAnArc() {
+        // Found via real hardware testing on PR #47: with too few points,
+        // a Kasa least-squares fit can match a non-circular curve to some
+        // (often enormous-radius) circle almost exactly - this parabola-like
+        // curve used to collapse into a single bogus G2 arc.
+        String source = """
+                M.title "small_smooth_curve"
+                Relative
+                Brepeat 5
+                    MoveTo x=(i*2)+3 y=sqrt(i+1)
+                end
+                M.end
+                """;
+
+        var tree = TestUtils.parse(source);
+        var visitor = new MarlinVisitor(new PrinterProfile());
+        String output = visitor.visit(tree);
+
+        long arcCount = output.lines().filter(l -> l.trim().matches("G[23] .*")).count();
+        long g1Count = output.lines().filter(l -> l.trim().matches("G1 .*")).count();
+
+        assertEquals(0, arcCount, "small smooth curves should not be mistaken for arcs");
+        assertEquals(5, g1Count, "all original moves should remain when arc confidence is too low");
     }
 
     @Test

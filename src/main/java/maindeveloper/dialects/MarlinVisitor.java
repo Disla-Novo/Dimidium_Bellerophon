@@ -36,6 +36,14 @@ public class MarlinVisitor extends GCodeVisitor {
     private static final double RADIUS_TOLERANCE_MM = 0.02;
     private static final double ANGLE_STEP_TOLERANCE_DEG = 1.0;
     private static final double CLOSED_LOOP_TOLERANCE_MM = 0.05;
+    // a handful of sparse/short-sweep points can be least-squares fit to
+    // *some* circle even when the actual path isn't one (a near-straight
+    // line of points fits an arbitrarily large-radius circle almost
+    // exactly) - these two gates were added after a real false positive
+    // (a 5-point parabola-like curve got collapsed into a bogus G2) found
+    // via hardware testing on PR #47
+    private static final int MIN_ARC_POINTS = 8;
+    private static final double MIN_SWEEP_DEG = 15.0;
 
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
@@ -60,7 +68,7 @@ public class MarlinVisitor extends GCodeVisitor {
         double[] ys = new double[times];
         String[] iterationLines = new String[times];
         Double fixedZ = null;
-        boolean eligible = times >= 3;
+        boolean eligible = times >= MIN_ARC_POINTS;
         StringBuilder fallback = new StringBuilder();
 
         // the loop always runs to completion, exactly like the base
@@ -153,6 +161,9 @@ public class MarlinVisitor extends GCodeVisitor {
     // required before this is trusted as a real arc
     private CircleFit fitCircle(double[] xs, double[] ys) {
         int n = xs.length;
+        if (n < MIN_ARC_POINTS) {
+            return null; // not enough points for reliable circle detection
+        }
 
         // Kasa algebraic circle fit: solve the normal equations for
         // x^2+y^2 = D*x + E*y + F
@@ -228,6 +239,10 @@ public class MarlinVisitor extends GCodeVisitor {
 
         if (Math.abs(totalSweep) > 360.0 + ANGLE_STEP_TOLERANCE_DEG) {
             return null; // more than one full lap in a single Brepeat - out of scope for one arc command
+        }
+
+        if (Math.abs(totalSweep) < MIN_SWEEP_DEG) {
+            return null; // arc is too shallow to justify optimization
         }
 
         return new CircleFit(centerX, centerY, radius, clockwise);
