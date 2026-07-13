@@ -494,6 +494,49 @@ M.end`,
     Cooldown
 M.end`,
   },
+    // added VARIABLES 7/12/26
+  "var": {
+    label: "var (Global)",
+    description: "Declares a global variable that persists across macros. Use 'var' for values that need to be shared between M.title blocks.",
+    example: `M.title "Global Variable Example"
+    var global_offset = 20
+    var feedrate = 1500
+    Absolute
+    Home
+    SetSpeed = feedrate
+    MoveTo x=global_offset y=global_offset z=0.2
+    M.call "SubMacro"
+    M.end
+
+    M.title "SubMacro"
+    global_offset = global_offset + 10
+    MoveTo x=global_offset y=global_offset z=0.2
+    M.end`,
+  },
+  "assignment": {
+    label: "Assignment (Local)",
+    description: "Assigns a value to a local variable. Only valid within the current macro. Does not persist across M.call.",
+    example: `M.title "Local Assignment Example"
+    Absolute
+    Home
+    pos_x = 50
+    pos_y = 50
+    MoveTo x=pos_x y=pos_y z=0.2
+    pos_x = 150
+    MoveTo x=pos_x y=pos_y
+    M.end`,
+  },
+  "axis-assignment": {
+    label: "Axis Assignment (Reserved)",
+    description: "🔺 x, y, z, and e are reserved axis names. Assigning to them directly will throw a clear error.",
+    example: `M.title "Axis Assignment Error"
+    Absolute
+    // This will throw: "ERROR: 'x' is a reserved axis name"
+    x = 10
+    MoveTo x=20 y=30
+    M.end`,
+     canCompile: false,
+  },
 };
 
 let currentCommandId = null;
