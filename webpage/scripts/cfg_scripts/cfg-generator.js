@@ -82,7 +82,118 @@ const boards = {
     has_uart_global: true,
     needs_standby_pins: false,
   },
+  "btt-skr-3": {
+    name: "BIGTREETECH SKR 3",
+    x_step: "PE2",
+    x_dir: "PE1",
+    x_enable: "!PE0",
+    x_endstop: "^PC0",
+    y_step: "PE5",
+    y_dir: "PE4",
+    y_enable: "!PE3",
+    y_endstop: "^PC1",
+    z_step: "PE8",
+    z_dir: "PE7",
+    z_enable: "!PE6",
+    z_endstop: "^PC2",
+    uart_pin_global: "PC11",
+    has_uart_global: true,
+  },
+  "btt-manta-m8p": {
+    name: "BIGTREETECH Manta M8P",
+    x_step: "PB9",
+    x_dir: "PB8",
+    x_enable: "!PC3",
+    x_endstop: "^PC14",
+    y_step: "PC2",
+    y_dir: "PC1",
+    y_enable: "!PC0",
+    y_endstop: "^PA5",
+    z_step: "PB6",
+    z_dir: "PB5",
+    z_enable: "!PB4",
+    z_endstop: "^PA6",
+    uart_pin_global: "PC11",
+    has_uart_global: true,
+  },
+  "fysetc-spider": {
+    name: "FYSETC Spider",
+    x_step: "PE11",
+    x_dir: "PE10",
+    x_enable: "!PE9",
+    x_endstop: "^PA1",
+    y_step: "PD8",
+    y_dir: "PB12",
+    y_enable: "!PD9",
+    y_endstop: "^PA2",
+    z_step: "PD12",
+    z_dir: "!PC4",
+    z_enable: "!PE8",
+    z_endstop: "^PA0",
+    uart_pin_x: "PE7",
+    uart_pin_y: "PE15",
+    uart_pin_z: "PA15",
+    has_uart_global: false,
+  },
+  "octopus-pro": {
+    name: "Octopus Pro",
+    x_step: "PB9",
+    x_dir: "PB8",
+    x_enable: "!PC3",
+    x_endstop: "^PA5",
+    y_step: "PC2",
+    y_dir: "PC1",
+    y_enable: "!PC0",
+    y_endstop: "^PA6",
+    z_step: "PB6",
+    z_dir: "PB5",
+    z_enable: "!PB4",
+    z_endstop: "^PA7",
+    uart_pin_global: "PC11",
+    has_uart_global: true,
+  },
+  "btt-manta-m5p": {
+    name: "BIGTREETECH Manta M5P",
+    x_step: "PC8",
+    x_dir: "PC9",
+    x_enable: "!PA15",
+    x_endstop: "^!PD3",
+    y_step: "PA10",
+    y_dir: "!PA14",
+    y_enable: "!PA13",
+    y_endstop: "^!PD2",
+    z_step: "PC6",
+    z_dir: "PC7",
+    z_enable: "!PA9",
+    z_endstop: "^!PC3",
+    e_step: "PB12",
+    e_dir: "!PB11",
+    e_enable: "!PA8",
+    uart_pin_x: "PD9",
+    uart_pin_y: "PD8",
+    uart_pin_z: "PB10",
+    uart_pin_e: "PB2",
+    has_uart_global: false,
+    needs_standby_pins: false,
+  },
 };
+
+// Builds a [tmc2209 <section>] block. tx_pin and uart_address are only
+// included when actually provided - a board with one dedicated UART pin
+// per driver doesn't need an address (there's nothing to multiplex), so
+// omitting it here rather than inventing one keeps the output honest about
+// what the board dictionary actually knows.
+function tmc2209Block(sectionName, uartPin, txPin, uartAddress, runCurrent) {
+  let block = `[tmc2209 ${sectionName}]\nuart_pin: ${uartPin}\n`;
+  if (txPin !== undefined) {
+    block += `tx_pin: ${txPin}\n`;
+  }
+  if (uartAddress !== undefined) {
+    block += `uart_address: ${uartAddress}\n`;
+  }
+  block += `run_current: ${runCurrent}\nstealthchop_threshold: 999999\n\n`;
+  return block;
+}
 
 // Generate based on form inputs
 function generateConfig() {
@@ -180,34 +291,54 @@ function generateConfig() {
     cfg += `position_max: ${bedZ}\n\n`;
   }
 
-  // TMC2209 driver configuration (SKR E3 Turbo uses per-axis UART pins)
+  // TMC2209 driver configuration. Boards wire UART one of two ways:
+  // per-axis dedicated pins (uart_pin_x/y/z/e - address only needed if the
+  // board actually shares one physical bus between drivers, e.g. SKR E3
+  // Turbo) or one shared global pin/bus for all axes (uart_pin_global,
+  // has_uart_global: true). Driven off what fields the board actually
+  // defines rather than the board name, so this works for any board added
+  // to the dictionary, not just the ones it was originally written for.
   if (driverType === "tmc2209") {
-    if (boardKey === "skr-e3-turbo") {
-      cfg += `[tmc2209 stepper_x]\nuart_pin: ${board.uart_pin_x}\nuart_address: ${board.uart_addr_x}\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
-      cfg += `[tmc2209 stepper_y]\nuart_pin: ${board.uart_pin_y}\nuart_address: ${board.uart_addr_y}\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
-      cfg += `[tmc2209 stepper_z]\nuart_pin: ${board.uart_pin_z}\nuart_address: ${board.uart_addr_z}\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
+    if (board.uart_pin_x !== undefined) {
+      cfg += tmc2209Block("stepper_x", board.uart_pin_x, undefined, board.uart_addr_x, "0.580");
+      cfg += tmc2209Block("stepper_y", board.uart_pin_y, undefined, board.uart_addr_y, "0.580");
+      cfg += tmc2209Block("stepper_z", board.uart_pin_z, undefined, board.uart_addr_z, "0.580");
     } else if (board.has_uart_global) {
-      cfg += `[tmc2209 stepper_x]\nuart_pin: ${board.uart_pin_global || "PC11"}\ntx_pin: ${board.tx_pin || "PC10"}\nuart_address: 0\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
-      cfg += `[tmc2209 stepper_y]\nuart_pin: ${board.uart_pin_global || "PC11"}\ntx_pin: ${board.tx_pin || "PC10"}\nuart_address: 1\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
-      cfg += `[tmc2209 stepper_z]\nuart_pin: ${board.uart_pin_global || "PC11"}\ntx_pin: ${board.tx_pin || "PC10"}\nuart_address: 2\nrun_current: 0.580\nstealthchop_threshold: 999999\n\n`;
+      const uartPin = board.uart_pin_global || "PC11";
+      const txPin = board.tx_pin || "PC10";
+      cfg += tmc2209Block("stepper_x", uartPin, txPin, 0, "0.580");
+      cfg += tmc2209Block("stepper_y", uartPin, txPin, 1, "0.580");
+      cfg += tmc2209Block("stepper_z", uartPin, txPin, 2, "0.580");
     }
   }
 
-  // Extruder configuration
+  // Extruder configuration. Falls back to the SKR Mini E3's extruder pinout
+  // when a board doesn't define its own e_step/e_dir/e_enable - a
+  // pre-existing limitation for boards without that data, not something
+  // this change attempts to source pin-accurate values for.
   cfg += `[extruder]\n`;
-  if (boardKey === "skr-e3-turbo") {
+  if (board.e_step !== undefined) {
     cfg += `step_pin: ${board.e_step}\ndir_pin: ${board.e_dir}\nenable_pin: ${board.e_enable}\n`;
   } else {
     cfg += `step_pin: PB3\ndir_pin: !PB4\nenable_pin: !PD1\n`;
   }
   cfg += `microsteps: 16\nrotation_distance: 33.500\nnozzle_diameter: 0.400\nfilament_diameter: 1.750\nheater_pin: PC8\nsensor_type: EPCOS 100K B57560G104F\nsensor_pin: PA0\ncontrol: pid\npid_Kp: 21.527\npid_Ki: 1.063\npid_Kd: 108.982\nmin_temp: 0\nmax_temp: 250\n\n`;
 
-  // TMC2209 extruder
+  // TMC2209 extruder - same per-axis vs global-bus split as the steppers
+  // above. If a board has neither (no uart_pin_e and no global UART bus),
+  // there's no data to build this section from, so it's omitted rather
+  // than guessing.
   if (driverType === "tmc2209") {
-    if (boardKey === "skr-e3-turbo") {
-      cfg += `[tmc2209 extruder]\nuart_pin: ${board.uart_pin_e}\nuart_address: ${board.uart_addr_e}\nrun_current: 0.650\nstealthchop_threshold: 999999\n\n`;
-    } else {
-      cfg += `[tmc2209 extruder]\nuart_pin: PC11\ntx_pin: PC10\nuart_address: 3\nrun_current: 0.650\nstealthchop_threshold: 999999\n\n`;
+    if (board.uart_pin_e !== undefined) {
+      cfg += tmc2209Block("extruder", board.uart_pin_e, undefined, board.uart_addr_e, "0.650");
+    } else if (board.has_uart_global) {
+      cfg += tmc2209Block(
+        "extruder",
+        board.uart_pin_global || "PC11",
+        board.tx_pin || "PC10",
+        3,
+        "0.650",
+      );
     }
   }
 
