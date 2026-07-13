@@ -2,6 +2,7 @@ package maindeveloper;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -267,7 +268,61 @@ void relativeModeOutputsRelativeCoordinatesForRepRap() {
     assertFalse(output.contains("G1 X70.000 Y70.000"),
             "RepRap: Should NOT output absolute coordinate X70.000 Y70.000 in relative mode");
 }
-   
 
+@Test
+void plainAssignmentToReservedAxisNameRaisesClearError() {
+    String source = """
+            M.title "t"
+            x = 5
+            Home
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new KlipperVisitor(new PrinterProfile());
+
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> visitor.visit(tree));
+    assertTrue(ex.getMessage().contains("reserved axis name"),
+            "expected a reserved-axis-name error, got: " + ex.getMessage());
+}
+
+@Test
+void plainAssignmentToEachReservedAxisLetterRaisesClearError() {
+    for (String axis : new String[] {"x", "y", "z", "e"}) {
+        String source = """
+                M.title "t"
+                %s = 5
+                Home
+                M.end
+                """.formatted(axis);
+
+        var tree = TestUtils.parse(source);
+        var visitor = new KlipperVisitor(new PrinterProfile());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> visitor.visit(tree),
+                "expected '" + axis + " = 5' to raise an error");
+        assertTrue(ex.getMessage().contains("'" + axis + "'"),
+                "expected the error to name '" + axis + "', got: " + ex.getMessage());
+    }
+}
+
+@Test
+void globalAssignmentToReservedAxisNameStillRaisesClearError() {
+    // no regression on the existing #45 behavior now that plain
+    // assignments to axis letters are also handled
+    String source = """
+            M.title "t"
+            var x = 5
+            Home
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new KlipperVisitor(new PrinterProfile());
+
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> visitor.visit(tree));
+    assertTrue(ex.getMessage().contains("reserved axis letter"),
+            "expected the existing global_assignment reserved-axis error, got: " + ex.getMessage());
+}
 
 }
