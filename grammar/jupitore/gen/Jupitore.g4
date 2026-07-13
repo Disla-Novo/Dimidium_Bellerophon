@@ -63,6 +63,7 @@ statement
     | PRINTFILE STRING stmtTerm             // Added - prints a G-code file via SD card
     | assignment   // new rule for variable assignment 6/17/2026
     | global_assignment  // var x = expr - persists across macros, unlike a plain assignment
+    | invalid_assignment  // x/y/z/e = expr - reserved axis letters used as a plain assignment target
     | insert_gcode_statement  // NEW: separate rule for InsertGCode
     ;
 
@@ -89,6 +90,15 @@ insert_gcode_statement
 // as opposed to a plain assignment which is local to the current macro
 global_assignment
     : VAR ID EQUALS expr NEWLINE
+    ;
+
+// x/y/z/e tokenize as dedicated axis tokens rather than a generic ID, so a
+// plain "x = 5" can never match the `assignment` rule above - without this
+// rule, the parser's error recovery silently drops the whole statement
+// before the visitor ever runs. This exists purely to catch that case and
+// raise a clear error instead of a silent no-op. See issue #51.
+invalid_assignment
+    : (X | Y | Z | E) EQUALS expr stmtTerm
     ;
 
   repeat_statement
