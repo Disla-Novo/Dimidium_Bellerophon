@@ -179,6 +179,14 @@
           </div>
 
           <div class="grammar-category">
+            <h4>Optimizations</h4>
+            <div class="grammar-item" data-command="arc-interpolation">
+              Arc Interpolation <span>smooth circles (Marlin)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
             <h4>Expressions</h4>
             <div class="grammar-item" data-command="functions">
               Functions <span>sin | cos | tan | sqrt | abs | sign</span>
@@ -262,7 +270,8 @@
 
           <div class="demo-output">
             <div class="output-header">
-              <span>Generated Output (Klipper)</span>
+              <span id="output-mode-label">Generated Output (Klipper)</span>
+              <!--now dynamic-->
             </div>
             <pre
               id="demo-output-content"
