@@ -522,29 +522,31 @@ M.end`,
 M.end`,
   },
   // added VARIABLES 7/12/26
-  var: {
+var: {
     label: "var (Global)",
     description:
-      "Declares a global variable that persists across macros. Use 'var' for values that need to be shared between M.title blocks.",
-    example: `M.title "Global Variable Example"
-    var global_offset = 20
-    var feedrate = 1500
-    Absolute
-    Home
-    SetSpeed = feedrate
-    MoveTo x=global_offset y=global_offset z=0.2
-    M.call "SubMacro"
-    M.end
+      "Declares a global variable that persists across the entire file. Any macro can read or modify it.",
+    example: `M.title "Setup"
+    # Declares a global variable 'start_pos' with initial value 10
+    var start_pos = 10
+    MoveTo x=start_pos
+M.end
 
-    M.title "SubMacro"
-    global_offset = global_offset + 10
-    MoveTo x=global_offset y=global_offset z=0.2
-    M.end`,
-  },
+M.title "Move"
+    # Modifies the global start_pos from 10 to 50 but only in current macro
+    start_pos = 50
+    MoveTo x=start_pos
+M.end
+
+M.title "Move_global"
+    MoveTo x=start_pos 
+M.end`
+
+},
   assignment: {
     label: "Assignment (Local)",
     description:
-      "Assigns a value to a local variable. Only valid within the current macro. Does not persist across M.call.",
+      "Assigns a value to a local variable. Only valid within the current macro.",
     example: `M.title "Local Assignment Example"
     Absolute
     Home
