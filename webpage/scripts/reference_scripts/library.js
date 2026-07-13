@@ -681,7 +681,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.success) {
         let output = data.output;
-        const modeLabel = mode.toUpperCase();
         if (output.startsWith("SUCCESS_PAGED:")) {
           output =
             "[Large output — paged to disk. Preview not available here.]";
