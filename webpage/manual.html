@@ -78,9 +78,8 @@
                         </ul>
 
                         <div class="note">
-                            The server runs locally on port 4567. No internet
-                            connection required after installation.
-                        </div>
+    The server runs locally. By default, it listens on port <strong>4567</strong>, but this can be changed by editing the <code>config.properties</code> file. No internet connection is required after installation.
+</div>
 
                         <h3>3. Compilation Architecture</h3>
                         <p>Bellerophon uses a decoupled <strong>Firmware Adapter
@@ -166,10 +165,7 @@
                             <li><strong>DSL Purpose:</strong> Bellerophon is a
                                 compilation engine, not a 3D slicer; it does not
                                 process 3D meshes (STL/STEP).</li>
-                            <li><strong>Variable Scope:</strong> Variables are
-                                currently local to the macro scope to prevent
-                                collision. Global state persistence is a planned
-                                future architectural expansion.</li>
+                            <li><strong>Variable Scope:</strong> Bellerophon supports both local variables (scoped to the macro) and global variables (defined with <code>var</code>, persisting across <code>M.call</code>).</li>
                             <li><strong>Target Compatibility:</strong> Feature
                                 support (such as conditional logic) is
                                 determined by the specific capabilities of the
@@ -211,46 +207,54 @@
                                     class="inline-code token-TITLE">M.title</span>
                                 and ends with <span
                                     class="inline-code token-MEND">M.end</span>.</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-TITLE">M.title</span> <span
-                                        class="token-STRING">"Macro Name"</span></span>
-                                <span class="lines"> [statement 1]</span>
-                                <span class="lines"> [statement 2]</span>
-                                <span class="lines"> [statement 3]</span>
-                                <span class="line"><span
-                                        class="token-MEND">M.end</span></span>
-                            </div>
+                            <pre><code><span class="token-TITLE">M.title</span> <span class="token-STRING">"Macro Name"</span>
+    [statement 1]
+    [statement 2]
+    [statement 3]
+<span class="token-MEND">M.end</span></code></pre>
                             <p>Each command must be on its own line. Indentation
                                 is optional but recommended. Comments start with
                                 <span class="inline-code">#</span>.</p>
                         </section>
 
-                        <!-- LOCAL USER VARIABLES -->
+                        <!-- USER VARIABLES (LOCAL & GLOBAL) -->
                         <section class="section">
-                            <h2>Local User Variables</h2>
-                            <p>Bellerophon supports <strong>local
-                                    variables</strong> defined inside macros.
-                                Variables are scoped to the macro they are
-                                defined in and are not accessible outside
-                                it.</p>
+                            <h2>User Variables (Local & Global)</h2>
+                            <p>Bellerophon supports both <strong>local variables</strong> (defined inside a single macro) and <strong>global variables</strong> (defined with the <code>var</code> keyword and shared across macros).</p>
 
-                            <div class="note">
-                                <strong>Scope:</strong> Variables are local to
-                                the macro. They do not persist across macro
-                                calls. Global variables are a planned future
-                                feature.
-                            </div>
+                       
+<div class="note">
+    <strong>Scope Rules:</strong> Variables defined without <code>var</code> are local to the macro and cleared when the macro ends. Variables defined with <code>var</code> are global and persist across all macros. If a local and global variable share the same name, the <strong>local variable shadows (takes priority over) the global</strong> inside that macro. Undefined variables default to <code>0.0</code>.
+</div>
+<h3>Local Variables (Standard Assignment)</h3>
+<p>To define or update a variable that only exists inside the current macro:</p>
+<pre><code><span class="token-TITLE">M.title</span> <span class="token-STRING">"Main"</span>
+    <span class="token-ID">pos_x</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">50</span>
+    <span class="token-ID">pos_y</span> <span class="token-EQUALS">=</span> <span class="token-ID">pos_x</span> <span class="token-OPERATOR">+</span> <span class="token-NUMBER">10</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-EQUALS">=</span><span class="token-ID">pos_x</span> <span class="token-Y">y</span><span class="token-EQUALS">=</span><span class="token-ID">pos_y</span>
+<span class="token-MEND">M.end</span></code></pre>
+<p style="color: #555; margin-top: 0.5rem;"><em>⏺ These variables are discarded when the macro ends.</em></p>
+
+<h3>Global Variables (<code>var</code>)</h3>
+<p>To define a variable that persists across the entire file and can be shared between macros, use the <code>var</code> keyword. A global variable defined in one macro can be read or modified by any other macro in the same compilation unit:</p>
+<pre><code><span class="token-TITLE">M.title</span> <span class="token-STRING">"MacroA"</span>
+    <span class="token-KEYWORD">var</span> <span class="token-ID">pos_x</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">50</span>
+    <span class="token-KEYWORD">var</span> <span class="token-ID">pos_y</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">60</span>
+    <span class="token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">3000</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-EQUALS">=</span><span class="token-ID">pos_x</span> <span class="token-Y">y</span><span class="token-EQUALS">=</span><span class="token-ID">pos_y</span>
+<span class="token-MEND">M.end</span>
+
+<span class="token-TITLE">M.title</span> <span class="token-STRING">"MacroB"</span>
+    <span class="token-ID">pos_x</span> <span class="token-EQUALS">=</span> <span class="token-ID">pos_x</span> <span class="token-OPERATOR">+</span> <span class="token-NUMBER">10</span>   <span class="token-COMMENT"># Now 60</span>
+    <span class="token-ID">pos_y</span> <span class="token-EQUALS">=</span> <span class="token-ID">pos_y</span> <span class="token-OPERATOR">+</span> <span class="token-NUMBER">10</span>   <span class="token-COMMENT"># Now 70</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-EQUALS">=</span><span class="token-ID">pos_x</span> <span class="token-Y">y</span><span class="token-EQUALS">=</span><span class="token-ID">pos_y</span>
+<span class="token-MEND">M.end</span></code></pre>
+<p style="color: #555; margin-top: 0.5rem;"><em>⏺ Global variables persist across the entire file. <code>pos_x</code> starts at 50 and <code>pos_y</code> at 60 in MacroA, then both become 60 and 70 in MacroB.</em></p>               </div>
 
                             <h3>Assignment Syntax</h3>
                             <p>To define or update a variable, use the
                                 assignment statement:</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-ID">variable_name</span>
-                                    <span class="token-EQUALS">=</span> <span
-                                        class="token-NUMBER">expression</span></span>
-                            </div>
+                            <pre><code><span class="token-ID">variable_name</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">expression</span></code></pre>
 
                             <h3>Supported Expressions</h3>
                             <p>Variables can be assigned any valid
@@ -275,54 +279,21 @@
                             </ul>
 
                             <h3>Example</h3>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-TITLE">M.title</span> <span
-                                        class="token-STRING">"example"</span></span>
-                                <span class="line"> <span
-                                        class="token-ID">base</span> <span
-                                        class="token-EQUALS">=</span> <span
-                                        class="token-NUMBER">100</span></span>
-                                <span class="line"> <span
-                                        class="token-ID">offset</span> <span
-                                        class="token-EQUALS">=</span> <span
-                                        class="token-NUMBER">50</span></span>
-                                <span class="line"> <span
-                                        class="token-ID">speed</span> <span
-                                        class="token-EQUALS">=</span> (<span
-                                        class="token-ID">base</span> + <span
-                                        class="token-ID">offset</span>) * <span
-                                        class="token-NUMBER">2</span></span>
-                                <span class="line"> <span
-                                        class="token-SET_SPEED">SetSpeed</span>
-                                    <span class="token-EQUALS">=</span> <span
-                                        class="token-ID">speed</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-ID">base</span> <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-ID">offset</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-ID">base</span>+<span
-                                        class="token-ID">offset</span> <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-ID">base</span>-<span
-                                        class="token-ID">offset</span></span>
-                                <span class="line"><span
-                                        class="token-MEND">M.end</span></span>
-                            </div>
+                            <pre><code><span class="token-TITLE">M.title</span> <span class="token-STRING">"example"</span>
+    <span class="token-ID">base</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">100</span>
+    <span class="token-ID">offset</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">50</span>
+    <span class="token-ID">speed</span> <span class="token-EQUALS">=</span> (<span class="token-ID">base</span> + <span class="token-ID">offset</span>) * <span class="token-NUMBER">2</span>
+    <span class="token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-ID">speed</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">base</span> <span class="token-Y">y</span>=<span class="token-ID">offset</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">base</span>+<span class="token-ID">offset</span> <span class="token-Y">y</span>=<span class="token-ID">base</span>-<span class="token-ID">offset</span>
+<span class="token-MEND">M.end</span></code></pre>
 
                             <h4>Output</h4>
-                            <div class="code-block">
-                                <span class="line">[gcode_macro example]</span>
-                                <span class="line">gcode:</span>
-                                <span class="line"> G1 F300</span>
-                                <span class="line"> G1 X100.000 Y50.000</span>
-                                <span class="line"> G1 X150.000 Y50.000</span>
-                            </div>
+                            <pre><code>[gcode_macro example]
+gcode:
+    G1 F300
+    G1 X100.000 Y50.000
+    G1 X150.000 Y50.000</code></pre>
 
                         </section>
 
@@ -1132,21 +1103,10 @@
                                 command executes a block once per printed layer
                                 and automatically advances the Z-axis using the
                                 configured <code>LayerHeight</code>.</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-LAYER">Layer</span> <span
-                                        class="token-NUMBER">50</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=100 <span
-                                        class="token-Y">y</span>=50</span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=120 <span
-                                        class="token-Y">y</span>=50</span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-LAYER">Layer</span> <span class="token-NUMBER">50</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=100 <span class="token-Y">y</span>=50
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=120 <span class="token-Y">y</span>=50
+<span class="token-END">end</span></code></pre>
                             <div class="note">
                                 <strong>Important:</strong> Z-axis movement is
                                 not allowed inside Layer blocks. The Layer
@@ -1187,31 +1147,15 @@
                                     class="inline-code token-COOLDOWN">Cooldown</span>
                                 command provides flexible temperature
                                 control:</p>
-                            <div class="code-block">
-                                <span class="token-COMMENT"># Turn off all
-                                    heaters</span>
-                                <span class="line"><span
-                                        class="token-COOLDOWN">Cooldown</span></span>
-                                <span class="line"><span class="token-COMMENT">#
-                                        or explicitly:</span></span>
-                                <span class="line"><span
-                                        class="token-COOLDOWN">Cooldown</span>
-                                    <span class="token-TARGET">all</span></span>
+                            <pre><code><span class="token-COMMENT"># Turn off all heaters</span>
+<span class="token-COOLDOWN">Cooldown</span>
+<span class="token-COMMENT"># or explicitly:</span>
+<span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">all</span>
 
-                                <span class="token-COMMENT"># Turn off specific
-                                    heaters</span>
-                                <span class="line"><span
-                                        class="token-COOLDOWN">Cooldown</span>
-                                    <span
-                                        class="token-TARGET">extruder</span></span>
-                                <span class="line"><span
-                                        class="token-COOLDOWN">Cooldown</span>
-                                    <span class="token-TARGET">bed</span></span>
-                                <span class="line"><span
-                                        class="token-COOLDOWN">Cooldown</span>
-                                    <span
-                                        class="token-TARGET">chamber</span></span>
-                            </div>
+<span class="token-COMMENT"># Turn off specific heaters</span>
+<span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">extruder</span>
+<span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">bed</span>
+<span class="token-COOLDOWN">Cooldown</span> <span class="token-TARGET">chamber</span></code></pre>
                             <p><strong>Behavior:</strong></p>
                             <ul>
                                 <li><strong>No target</strong> → Turns off all
@@ -1220,15 +1164,25 @@
                                     turns off that specific heater</li>
                             </ul>
 
-                            <h3>6. Variable Scoping</h3>
-                            <p>Variables are defined via <code>name =
-                                    expression</code>. They are <strong>local to
-                                    the macro</strong>. This prevents variable
-                                name collisions across different macros,
-                                ensuring your code remains modular and safe for
-                                inclusion in larger printer config files.
-                                Variables are not accessible outside the macro
-                                they are defined in.</p>
+                           <h3>6. Variable Scoping</h3>
+<p>Bellerophon supports two types of variables with different scope rules:</p>
+<ul>
+    <li><strong>Local variables</strong> (defined without <code>var</code>) are scoped to the macro they are defined in. They are created when the macro starts and discarded when the macro ends. This prevents name collisions across different macros.</li>
+    <li><strong>Global variables</strong> (defined with the <code>var</code> keyword) persist across the entire compilation unit. They can be accessed and modified from any macro in the same file.</li>
+</ul>
+
+<p><strong>Shadowing Priority:</strong> If a local variable and a global variable share the same name, the <strong>local variable takes priority</strong> inside that macro. The global variable is temporarily hidden and becomes visible again once the macro ends.</p>
+
+<p><strong>Default Value:</strong> If a variable name is used but has not been defined either locally or globally, the compiler defaults to <code>0.0</code>.</p>
+
+<div class="note">
+    <ul>
+        <li>Local (no <code>var</code>) → macro-only, cleared at end.</li>
+        <li>Global (<code>var</code>) → whole file, persists everywhere.</li>
+        <li>Local always beats global when names conflict.</li>
+        <li>Undefined variables → <code>0.0</code>.</li>
+    </ul>
+</div>
 
                             <h3>7. Assignment Operators</h3>
                             <p>Operators allow for precise control during
@@ -1292,74 +1246,40 @@
                             <p>The same loop code produces very different
                                 results depending on the active mode:</p>
 
-                            <div class="code-block">
-                                <span class="line"><span class="token-COMMENT">#
-                                        Absolute Mode Example</span></span>
-                                <span class="line"><span
-                                        class="token-ABSOLUTE">Absolute</span></span>
-                                <span class="line"><span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-NUMBER">10</span></span>
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">4</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span><span
-                                        class="token-PLUSEQ">+=</span><span
-                                        class="token-NUMBER">5</span></span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-COMMENT"># Absolute Mode Example</span>
+<span class="token-ABSOLUTE">Absolute</span>
+<span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">10</span>
+<span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">5</span>
+<span class="token-END">end</span></code></pre>
 
-                            <div class="code-block">
-                                <span class="line"><span class="token-COMMENT">#
-                                        Relative Mode Example</span></span>
-                                <span class="line"><span
-                                        class="token-RELATIVE">Relative</span></span>
-                                <span class="line"><span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-NUMBER">10</span></span>
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">4</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span><span
-                                        class="token-PLUSEQ">+=</span><span
-                                        class="token-NUMBER">5</span></span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-COMMENT"># Relative Mode Example</span>
+<span class="token-RELATIVE">Relative</span>
+<span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">10</span>
+<span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">5</span>
+<span class="token-END">end</span></code></pre>
 
                             <h4>Output:</h4>
-                            <div class="code-block">
-                                <span class="line"><span class="token-COMMENT">#
-                                        Absolute Mode Output</span></span>
-                                <span class="line">[gcode_macro
-                                    Absolute!-tester]</span>
-                                <span class="line">gcode:</span>
-                                <span class="line"> G90</span>
-                                <span class="line"> G1 X10.000</span>
-                                <span class="line"> G1 X15.000</span>
-                                <span class="line"> G1 X20.000</span>
-                                <span class="line"> G1 X25.000</span>
-                                <span class="line"> G1 X30.000</span>
-                                <span class="line"> </span>
-                                <span class="line"><span class="token-COMMENT">#
-                                        Relative Mode Output</span></span>
-                                <span class="line">[gcode_macro
-                                    Relative!-tester]</span>
-                                <span class="line">gcode:</span>
-                                <span class="line"> G91</span>
-                                <span class="line"> G1 X10.000</span>
-                                <span class="line"> G1 X5.000</span>
-                                <span class="line"> G1 X5.000</span>
-                                <span class="line"> G1 X5.000</span>
-                                <span class="line"> G1 X5.000</span>
-                            </div>
+                            <pre><code><span class="token-COMMENT"># Absolute Mode Output</span>
+[gcode_macro Absolute!-tester]
+gcode:
+    G90
+    G1 X10.000
+    G1 X15.000
+    G1 X20.000
+    G1 X25.000
+    G1 X30.000
+
+<span class="token-COMMENT"># Relative Mode Output</span>
+[gcode_macro Relative!-tester]
+gcode:
+    G91
+    G1 X10.000
+    G1 X5.000
+    G1 X5.000
+    G1 X5.000
+    G1 X5.000</code></pre>
 
                             <div class="note">
                                 <strong>Key observation:</strong> In absolute
@@ -1380,38 +1300,18 @@
                                 compilation. The value must be a constant
                                 number, not a variable or expression.</p>
 
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-REPEAT">repeat</span> <span
-                                        class="token-NUMBER">3</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span><span
-                                        class="token-PLUSEQ">+=</span><span
-                                        class="token-NUMBER">10</span> <span
-                                        class="token-Y">y</span><span
-                                        class="token-PLUSEQ">+=</span><span
-                                        class="token-NUMBER">10</span></span>
-                                <span class="lines"> <span
-                                        class="token-RESPOND">Respond</span>
-                                    <span class="token-MSG">MSG</span> <span
-                                        class="token-STRING">"Moving..."</span></span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-REPEAT">repeat</span> <span class="token-NUMBER">3</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">10</span> <span class="token-Y">y</span><span class="token-PLUSEQ">+=</span><span class="token-NUMBER">10</span>
+    <span class="token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Moving..."</span>
+<span class="token-END">end</span></code></pre>
 
                             <h4>Output (repeat):</h4>
-                            <div class="code-block">
-                                <span class="line"> G1 X10.0 Y10.0</span>
-                                <span class="line"> RESPOND
-                                    MSG="Moving..."</span>
-                                <span class="line"> G1 X20.0 Y20.0</span>
-                                <span class="line"> RESPOND
-                                    MSG="Moving..."</span>
-                                <span class="line"> G1 X30.0 Y30.0</span>
-                                <span class="line"> RESPOND
-                                    MSG="Moving..."</span>
-                            </div>
+                            <pre><code>G1 X10.0 Y10.0
+RESPOND MSG="Moving..."
+G1 X20.0 Y20.0
+RESPOND MSG="Moving..."
+G1 X30.0 Y30.0
+RESPOND MSG="Moving..."</code></pre>
                             <p class="note">The commands are physically
                                 duplicated in the output G-code. Great for
                                 simple, fixed repetitions where the number of
@@ -1445,17 +1345,9 @@
                             </div>
 
                             <h4>Example: Using the iterator</h4>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">5</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-ID">i</span></span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>
+<span class="token-END">end</span></code></pre>
 
                             <h4>Example: Mathematical Expressions (global
                                 availability)</h4>
@@ -1464,85 +1356,33 @@
                                 <code>^</code>, absolute value
                                 <code>abs()</code>, signum <code>sign()</code>,
                                 and the constant <code>pi</code>.</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">3</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-ID">i</span>^<span
-                                        class="token-NUMBER">2</span> * <span
-                                        class="token-NUMBER">5</span> + <span
-                                        class="token-FUNC">abs</span>(<span
-                                        class="token-ID">i</span>-<span
-                                        class="token-NUMBER">2</span>)</span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                                <span class="line"><span
-                                        class="token-HEAT">Heat</span> <span
-                                        class="token-TARGET">extruder</span>=<span
-                                        class="token-NUMBER">180</span> + <span
-                                        class="token-NUMBER">20</span>*<span
-                                        class="token-FUNC">sin</span>(<span
-                                        class="token-NUMBER">3.14159</span>/<span
-                                        class="token-NUMBER">2</span>)</span>
-                                <span class="token-COMMENT"># works outside
-                                    loops too</span>
-                            </div>
+                            <pre><code><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">3</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>^<span class="token-NUMBER">2</span> * <span class="token-NUMBER">5</span> + <span class="token-FUNC">abs</span>(<span class="token-ID">i</span>-<span class="token-NUMBER">2</span>)
+<span class="token-END">end</span>
+<span class="token-HEAT">Heat</span> <span class="token-TARGET">extruder</span>=<span class="token-NUMBER">180</span> + <span class="token-NUMBER">20</span>*<span class="token-FUNC">sin</span>(<span class="token-NUMBER">90</span>/<span class="token-NUMBER">2</span>)
+<span class="token-COMMENT"># works outside loops too</span></code></pre>
 
                             <h4>Example: Drawing a Square (Relative)</h4>
                             <p>Using <strong>Relative</strong> mode ensures each
                                 move is from the previous point, naturally
                                 forming shapes when iterating.</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-RELATIVE">Relative</span></span>
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">4</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=10 <span
-                                        class="token-Y">y</span>=0</span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=0 <span
-                                        class="token-Y">y</span>=10</span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=-10 <span
-                                        class="token-Y">y</span>=0</span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=0 <span
-                                        class="token-Y">y</span>=-10</span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-RELATIVE">Relative</span>
+<span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">4</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=10 <span class="token-Y">y</span>=0
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=0 <span class="token-Y">y</span>=10
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=-10 <span class="token-Y">y</span>=0
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=0 <span class="token-Y">y</span>=-10
+<span class="token-END">end</span></code></pre>
 
                             <h4>Example: Drawing a Circle (Relative)</h4>
                             <p>Using <strong>Relative</strong> mode allows the
                                 circle to be built incrementally, keeping each
                                 move relative to the last point for smooth
                                 motion.</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-RELATIVE">Relative</span></span>
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">60</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-FUNC">cos</span>(<span
-                                        class="token-ID">i</span>*0.1)*5 <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-FUNC">sin</span>(<span
-                                        class="token-ID">i</span>*0.1)*5</span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-RELATIVE">Relative</span>
+<span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">60</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-FUNC">cos</span>(<span class="token-ID">i</span>*0.1)*5 <span class="token-Y">y</span>=<span class="token-FUNC">sin</span>(<span class="token-ID">i</span>*0.1)*5
+<span class="token-END">end</span></code></pre>
 
                             <h4>Example: Drawing a Spiral (Relative)</h4>
                             <p>Using <strong>Relative</strong> mode allows
@@ -1552,62 +1392,20 @@
                                 calculate both angle and radius, creating an
                                 expanding spiral pattern.</p>
 
-                            <div class="code-block">
-                                <span class="line"><span class="token-COMMENT">#
-                                        Spiral test macro</span></span>
-                                <span class="line">M.title <span
-                                        class="token-STRING">"spiral_test"</span></span>
-                                <span class="line"><span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span> = <span
-                                        class="token-NUMBER">160</span> <span
-                                        class="token-Y">y</span> = <span
-                                        class="token-NUMBER">160</span> <span
-                                        class="token-Z">z</span>= <span
-                                        class="token-NUMBER">10</span></span>
-                                <span class="line"><span
-                                        class="token-RELATIVE">Relative</span></span>
-                                <span class="line"><span
-                                        class="token-SETSPEED">SetSpeed</span> =
-                                    <span
-                                        class="token-NUMBER">6500</span></span>
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">65</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-FUNC">cos</span>(<span
-                                        class="token-ID">i</span>*<span
-                                        class="token-NUMBER">10</span>)*(<span
-                                        class="token-ID">i</span>*<span
-                                        class="token-NUMBER">0.1</span>) <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-FUNC">sin</span>(<span
-                                        class="token-ID">i</span>*<span
-                                        class="token-NUMBER">10</span>)*(<span
-                                        class="token-ID">i</span>*<span
-                                        class="token-NUMBER">0.1</span>)</span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                                <span class="line"><span
-                                        class="token-DWELL">Dwell</span> <span
-                                        class="token-NUMBER">2</span> ms</span>
-                                <span class="line"><span
-                                        class="token-ABSOLUTE">Absolute</span></span>
-                                <span class="line"><span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span> = <span
-                                        class="token-NUMBER">150</span> <span
-                                        class="token-Y">y</span> = <span
-                                        class="token-NUMBER">150</span></span>
-                                <span class="line"><span
-                                        class="token-DWELL">Dwell</span> <span
-                                        class="token-NUMBER">2</span> s</span>
-                                <span class="line"><span
-                                        class="token-HOME">Home</span></span>
-                                <span class="line">M.end</span>
-                            </div>
+                            <pre><code><span class="token-COMMENT"># Spiral test macro</span>
+M.title <span class="token-STRING">"spiral_test"</span>
+<span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span> = <span class="token-NUMBER">160</span> <span class="token-Y">y</span> = <span class="token-NUMBER">160</span> <span class="token-Z">z</span>= <span class="token-NUMBER">10</span>
+<span class="token-RELATIVE">Relative</span>
+<span class="token-SETSPEED">SetSpeed</span> = <span class="token-NUMBER">6500</span>
+<span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">65</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-FUNC">cos</span>(<span class="token-ID">i</span>*<span class="token-NUMBER">10</span>)*(<span class="token-ID">i</span>*<span class="token-NUMBER">0.1</span>) <span class="token-Y">y</span>=<span class="token-FUNC">sin</span>(<span class="token-ID">i</span>*<span class="token-NUMBER">10</span>)*(<span class="token-ID">i</span>*<span class="token-NUMBER">0.1</span>)
+<span class="token-END">end</span>
+<span class="token-DWELL">Dwell</span> <span class="token-NUMBER">2</span> ms
+<span class="token-ABSOLUTE">Absolute</span>
+<span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span> = <span class="token-NUMBER">150</span> <span class="token-Y">y</span> = <span class="token-NUMBER">150</span>
+<span class="token-DWELL">Dwell</span> <span class="token-NUMBER">2</span> s
+<span class="token-HOME">Home</span>
+M.end</code></pre>
 
                             <div class="note">
                                 <strong>How the spiral formula works:</strong>
@@ -1641,94 +1439,35 @@
                                 loops. Each nested loop has its own iterator
                                 <code>i</code> that is scoped to that loop. This
                                 allows for complex 2D and 3D patterns:</p>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">5</span></span>
-                                <span class="lines"> <span
-                                        class="token-JREPEAT">Brepeat</span>
-                                    <span class="token-NUMBER">5</span></span>
-                                <span class="lines"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-ID">i</span>*10 <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-ID">i</span>*10</span>
-                                <span class="lines"> <span
-                                        class="token-END">end</span></span>
-                                <span class="line"><span
-                                        class="token-END">end</span></span>
-                            </div>
+                            <pre><code><span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span>
+    <span class="token-JREPEAT">Brepeat</span> <span class="token-NUMBER">5</span>
+        <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-ID">i</span>*10 <span class="token-Y">y</span>=<span class="token-ID">i</span>*10
+    <span class="token-END">end</span>
+<span class="token-END">end</span></code></pre>
                         </section>
 
                         <section class="section">
                             <h2>Example Program</h2>
-                            <div class="code-block">
-                                <span class="line"><span
-                                        class="token-TITLE">M.title</span> <span
-                                        class="token-STRING">"Bed Leveling Routine"</span></span>
-                                <span class="line"> <span
-                                        class="token-ABSOLUTE">Absolute</span></span>
-                                <span class="line"> <span
-                                        class="token-SET_SPEED">SetSpeed</span>
-                                    <span class="token-EQUALS">=</span> <span
-                                        class="token-NUMBER">3000</span></span>
-                                <span class="line"> <span
-                                        class="token-HOME">Home</span> <span
-                                        class="token-ARROW">-&gt;</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-NUMBER">0</span> <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-NUMBER">0</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-Z">z</span>=<span
-                                        class="token-NUMBER">5</span></span>
-                                <span class="line"> <span
-                                        class="token-HEAT">Heat</span> <span
-                                        class="token-TARGET">bed</span>=<span
-                                        class="token-NUMBER">60</span></span>
-                                <span class="line"> <span
-                                        class="token-RESPOND">Respond</span>
-                                    <span class="token-MSG">MSG</span> <span
-                                        class="token-STRING">"Bed heating complete"</span></span>
-                                <span class="line"> <span
-                                        class="token-LEVEL">Level</span></span>
-                                <span class="line"> <span
-                                        class="token-LOAD_BED_MESH">LoadBedMesh</span>
-                                    <span
-                                        class="token-STRING">"default"</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVEEX">MoveTo</span> <span
-                                        class="token-X">x</span>=<span
-                                        class="token-NUMBER">100</span> <span
-                                        class="token-Y">y</span>=<span
-                                        class="token-NUMBER">100</span></span>
-                                <span class="line"> <span
-                                        class="token-PROBE_CALIBRATE">ProbeCalibrate</span></span>
-                                <span class="line"> <span
-                                        class="token-SET_PRESSURE_ADVANCE">SetPressureAdvance</span>
-                                    <span
-                                        class="token-NUMBER">0.04</span></span>
-                                <span class="line"> <span
-                                        class="token-RESET_EXTRUDER">ResetExtruder</span></span>
-                                <span class="line"> <span
-                                        class="token-RELATIVEEXTRUSION">RelativeExtrusion</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVE">Move</span> <span
-                                        class="token-DIRECTION">right</span></span>
-                                <span class="line"> <span
-                                        class="token-MOVE">Move</span> <span
-                                        class="token-DIRECTION">up</span></span>
-                                <span class="line"> <span
-                                        class="token-PAUSE">Pause</span></span>
-                                <span class="line"> <span
-                                        class="token-RESUME">Resume</span></span>
-                                <span class="line"> <span
-                                        class="token-COOLDOWN">Cooldown</span></span>
-                                <span class="line"><span
-                                        class="token-MEND">M.end</span></span>
-                            </div>
+                            <pre><code><span class="token-TITLE">M.title</span> <span class="token-STRING">"Bed Leveling Routine"</span>
+    <span class="token-ABSOLUTE">Absolute</span>
+    <span class="token-SET_SPEED">SetSpeed</span> <span class="token-EQUALS">=</span> <span class="token-NUMBER">3000</span>
+    <span class="token-HOME">Home</span> <span class="token-ARROW">-&gt;</span> <span class="token-X">x</span>=<span class="token-NUMBER">0</span> <span class="token-Y">y</span>=<span class="token-NUMBER">0</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-Z">z</span>=<span class="token-NUMBER">5</span>
+    <span class="token-HEAT">Heat</span> <span class="token-TARGET">bed</span>=<span class="token-NUMBER">60</span>
+    <span class="token-RESPOND">Respond</span> <span class="token-MSG">MSG</span> <span class="token-STRING">"Bed heating complete"</span>
+    <span class="token-LEVEL">Level</span>
+    <span class="token-LOAD_BED_MESH">LoadBedMesh</span> <span class="token-STRING">"default"</span>
+    <span class="token-MOVEEX">MoveTo</span> <span class="token-X">x</span>=<span class="token-NUMBER">100</span> <span class="token-Y">y</span>=<span class="token-NUMBER">100</span>
+    <span class="token-PROBE_CALIBRATE">ProbeCalibrate</span>
+    <span class="token-SET_PRESSURE_ADVANCE">SetPressureAdvance</span> <span class="token-NUMBER">0.04</span>
+    <span class="token-RESET_EXTRUDER">ResetExtruder</span>
+    <span class="token-RELATIVEEXTRUSION">RelativeExtrusion</span>
+    <span class="token-MOVE">Move</span> <span class="token-DIRECTION">right</span>
+    <span class="token-MOVE">Move</span> <span class="token-DIRECTION">up</span>
+    <span class="token-PAUSE">Pause</span>
+    <span class="token-RESUME">Resume</span>
+    <span class="token-COOLDOWN">Cooldown</span>
+<span class="token-MEND">M.end</span></code></pre>
                         </section>
 
                         <section class="section">
@@ -1810,25 +1549,11 @@
                             </ul>
 
                             <h3>Example Usage</h3>
-                            <div class="code-block">
-                                <span class="line"><span class="token-COMMENT">#
-                                        Include a small G-code file
-                                        directly</span></span>
-                                <span class="line"><span
-                                        class="token-INSERTGCODE">InsertGcode</span>
-                                    <span
-                                        class="token-STRING">"part_A.gcode"</span></span>
-                                <span class="line"></span>
-                                <span class="line"><span class="token-COMMENT">#
-                                        Include a large G-code file by
-                                        reference</span></span>
-                                <span class="line"><span
-                                        class="token-INSERTGCODE">InsertGcode</span>
-                                    <span
-                                        class="token-STRING">"part_B.gcode"</span>
-                                    <span
-                                        class="token-ID">reference</span></span>
-                            </div>
+                            <pre><code><span class="token-COMMENT"># Include a small G-code file directly</span>
+<span class="token-INSERTGCODE">InsertGcode</span> <span class="token-STRING">"part_A.gcode"</span>
+
+<span class="token-COMMENT"># Include a large G-code file by reference</span>
+<span class="token-INSERTGCODE">InsertGcode</span> <span class="token-STRING">"part_B.gcode"</span> <span class="token-ID">reference</span></code></pre>
                         </section>
 
                     </div>
