@@ -61,7 +61,7 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 | `webpage/index.html` | Landing page linking to the IDE, CFG Generator, and Gravity Hub. |
 | `webpage/ide.html` | Main IDE page for writing, compiling, and testing `.bph` source. |
 | `webpage/manual.html` | Bellerophon language documentation. |
-| `webpage/library.html` | Page listing token references |
+| `webpage/library.html` | Interactive Library that showcases commands. Pin references to IDE |
 | `webpage/generator.html` | CFG Generator page with board selection, input form, and output panel. |
 | `webpage/hub.html` | Gravity Hub main dashboard. Displays and manages printer groups (Klipper, Bambu, Prusa, Custom). |
 | `webpage/group.html` | Group details page. Shows printers in a group and allows adding new printers by name and IP/URL. |
