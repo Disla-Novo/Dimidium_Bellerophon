@@ -1,32 +1,10 @@
 <div align="center">
-  <a href="https://github.com/Juli132/Dimidium_Bellerophon/">
-<img width="1920" height="673" alt="2026-06-2421-59-46-ezgif com-crop" src="https://github.com/user-attachments/assets/c8ee376f-ee58-4ebb-901a-757a6417f868" />
-  </a>
+  <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/"><img width="1920" height="673" alt="2026-06-2421-59-46-ezgif com-crop" src="https://github.com/user-attachments/assets/c8ee376f-ee58-4ebb-901a-757a6417f868" /></a><br>
+  <a href="Bellerophon%20Language%20_%20Documentation.pdf"><img src="https://img.shields.io/badge/Bellerophon-DSL-black?labelColor=0d9488&style=flat" alt="Bellerophon: DSL"></a><a href="https://github.com/Disla-Novo/Dimidium_Bellerophon"><img src="https://img.shields.io/badge/GravityHub-Beta-black?labelColor=0d9488&style=flat" alt="Gravity Hub: Beta"></a><br>
+  <a href="https://github.com/Klipper3d" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;"></a><a href="https://github.com/MarlinFirmware" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;"></a><br>
+  <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon"><img src="https://img.shields.io/badge/OS-Windows%20|%20Linux%20|%20macOS-black?labelColor=0078D4&style=flat" alt="Platform"></a><a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL_3.0-blue.svg" alt="License" style="vertical-align: top;"></a><br>
+  <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/maven.yml"><img src="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/maven.yml/badge.svg?branch=main" alt="Java CI with Maven Build Status"></a><a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/github-code-scanning/codeql"><img src="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/github-code-scanning/codeql/badge.svg" alt="CodeQL Security Scan Status"></a>
 </div>
-<p align="center">
-  <!-- Row 1: Project Identity -->
-  <a href="Bellerophon%20Language%20_%20Documentation.pdf"><img src="https://img.shields.io/badge/Bellerophon-DSL-black?labelColor=0d9488&style=flat" alt="Bellerophon: DSL"></a>
-  <a href="https://github.com/Juli132/Dimidium_Bellerophon"><img src="https://img.shields.io/badge/GravityHub-Beta-black?labelColor=0d9488&style=flat" alt="Gravity Hub: Beta"></a>
-  <br>
-
-  <!-- Row 2: Firmware Support -->
-<a href="https://github.com/Klipper3d" target="_blank" rel="noopener noreferrer">
-  <img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;">
-</a>
-
-<a href="https://github.com/MarlinFirmware" target="_blank" rel="noopener noreferrer">
-  <img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;">
-</a>
-  <br>
-
-  <!-- Row 3: Environment & License -->
-<a href="https://github.com/Juli132/Dimidium_Bellerophon">
-  <img src="https://img.shields.io/badge/OS-Windows%20|%20Linux%20|%20macOS-black?labelColor=0078D4&style=flat" alt="Platform">
-</a>
- <a href="LICENSE" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/License-AGPL_3.0-blue.svg" alt="License" style="vertical-align: top;">
-</a>
-</p>
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
 
