@@ -16,7 +16,9 @@ The CLA grants permission for your contributions to be used in both:
 - the open-source Dimidium ecosystem (AGPL v3.0)
 - proprietary and commercial components of the Dimidium Ecosystem
 
-*This CLA does not transfer ownership of your contribution.*
+>*This CLA transfers copyright ownership of your contribution to the Project Owner, but you retain a perpetual license to use your own contribution outside the Dimidium Ecosystem. You are not giving up the right to use your work elsewhere.*
+
+<sub>Note: The CLA in effect at the time a pull request is submitted is the version that governs that contribution. Future updates to this CLA apply only to contributions submitted after the update, not retroactively.</sub>
 
 See [`CLA.md`](./CLA.md) for full terms.
 
@@ -139,6 +141,9 @@ Bellerophon uses a data-driven theming system. Adding a new theme is modular and
 
 If you are looking for a place to jump in, here are the active development milestones we are currently focusing on. Feel free to open a PR for any of these focus areas:
 
+>Completed milestones are tracked and closed in the [GitHub Milestones](https://github.com/Disla-Novo/Dimidium_Bellerophon/milestones) section, where they are credited to their respective contributors.
+
+
 <table>
   <tr>
     <td valign="top" width="50%">
@@ -149,21 +154,14 @@ If you are looking for a place to jump in, here are the active development miles
         <li><b>Error Reporting:</b> Ensure the error reporter tracks the actual code line accurately, regardless of leading blank lines or comments.</li>
       </ul>
       <br>
-      <h3>2. Variable Support (State Management)</h3>
-      <p><b>Goal:</b> Expand the stateful variable system beyond simple procedural geometry.</p>
-      <ul>
-        <li><b>Global Variables:</b> Phase 1 (local-scoped variables within macros) and Phase 2 (global, unit-scoped variables via <code>var name = expr</code>, persisting across the entire compilation unit) are both implemented. A plain <code>name = expr</code> stays local to its macro; a local variable shadows a global one of the same name.</li>
-      </ul>
-    </td>
     <td valign="top" width="50%">
-      <h3>3. Gravity Hub Deployment (Networking & Infrastructure)</h3>
+      <h3>2. Gravity Hub Deployment (Networking & Infrastructure)</h3>
       <p><b>Goal:</b> Transition Gravity Hub from a prototype to a scalable, production-ready fleet manager.</p>
       <ul>
         <li><b>Dynamic Discovery:</b> Move away from static, manual IP management and implement a dynamic printer discovery and registration system.</li>
         <li><b>Group Logic & Syncing:</b> Build out the logic to ensure group-level public folders are correctly synced and deployed across the dynamic printer fleet.</li>
       </ul>
-      <br>
-      <h3>4. Dimidium's Reach (System Architecture)</h3>
+      <h3>3. Dimidium's Reach (System Architecture)</h3>
       <p><b>Goal:</b> Expand ecosystem flexibility and system-level control.</p>
       <ul>
         <li><b>Configuration Management:</b> Strip out hardcoded defaults (ports, timeout intervals, host addresses) and migrate them to configurable system parameters.</li>
@@ -173,7 +171,7 @@ If you are looking for a place to jump in, here are the active development miles
   </tr>
   <tr>
     <td valign="top" width="50%">
-      <h3>5. UI/UX & Ecosystem Polish</h3>
+      <h3>4. UI/UX & Ecosystem Polish</h3>
       <p><b>Goal:</b> Elevate the visual experience, accessibility, and consistency across the entire Dimidium Ecosystem.</p>
       <ul>
         <li><b>Design Unification:</b> Establish a shared visual language (colors, spacing, component behavior) that applies to Bellerophon, the CFG Generator, and Gravity Hub.</li>
