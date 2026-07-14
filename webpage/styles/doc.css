@@ -717,3 +717,9 @@ p {
     background: white !important;
   }
 }
+
+pre code {
+  font-size: 1.15em;
+  white-space: pre;
+  tab-size: 4;
+}

@@ -319,6 +319,33 @@ M.end`,
     Home
 M.end`,
   },
+  "arc-interpolation": {
+    label: "Arc Interpolation (Marlin)",
+    description:
+      " Demonstrates arc optimization. A Brepeat generating a circle is automatically detected and compiled into a single smooth G2/G3 arc instead of hundreds of micro-segments. This eliminates stutter on Marlin printers. (Compiles to Marlin only.)",
+    mode: "marlin",
+    example: `M.title "Arc Interpolation Demo"
+Absolute
+SetSpeed = 3000
+Home
+Dwell 1000 ms
+
+# Simple circle: 100 points condensed into 1 smooth arc
+Respond MSG "Printing smooth circle..."
+Brepeat 100
+    MoveTo x=110 + cos(i*3.6)*40 y=110 + sin(i*3.6)*40 z=10
+end
+Dwell 1000 ms
+
+# Closed loop: 9 points over 360° split into two half-circles
+Respond MSG "Printing closed loop..."
+Brepeat 9
+    MoveTo x=110+40*cos(i*45) y=110+40*sin(i*45) z=10
+end
+
+Home
+M.end`,
+  },
   end: {
     label: "end",
     description: "Ends a loop or layer block.",
@@ -494,6 +521,54 @@ M.end`,
     Cooldown
 M.end`,
   },
+  // added VARIABLES 7/12/26
+var: {
+    label: "var (Global)",
+    description:
+      "Declares a global variable that persists across the entire file. Any macro can read or modify it.",
+    example: `M.title "Setup"
+    # Declares a global variable 'start_pos' with initial value 10
+    var start_pos = 10
+    MoveTo x=start_pos
+M.end
+
+M.title "Move"
+    # Modifies the global start_pos from 10 to 50 but only in current macro
+    start_pos = 50
+    MoveTo x=start_pos
+M.end
+
+M.title "Move_global"
+    MoveTo x=start_pos 
+M.end`
+
+},
+  assignment: {
+    label: "Assignment (Local)",
+    description:
+      "Assigns a value to a local variable. Only valid within the current macro.",
+    example: `M.title "Local Assignment Example"
+    Absolute
+    Home
+    pos_x = 50
+    pos_y = 50
+    MoveTo x=pos_x y=pos_y z=0.2
+    pos_x = 150
+    MoveTo x=pos_x y=pos_y
+    M.end`,
+  },
+  "axis-assignment": {
+    label: "Axis Assignment (Reserved)",
+    description:
+      "🔺 x, y, z, and e are reserved axis names. Assigning to them directly will throw a clear error.",
+    example: `M.title "Axis Assignment Error"
+    Absolute
+    // This will throw: "ERROR: 'x' is a reserved axis name"
+    x = 10
+    MoveTo x=20 y=30
+    M.end`,
+    canCompile: false,
+  },
 };
 
 let currentCommandId = null;
@@ -528,6 +603,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("demo-title").textContent = cmd.label;
     document.getElementById("demo-description").textContent = cmd.description;
     demoInput.value = cmd.example;
+
+    const modeLabel = (cmd.mode || "klipper").toUpperCase();
+    document.getElementById("output-mode-label").textContent =
+      `Generated Output (${modeLabel})`;
 
     demoOutput.innerHTML =
       '<span class="placeholder">Compile to see output</span>';
@@ -585,12 +664,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {}
       }
 
+      const mode = cmd.mode || "klipper"; //  otherwise default to klipper
+
       const res = await fetch("/compile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code,
-          mode: "klipper",
+          mode: mode, //  dynamic per command now
           profile,
           gcodeFolder: localStorage.getItem("bellerophon-gcode-folder") || "",
         }),
@@ -605,17 +686,17 @@ document.addEventListener("DOMContentLoaded", () => {
             "[Large output — paged to disk. Preview not available here.]";
         }
         demoOutput.textContent = output;
-        demoStatus.textContent = "✓ Success";
+        demoStatus.textContent = `✓ Success`;
         demoStatus.className = "demo-status success";
       } else {
         demoOutput.textContent =
           "Error: " + (data.error || "Unknown compiler error");
-        demoStatus.textContent = "✗ Compilation failed";
+        demoStatus.textContent = `✗ Compilation failed`;
         demoStatus.className = "demo-status error";
       }
     } catch (err) {
       demoOutput.textContent = "Network error: " + err.message;
-      demoStatus.textContent = "✗ Connection error";
+      demoStatus.textContent = `✗ Connection error`;
       demoStatus.className = "demo-status error";
     }
 

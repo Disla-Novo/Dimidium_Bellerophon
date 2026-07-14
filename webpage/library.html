@@ -32,6 +32,30 @@
           </div>
 
           <div class="grammar-category">
+            <h4>Variables</h4>
+            <div class="grammar-item" data-command="var">
+              var <span>name = value (global)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="assignment">
+              <span>name = value (local)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+            <div class="grammar-item" data-command="axis-assignment">
+              <span style="color: #e74c3c">🔺 x/y/z/e = value</span>
+              <span style="color: #888; font-size: 0.8rem"
+                >(reserved - throws error)</span
+              >
+              <a
+                href="#"
+                class="add-btn"
+                style="opacity: 0.3; pointer-events: none"
+                >+</a
+              >
+            </div>
+          </div>
+
+          <div class="grammar-category">
             <h4>Motion</h4>
             <div class="grammar-item" data-command="home">
               Home <span>homes all axes</span> <a href="#" class="add-btn">+</a>
@@ -155,6 +179,14 @@
           </div>
 
           <div class="grammar-category">
+            <h4>Optimizations</h4>
+            <div class="grammar-item" data-command="arc-interpolation">
+              Arc Interpolation <span>smooth circles (Marlin)</span>
+              <a href="#" class="add-btn">+</a>
+            </div>
+          </div>
+
+          <div class="grammar-category">
             <h4>Expressions</h4>
             <div class="grammar-item" data-command="functions">
               Functions <span>sin | cos | tan | sqrt | abs | sign</span>
@@ -238,7 +270,8 @@
 
           <div class="demo-output">
             <div class="output-header">
-              <span>Generated Output (Klipper)</span>
+              <span id="output-mode-label">Generated Output (Klipper)</span>
+              <!--now dynamic-->
             </div>
             <pre
               id="demo-output-content"
