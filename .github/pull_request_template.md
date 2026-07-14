@@ -1,8 +1,8 @@
 ## Dimidium Contribution Checklist
 
-- [ ] I have read and agree to the CLA (CLA.md)
-- [ ] This code is my original work or I have rights to submit it
-- [ ] I am not knowingly submitting copied or unlicensed code
+>This checklist below is mandatory
+
+ - [ ] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.
 
 ---
 

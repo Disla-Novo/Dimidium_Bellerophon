@@ -5,15 +5,12 @@ on:
     types: [opened, edited, synchronize]
 
 permissions:
-  pull-requests: read   # adjusted permissions
+  pull-requests: read
 
 jobs:
   verify-cla:
     name: Verify Legal Checklist
-
-    # Only run for forked PRs (external contributors)
     if: github.event.pull_request.head.repo.fork == true
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,24 +18,23 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          # Convert PR body to lowercase so it matches [x] or [X]
+          # Convert PR body to lowercase for case-insensitive matching
           BODY_LOWER=$(echo "$PR_BODY" | tr '[:upper:]' '[:lower:]')
+          FAIL=0
 
           # Check 1: CLA Agreement
-          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] i have read and agree to the cla"; then
-            echo "::error::Missing CLA Agreement. You must check the 'I have read and agree to the CLA' box in the PR description."
-            exit 1
+          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*agree.*(cla|contributor license agreement)"; then
+            echo "::error::Missing CLA Agreement. You must check the box confirming you agree to the CLA."
+            FAIL=1
           fi
 
-          # Check 2: Original Work Confirmation
-          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] this code is my original work"; then
-            echo "::error::Missing Original Work confirmation. You must check the 'This code is my original work' box."
-            exit 1
+          # Check 2: Original Work Confirmation (flexible phrasing)
+          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*(original work|my own work|my work)"; then
+            echo "::error::Missing Original Work confirmation. You must check the box confirming this is your own original work."
+            FAIL=1
           fi
 
-          # Check 3: Unlicensed Code Confirmation
-          if ! echo "$BODY_LOWER" | grep -q -- "- \[x\] i am not knowingly submitting copied"; then
-            echo "::error::Missing Unlicensed Code confirmation. You must check the 'I am not knowingly submitting copied code' box."
+          if [ "$FAIL" -eq 1 ]; then
             exit 1
           fi
 
