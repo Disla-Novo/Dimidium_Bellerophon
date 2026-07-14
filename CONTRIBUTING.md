@@ -25,9 +25,7 @@ See [`CLA.md`](./CLA.md) for full terms.
 For each PR, please be sure to strictly have the following at the top or bottom of the description (not in comments):
 
 ```text
-- [ ] I have read and agree to the CLA (CLA.md)
-- [ ] This code is my original work or I have rights to submit it
-- [ ] I am not knowingly submitting copied or unlicensed code
+- [ ] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.
 ```
 
 __If you do not agree, please do not submit a pull request.__
@@ -223,9 +221,7 @@ When filing a bug, include:
 - Fork the repo and create a branch named `feature/xxx` or `fix/yyy`.
 > At the top or bottom of each PR (descriptions only, not comments) copy and 'x' this checklist:
 ```text
-- [ ] I have read and agree to the CLA (CLA.md)
-- [ ] This code is my original work or I have rights to submit it
-- [ ] I am not knowingly submitting copied or unlicensed code
+- [ ] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.
 ```
 
 - Keep PRs focused and small.
