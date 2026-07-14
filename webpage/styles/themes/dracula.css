@@ -1,0 +1,157 @@
+/* dracula.css - official Dracula palette (https://draculatheme.com/contribute) */
+
+body.theme-dracula {
+  background-color: #282a36;
+  color: #f8f8f2;
+}
+
+body.theme-dracula #jupitore-app {
+  background: #282a36;
+}
+
+body.theme-dracula .sidebar {
+  background: #21222c;
+  border-right: 1px solid #44475a;
+}
+
+body.theme-dracula #line-numbers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  padding: 20px 5px;
+  text-align: right;
+  user-select: none;
+  color: #6272a4;
+  background: rgba(33, 34, 44, 0.75);
+  border-right: 1px solid #44475a;
+  height: 100%;
+  font-family: "Consolas", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  z-index: 1;
+  overflow: hidden;
+}
+
+body.theme-dracula .brand .logo-box {
+  color: #ff79c6;
+  letter-spacing: 1px;
+}
+
+body.theme-dracula .sidebar-btn {
+  background: #282a36;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+}
+
+body.theme-dracula .sidebar-btn:hover {
+  background: #44475a;
+  color: #ffffff;
+  border-color: #bd93f9;
+}
+
+body.theme-dracula .toolbar {
+  background: #21222c;
+  border-bottom: 1px solid #44475a;
+}
+
+body.theme-dracula .run-btn {
+  background: #ff79c6;
+  color: #282a36;
+}
+
+body.theme-dracula .run-btn:hover {
+  background: #ff92d0;
+}
+
+body.theme-dracula .clear-btn {
+  background: #282a36;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+}
+
+body.theme-dracula .clear-btn:hover {
+  background: #44475a;
+  color: #ffffff;
+}
+
+body.theme-dracula .settings-btn {
+  background: #282a36;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+}
+
+body.theme-dracula .settings-btn:hover {
+  border-color: #bd93f9;
+  color: #ffffff;
+}
+
+body.theme-dracula #file-name-editable {
+  color: #f8f8f2;
+}
+
+body.theme-dracula .pane {
+  background: #282a36;
+}
+
+body.theme-dracula .pane-label {
+  background: #21222c;
+  color: #6272a4;
+  border-bottom: 1px solid #44475a;
+}
+
+body.theme-dracula #code-overlay {
+  color: #f8f8f2;
+}
+
+body.theme-dracula #code-input {
+  caret-color: #f8f8f2;
+}
+
+body.theme-dracula .output-view {
+  background: #282a36;
+  color: #f8f8f2;
+}
+
+body.theme-dracula .console {
+  background: #21222c;
+  border-top: 1px solid #44475a;
+  color: #a2a4b8;
+}
+
+body.theme-dracula #console-log .log-entry {
+  color: #a2a4b8;
+}
+
+body.theme-dracula #console-log .log-entry.error {
+  color: #ff5555;
+}
+
+body.theme-dracula #console-log .log-entry.success {
+  color: #50fa7b;
+}
+
+body.theme-dracula .modal-content {
+  background: #21222c;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+}
+
+body.theme-dracula .modal-form input {
+  width: 100%;
+  padding: 6px;
+  background: #191a21;
+  border: 1px solid #44475a;
+  color: #fff;
+  border-radius: 4px;
+}
+
+body.theme-dracula .modal-content input {
+  background: #282a36;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+}
+
+body.theme-dracula .modal-content input:focus {
+  border-color: #bd93f9;
+}
