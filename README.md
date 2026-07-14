@@ -108,7 +108,7 @@ M.end
 4. **Visualize (Optional):** Use the **CFG Generator** tab to preview your path on the printer bed.
 
 > [!TIP]
-> Check out the `References` in the IDE or `Documentation` in the main menu for more information on Bellerophon.
+> Check out the `References` in the IDE or `Documentation` in the application for more information on Bellerophon.
 
 
 ## Windows Security Prompts (What to Expect)
