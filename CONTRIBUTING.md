@@ -95,7 +95,7 @@ Here are the best ways to jump in:
       <h3>2. Documentation & Typos</h3>
       <p>Clear documentation is the backbone of any good open-source project.</p>
       <ul>
-        <li><b>What you can do:</b> Read through this README or <code>webpage/manual.html</code>. If you spot a typo, a confusing sentence, or a broken link, open a Pull Request to fix it!</li>
+        <li><b>What you can do:</b> Read through this, <code>webpage/manual.html</code>, or any available documentation. If you spot a typo, a confusing sentence, or a broken link, open a Pull Request to fix it!</li>
         <li><b>Skills needed:</b> Reading and writing English.</li>
       </ul>
     </td>
@@ -139,60 +139,9 @@ Bellerophon uses a data-driven theming system. Adding a new theme is modular and
 
 If you are looking for a place to jump in, here are the active development milestones we are currently focusing on. Feel free to open a PR for any of these focus areas:
 
->Completed milestones are tracked and closed in the [GitHub Milestones](https://github.com/Disla-Novo/Dimidium_Bellerophon/milestones) section, where they are credited to their respective contributors.
+[GitHub Milestones](https://github.com/Disla-Novo/Dimidium_Bellerophon/milestones)
 
-
-<table>
-  <tr>
-    <td valign="top" width="50%">
-      <h3>1. Bellerophon's Health (Compiler & Parser)</h3>
-      <p><b>Goal:</b> Make the compiler more forgiving, intuitive, and lexically robust.</p>
-      <ul>
-        <li><b>Whitespace Resilience:</b> Update the Lexer/Parser to treat arbitrary whitespace and indentation as non-functional. We want to move away from fragile parsing (where an extra space throws an exception) to a token-stream approach that safely skips whitespace.</li>
-        <li><b>Error Reporting:</b> Ensure the error reporter tracks the actual code line accurately, regardless of leading blank lines or comments.</li>
-      </ul>
-      <br>
-    <td valign="top" width="50%">
-      <h3>2. Gravity Hub Deployment (Networking & Infrastructure)</h3>
-      <p><b>Goal:</b> Transition Gravity Hub from a prototype to a scalable, production-ready fleet manager.</p>
-      <ul>
-        <li><b>Dynamic Discovery:</b> Move away from static, manual IP management and implement a dynamic printer discovery and registration system.</li>
-        <li><b>Group Logic & Syncing:</b> Build out the logic to ensure group-level public folders are correctly synced and deployed across the dynamic printer fleet.</li>
-      </ul>
-      <h3>3. Dimidium's Reach (System Architecture)</h3>
-      <p><b>Goal:</b> Expand ecosystem flexibility and system-level control.</p>
-      <ul>
-        <li><b>Configuration Management:</b> Strip out hardcoded defaults (ports, timeout intervals, host addresses) and migrate them to configurable system parameters.</li>
-        <li><b>Optimization & Adaptability:</b> Reduce data handling latency and ensure the ecosystem can be deployed seamlessly across different hardware environments and network architectures.</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td valign="top" width="50%">
-      <h3>4. UI/UX & Ecosystem Polish</h3>
-      <p><b>Goal:</b> Elevate the visual experience, accessibility, and consistency across the entire Dimidium Ecosystem.</p>
-      <ul>
-        <li><b>Design Unification:</b> Establish a shared visual language (colors, spacing, component behavior) that applies to Bellerophon, the CFG Generator, and Gravity Hub.</li>
-        <li><b>Theming & Engine Robustness:</b> Improve the modularity of the theme-loading system to ensure it works seamlessly across all web-based tools in the ecosystem.</li>
-        <li><b>CSS Scoping & Cleanup:</b> Eliminate visual inconsistencies by properly scoping styles and removing redundant code across <code>starter.css</code>, <code>dark.css</code>, and tool-specific stylesheets.</li>
-        <li><b>Documentation Polish:</b> Update <code>manual.html</code> and other project docs to reflect our current UI/UX, ensuring that tutorials and guides are visually aligned with the software.</li>
-        <li><b>Accessibility & Clarity:</b> Standardize hover states, contrast ratios, and layout patterns to make the ecosystem easier to navigate, regardless of the printer hardware or network environment.</li>
-      </ul>
-    </td>
-    <td valign="top" width="50%">
-      <h3>Why This Matters</h3>
-      <p>We make the ecosystem more professional, more maintainable, and significantly easier to use. A polished UI builds trust with users while comprehensive documentation reduces support burden and lowers the barrier to entry for new contributors and users alike.</p>
-      <br>
-      <p><b>Key Deliverables:</b></p>
-      <ul>
-        <li>Unified CSS framework across all tools</li>
-        <li>Fully functional theming system (Light/Dark + extensible)</li>
-        <li>Updated <code>manual.html</code> with current UI</li>
-        <li>User-friendly onboarding elements</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+>Completed milestones are tracked and closed in the [Closed Milestones](https://github.com/Disla-Novo/Dimidium_Bellerophon/milestones?state=closed) section, where they are credited to their respective contributors.
 
 ---
 
