@@ -35,7 +35,7 @@ function positionGcodeSuggestionBox(textarea) {
   const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
   
   gcodeSuggestionBox.style.left = (rect.left + 10) + 'px';
-  gcodeSuggestionBox.style.top = (rect.top + (currentLine * lineHeight) + 10) + 'px';
+  gcodeSuggestionBox.style.top = (rect.top + (currentLine * lineHeight) + 25) + 'px'; // changed to 25 from 10 for better spacing
 }
 
 function showGcodeSuggestions(files, prefix) {
@@ -96,6 +96,8 @@ function insertGcodeFileName(fileName) {
   
   textarea.focus();
   updateLines();
+  // adding event for textarea. this should fix the invisibility bug
+  textarea.dispatchEvent(new Event("input"));
 }
 
 function checkForGcodeAutocomplete() {
