@@ -163,6 +163,7 @@ coord
    expr
     : '(' expr ')'                    # parens    
     | func '(' expr ')'               # funcCall  
+    | '-' expr                        # unaryMinus   // 7/21/2026 added unary minus to allow for negative numbers in expressions.   
     | <assoc=right> expr '^' expr     # power    
     | expr op=('*'|'/') expr          # mulDiv    //  Multiplication/Division
     | expr op=('+'|'-') expr          # addSub    // Addition/Subtraction
@@ -264,7 +265,8 @@ MINUS      : '-';
 COMPARE    : '>' | '<' | '==' | '!=';
 
 // Numbers and strings
-NUMBER : '-'?[0-9]+ ('.' [0-9]+)?;
+// NUMBER : '-'?[0-9]+ ('.' [0-9]+)?; deleting '-' from the front of the number token allows for unary minus.
+NUMBER : [0-9]+ ('.' [0-9]+)?;
 STRING : '"' (~["\r\n])* '"';
 
 // Delimiters
