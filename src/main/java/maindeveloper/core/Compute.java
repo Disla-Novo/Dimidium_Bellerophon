@@ -32,7 +32,6 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         return (double) iteration;
     }
 
-    
     /**
      * @param ctx
      * @return Double
@@ -43,7 +42,6 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         return Math.PI;
     }
 
-    
     /**
      * @param ctx
      * @return Double
@@ -52,6 +50,11 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     @Override
     public Double visitParens(JupitoreParser.ParensContext ctx) {
         return visit(ctx.expr());
+    }
+      // 7/21/26  unary minus for negative numbers in expressions
+    @Override
+    public Double visitUnaryMinus(JupitoreParser.UnaryMinusContext ctx) {
+        return -visit(ctx.expr());
     }
 
     // NEW
@@ -149,13 +152,12 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         return 0.0;
     }
 
-
-// added helper method 
+    // added helper method
     private double parseDoubleSafe(String value, String context) {
-    try {
-        return Double.parseDouble(value);
-    } catch (NumberFormatException e) {
-        throw new RuntimeException("Invalid number at " + context + ": " + value);
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid number at " + context + ": " + value);
+        }
     }
-}
 }
