@@ -8,10 +8,24 @@ import maindeveloper.core.PrinterProfile;
 // (home/move/heat), so only what's needed to compile a simple test file is
 // implemented - everything else is stubbed out until there's a real need
 // for RRF's object-model config commands (M563/M307/M950, etc).
+
+// implemented issue #68
+
 public class RepRapVisitor extends GCodeVisitor {
+    private boolean toolSelected = false;
 
     public RepRapVisitor(PrinterProfile profile) {
         super(profile);
+    }
+
+    // if tool is selected, emit T0 once, not per-macro.
+
+    private String ensureToolSelected() {
+        if (!toolSelected) {
+            toolSelected = true;
+            return "T0\n";
+        }
+        return "";
     }
 
     @Override
@@ -19,12 +33,13 @@ public class RepRapVisitor extends GCodeVisitor {
         return "; " + macroName + "\n";
     }
 
+    // adding the prefix
     @Override
     protected String emitHeat(String target, double value, boolean wait) {
         String setCmd = wait ? "M109" : "M104";
         switch (target) {
             case "extruder":
-                return setCmd + " S" + (int) value + "\n";
+                return ensureToolSelected() + setCmd + " S" + (int) value + "\n";
             case "bed":
                 return (wait ? "M190" : "M140") + " S" + (int) value + "\n";
             case "chamber":
@@ -34,11 +49,12 @@ public class RepRapVisitor extends GCodeVisitor {
         }
     }
 
+    // adding the prefix
     @Override
     protected String emitSetHeater(String target, double value) {
         switch (target) {
             case "extruder":
-                return "M104 S" + (int) value + "\n";
+                return ensureToolSelected() + "M104 S" + (int) value + "\n";
             case "bed":
                 return "M140 S" + (int) value + "\n";
             case "chamber":
@@ -66,87 +82,126 @@ public class RepRapVisitor extends GCodeVisitor {
         }
     }
 
+    // adding the prefix
     @Override
     protected String emitMoveTo(String coordList) {
-        if (coordList != null && !coordList.isEmpty()) {
-            return "G1 " + coordList + "\n";
+        if (coordList == null || coordList.isEmpty()) {
+            return "";
         }
-        return "";
+
+        // Only select the tool if this move includes extrusion (E)
+        String prefix = coordList.contains("E") ? ensureToolSelected() : "";
+        return prefix + "G1 " + coordList + "\n";
     }
 
+    // adding prefix
     @Override
     protected String emitHome(String coordList) {
-        return "";
+        if (coordList == null || coordList.isEmpty()) {
+            return "G28\n";
+        }
+        return "G28 " + coordList + "\n";
     }
 
     @Override
     protected String emitCooldown(String target) {
-        return "";
+
+        if (target == null) {
+            return "M104 S0\nM140 S0\nM141 S0\n";
+
+        }
+        switch (target) {
+            case "extruder":
+                return "M104 S0\n";
+            case "bed":
+                return "M140 S0\n";
+            case "chamber":
+                return "M141 S0\n";
+            default:
+                return "";
+        }
     }
 
     @Override
     protected String emitWaitForTemp(String target) {
-        return "";
+        switch (target) {
+            case "extruder":
+                // P0 targets Tool 0 (single-extruder MVP)
+                return "M116 P0\n";
+            case "bed":
+                // H0 is the standard RRF bed heater index
+                return "M116 H0\n";
+            case "chamber":
+                // Heater index unknown for chamber; bare M116 waits on
+                // all heaters, which is probably fine for a single-chamber printer
+                return "M116\n";
+            default:
+                return "";
+        }
     }
 
     @Override
     protected String emitSetSpeed(double value) {
-        return "";
+        return "G1 F" + (int) value + "\n";
     }
 
     @Override
     protected String emitSetFan(double value) {
-        return "";
+        // so, RRF's S is 0.0 - 1.0 fraction by default. so we expect the call to pass
+        // 0.0-1.0 value
+        return "M106 S" + value + "\n";
     }
 
     @Override
     protected String emitAbsolute() {
-        return "";
+        return "G90\n";
     }
 
     @Override
     protected String emitRelative() {
-        return "";
+        return "G91\n"
+                + "; Note: RRF does not set extrusion relative via G91, "
+                + "use RelativeExtrusion (M83) explicitly if needed\n";
     }
 
     @Override
     protected String emitRelativeExtrusion() {
-        return "";
+        return "M83\n";
     }
 
     @Override
     protected String emitResetExtruder() {
-        return "";
+        return "G92 E0\n";
     }
 
     @Override
     protected String emitPause() {
-        return "";
+        return "M25\n";
     }
 
     @Override
     protected String emitResume() {
-        return "";
+        return "M24\n";
     }
 
     @Override
     protected String emitDwell(double milliseconds) {
-        return "";
+        return "G4 P" + (int) milliseconds + "\n";
     }
 
     @Override
     protected String emitTimeoutSet(double seconds) {
-        return "";
+        return "M84 S" + (int) seconds + "\n";
     }
 
     @Override
     protected String emitRespond(String message) {
-        return "";
+        return "M117 " + message + "\n";
     }
 
     @Override
     protected String emitPrintFile(String filename) {
-        return "";
+        return "M32 " + filename + "\n";
     }
 
     @Override
@@ -171,7 +226,9 @@ public class RepRapVisitor extends GCodeVisitor {
 
     @Override
     protected String emitSetPressureAdvance(double value) {
-        return "";
+        // Default D0 for the
+        // single-extruder MVP.
+        return "M572 D0 S" + value + "\n";
     }
 
     @Override
@@ -211,7 +268,8 @@ public class RepRapVisitor extends GCodeVisitor {
 
     @Override
     protected String emitLayerStart(int layer) {
-        return "";
+        double z = layer * settings.getLayerHeight();
+        return "G1 Z" + String.format("%.3f", z) + "\n";
     }
 
     @Override
