@@ -325,4 +325,40 @@ void globalAssignmentToReservedAxisNameStillRaisesClearError() {
             "expected the existing global_assignment reserved-axis error, got: " + ex.getMessage());
 }
 
+
+@Test
+void repRapVisitorEmitsRRFSpecificCommands() {
+    String source = """
+            M.title "RRF_Specific"
+            Heat extruder = 210
+            MoveTo x=10 y=0 e=0.5
+            WaitForTemp bed
+            SetFan = 0.5
+            SetPressureAdvance 0.04
+            Relative
+            PRINTFILE "test.gcode"
+            Cooldown
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new RepRapVisitor(new PrinterProfile());
+    String output = visitor.visit(tree);
+
+    assertTrue(output.contains("T0"), "T0 should be emitted for extruder heat");
+    long t0Count = output.lines().filter(line -> line.trim().equals("T0")).count();
+    assertTrue(t0Count == 1, "T0 should be emitted exactly once, got " + t0Count);
+    assertTrue(output.contains("M109 S210"), "Heat extruder: M109 S210");
+    assertTrue(output.contains("G1 X10.000 Y0.000 E0.500"), "MoveTo with E: G1 ... E");
+    assertTrue(output.contains("M116 H0"), "WaitForTemp bed: M116 H0");
+    assertTrue(output.contains("M106 S0.5"), "SetFan: M106 S0.5 (fraction)");
+    assertTrue(output.contains("M572 D0 S0.04"), "SetPressureAdvance: M572 D0 S0.04");
+    assertTrue(output.contains("G91"), "Relative: G91");
+    assertTrue(output.contains("; Note: RRF does not set extrusion relative via G91"), "Relative comment");
+    assertTrue(output.contains("M32 test.gcode"), "PRINTFILE: M32 (single command)");
+    assertTrue(output.contains("M104 S0"), "Cooldown extruder: M104 S0");
+    assertTrue(output.contains("M140 S0"), "Cooldown bed: M140 S0");
+    assertTrue(output.contains("M141 S0"), "Cooldown chamber: M141 S0");
+}
+
 }
