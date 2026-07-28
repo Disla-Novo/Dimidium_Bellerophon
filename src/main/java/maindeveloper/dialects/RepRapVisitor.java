@@ -10,6 +10,7 @@ import maindeveloper.core.PrinterProfile;
 // for RRF's object-model config commands (M563/M307/M950, etc).
 
 // implemented issue #68
+// implemented issue #69
 
 public class RepRapVisitor extends GCodeVisitor {
     private boolean toolSelected = false;
