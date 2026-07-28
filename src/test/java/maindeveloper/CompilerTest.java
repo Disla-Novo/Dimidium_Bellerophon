@@ -361,4 +361,32 @@ void repRapVisitorEmitsRRFSpecificCommands() {
     assertTrue(output.contains("M141 S0"), "Cooldown chamber: M141 S0");
 }
 
+@Test
+void repRapVisitorEmitsPartTwoCommands() {
+    String source = """
+            M.title "RRF_Part2"
+            BedMeshCalibrate
+            LoadBedMesh
+            LoadBedMesh "custom_mesh"
+            ProbeCalibrate
+            M.call "SubMacro"
+            if extruder > 200
+                Respond MSG "Hot enough"
+            endif
+            M.end
+            """;
+
+    var tree = TestUtils.parse(source);
+    var visitor = new RepRapVisitor(new PrinterProfile());
+    String output = visitor.visit(tree);
+
+    assertTrue(output.contains("G29"), "BedMeshCalibrate: G29");
+    assertTrue(output.contains("G29 S1"), "LoadBedMesh (no profile): G29 S1");
+    assertTrue(output.contains("G29 S1 P\"custom_mesh\""), "LoadBedMesh with profile: G29 S1 P\"custom_mesh\"");
+    assertTrue(output.contains("G30"), "ProbeCalibrate: G30");
+    assertTrue(output.contains("M98 P\"SubMacro\""), "MacroCall: M98 P\"SubMacro\"");
+    assertTrue(output.contains("; Conditional skipped"), "IfStart: conditional comment");
+    assertTrue(output.contains("; End conditional skipped"), "IfEnd: end conditional comment");
+}
+
 }
