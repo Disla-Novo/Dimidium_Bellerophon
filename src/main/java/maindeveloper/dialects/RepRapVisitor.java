@@ -10,6 +10,7 @@ import maindeveloper.core.PrinterProfile;
 // for RRF's object-model config commands (M563/M307/M950, etc).
 
 // implemented issue #68
+// implemented issue #69
 
 public class RepRapVisitor extends GCodeVisitor {
     private boolean toolSelected = false;
@@ -206,22 +207,50 @@ public class RepRapVisitor extends GCodeVisitor {
 
     @Override
     protected String emitMacroCall(String macroName) {
-        return "";
+        // TODO: validate that this is the correct command for RRF
+        if (macroName == null || macroName.isEmpty()) {
+            return "";
+        }
+        
+        // Strip quotes if they were preserved by the ANTLR STRING token
+        String cleanMacro = macroName;
+        if (cleanMacro.startsWith("\"") && cleanMacro.endsWith("\"")) {
+            cleanMacro = cleanMacro.substring(1, cleanMacro.length() - 1);
+        }
+        
+        // RRF calls macros using M98 and the file name/path
+        return "M98 P\"" + cleanMacro + "\"\n";
     }
 
     @Override
     protected String emitBedMeshCalibrate() {
-        return "";
+       // TODO: validate that this is the correct command for RRF
+        // G29 in RRF executes the mesh.g macro to probe the bed. 
+       return "G29\n";
     }
 
-    @Override
-    protected String emitLoadBedMesh(String profile) {
-        return "";
+  @Override
+protected String emitLoadBedMesh(String profile) {
+    // TODO: validate that this is the correct command for RRF
+    // RRF: G29 S1 loads a saved heightmap
+    // P"name" specifies which profile to load
+    if (profile == null || profile.isEmpty()) {
+       
+        return "G29 S1\n";
     }
+    
+    String cleanProfile = profile;
+    if (cleanProfile.startsWith("\"") && cleanProfile.endsWith("\"")) {
+        cleanProfile = cleanProfile.substring(1, cleanProfile.length() - 1);
+    }
+    
+    return "G29 S1 P\"" + cleanProfile + "\"\n";
+}
+
 
     @Override
     protected String emitProbeCalibrate() {
-        return "";
+        return "G30\n";
     }
 
     @Override
@@ -258,12 +287,14 @@ public class RepRapVisitor extends GCodeVisitor {
 
     @Override
     protected String emitIfStart(String condition) {
-        return "";
+        // RRF supports Meta-GCode (if/elif/else), but safely translating  
+        // conditions to RRF's specific Object Model syntax is out of scope
+        return "; Conditional skipped (not supported in RRF target)\n";
     }
 
     @Override
     protected String emitIfEnd() {
-        return "";
+        return "; End conditional skipped\n";
     }
 
     @Override
