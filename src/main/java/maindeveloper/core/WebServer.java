@@ -91,10 +91,43 @@ public class WebServer {
         public String gcodeFolder; // insertGcode folder - the G-code library folder path from frontend
     }
 
+    static class CompileError {
+        public int line;
+        public String message;
+        public String type;
+    }
+
     static class CompileResponse {
         public boolean success;
         public String output;
         public String error;
+        public List<CompileError> errors;
+    }
+
+    private static int inferLineNumberFromMessage(String message, String requestBody) {
+        if (message == null || requestBody == null || requestBody.isBlank()) {
+            return 1;
+        }
+
+        try {
+            CompileRequest request = new Gson().fromJson(requestBody, CompileRequest.class);
+            if (request != null && request.code != null && !request.code.isBlank()) {
+                String[] lines = request.code.split("\\r?\\n");
+                for (int i = 0; i < lines.length; i++) {
+                    String line = lines[i].trim();
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+                    if (message.toLowerCase().contains(line.toLowerCase())) {
+                        return i + 1;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // fall back to line 1
+        }
+
+        return 1;
     }
 
     static class ScanRequest {
@@ -154,6 +187,11 @@ public class WebServer {
                 }
 
                 out.error = message + hint;
+                out.errors = new ArrayList<>();
+                out.errors.add(new CompileError());
+                out.errors.get(0).line = inferLineNumberFromMessage(message, req.body());
+                out.errors.get(0).message = out.error;
+                out.errors.get(0).type = "error";
             }
 
             res.type("application/json");
