@@ -312,8 +312,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return emitRelativeExtrusion();
         }
 
-        if (ctx.LOAD_BED_MESH() != null && ctx.STRING() != null) {
-            String pr = ctx.STRING().getText().replace("\"", "");
+        if (ctx.LOAD_BED_MESH() != null) {
+            String pr = null;
+            if (ctx.STRING() != null) {
+                pr = ctx.STRING().getText().replace("\"", "");
+            }
             return emitLoadBedMesh(pr);
         }
 
