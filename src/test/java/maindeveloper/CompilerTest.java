@@ -382,6 +382,7 @@ void repRapVisitorEmitsPartTwoCommands() {
 
     assertTrue(output.contains("G29"), "BedMeshCalibrate: G29");
     assertTrue(output.contains("G29 S1"), "LoadBedMesh (no profile): G29 S1");
+    assertFalse(output.contains("P\"<;missing STRING>\""), "LoadBedMesh without profile should not emit the parser placeholder");
     assertTrue(output.contains("G29 S1 P\"custom_mesh\""), "LoadBedMesh with profile: G29 S1 P\"custom_mesh\"");
     assertTrue(output.contains("G30"), "ProbeCalibrate: G30");
     assertTrue(output.contains("M98 P\"SubMacro\""), "MacroCall: M98 P\"SubMacro\"");
