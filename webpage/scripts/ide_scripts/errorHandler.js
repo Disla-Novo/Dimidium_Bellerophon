@@ -210,10 +210,11 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       }
       // added this here
-      else if (Array.isArray(data.errors)) {
+      else if (Array.isArray(data.errors) && data.errors.length > 0) {
         data.errors.forEach((err) => {
-          logMessage(log, `Line ${err.line}: ${err.message}`, "error");
-          markErrorLine(err.line);
+          const line = Number(err.line) || 1;
+          logMessage(log, `Line ${line}: ${err.message}`, "error");
+          markErrorLine(line);
         });
       } else {
         logMessage(
