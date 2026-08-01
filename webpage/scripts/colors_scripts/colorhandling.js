@@ -14,6 +14,57 @@ function getSemanticColor(type) {
   return theme?.semantic?.[type];
 }
 
+function resolveTokenColor(tokenName, fallbackColor) {
+  if (!tokenName) return fallbackColor;
+
+  if (tokenColors[tokenName]) {
+    return tokenColors[tokenName];
+  }
+
+  const normalized = tokenName.toUpperCase();
+  if (tokenColors[normalized]) {
+    return tokenColors[normalized];
+  }
+
+  const semanticFallbacks = {
+    TITLE: "keyword",
+    MEND: "keyword",
+    HOME: "keyword",
+    MOVE: "keyword",
+    HEAT: "keyword",
+    LEVEL: "keyword",
+    CALL: "keyword",
+    IF: "keyword",
+    ENDIF: "keyword",
+    REPEAT: "keyword",
+    END: "keyword",
+    BREPEAT: "keyword",
+    PAUSE: "keyword",
+    RESPOND: "keyword",
+    RESUME: "keyword",
+    WAITFORTEMP: "keyword",
+    COOLDOWN: "keyword",
+    SET_SPEED: "keyword",
+    SET_FAN: "keyword",
+    PRINTFILE: "keyword",
+    LOAD_BED_MESH: "keyword",
+    BED_MESH_CALIBRATE: "keyword",
+    PROBE_CALIBRATE: "keyword",
+    SET_PRESSURE_ADVANCE: "keyword",
+    RESET_EXTRUDER: "keyword",
+    RELATIVEEXTRUSION: "keyword",
+    ABSOLUTE: "keyword",
+    RELATIVE: "keyword",
+    MOVEEX: "keyword",
+    STRING: "string",
+    NUMBER: "number",
+    ID: "variable",
+  };
+
+  const semanticType = semanticFallbacks[normalized] || semanticFallbacks[tokenName];
+  return getSemanticColor(semanticType) || fallbackColor;
+}
+
 async function highlightCode() {
   const input = document.getElementById("code-input");
   const overlay = document.getElementById("code-overlay");
@@ -37,7 +88,7 @@ async function highlightCode() {
       html += escapeHTML(codeInput.slice(lastIndex, t.start));
     }
 
-    let color = tokenColors[t.name] || "#ffffff";
+    let color = resolveTokenColor(t.name, "#ffffff");
 
     if (t.name === "ID") {
       let nextIndex = t.end + 1;
@@ -63,7 +114,7 @@ async function highlightCode() {
       if (isAssignmentTarget) {
         color = getSemanticColor("variable") || "#9cdcfe";
       } else {
-        color = tokenColors.ID || "#abb2bf";
+        color = resolveTokenColor("ID", "#abb2bf");
       }
     }
 
