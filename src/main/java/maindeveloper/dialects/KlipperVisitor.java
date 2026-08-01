@@ -193,6 +193,9 @@ public class KlipperVisitor extends GCodeVisitor {
 
     @Override
     protected String emitLoadBedMesh(String profile) {
+        if (profile == null || profile.isEmpty()) {
+            throw new IllegalArgumentException("Klipper requires a profile name for LoadBedMesh");
+        }
         return "BED_MESH_PROFILE LOAD=" + profile + "\n";
     }
 

@@ -483,6 +483,9 @@ public class MarlinVisitor extends GCodeVisitor {
 
     @Override
     protected String emitLoadBedMesh(String profile) {
+        if (profile == null || profile.isEmpty()) {
+            throw new IllegalArgumentException("Marlin requires a profile name for LoadBedMesh");
+        }
         return "G29 L" + profile + "\n"; // Marlin load mesh
     }
 

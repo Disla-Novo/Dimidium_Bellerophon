@@ -235,15 +235,14 @@ protected String emitLoadBedMesh(String profile) {
     // RRF: G29 S1 loads a saved heightmap
     // P"name" specifies which profile to load
     if (profile == null || profile.isEmpty()) {
-       
         return "G29 S1\n";
     }
-    
+
     String cleanProfile = profile;
     if (cleanProfile.startsWith("\"") && cleanProfile.endsWith("\"")) {
         cleanProfile = cleanProfile.substring(1, cleanProfile.length() - 1);
     }
-    
+
     return "G29 S1 P\"" + cleanProfile + "\"\n";
 }
 
