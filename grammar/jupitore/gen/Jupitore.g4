@@ -51,7 +51,7 @@ statement
     | RELATIVE stmtTerm   // outputs G91 which is a relative positioning
     | TIMEOUT_SET expr stmtTerm                        // Set idle timeout
     | RELATIVEEXTRUSION stmtTerm // this is command M83
-    | LOAD_BED_MESH STRING stmtTerm            // BED_MESH_PROFILE LOAD=default
+    | LOAD_BED_MESH STRING? stmtTerm            // BED_MESH_PROFILE LOAD=default (optional profile) 7/31/2026
     | SET_PRESSURE_ADVANCE expr stmtTerm     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
     | RESET_EXTRUDER stmtTerm                  // G92 E0
     | DWELL expr ( 'S' | 's' | 'MS' | 'ms' )? stmtTerm// new
