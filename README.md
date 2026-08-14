@@ -19,20 +19,20 @@ Bellerophon is a compiled domain-specific language (DSL) and IDE designed to rep
 
 ## What This Means for You
 
-- **Write Once, Deploy Anywhere** – One script, all firmware.
-- **Safety-First** – Simulate before you print. Prevent bed crashes.
-- **Parametric Power** – Variables, math, loops. No more hardcoding.
-- **100% Local** – All local network features are and will remain free.
+- **Write Once, Deploy Anywhere** - One script, all firmware.
+- **Safety-First** - Simulate before you print. Prevent bed crashes.
+- **Parametric Capabilities** - Variables, math, loops.
+- **100% Local** - All local network features are and will remain free.
 
 ---
 
 ## Key Components
 
-> **Bellerophon IDE** — A real-time syntax-validating editor for authoring multi-firmware macros.
+> **Bellerophon IDE**: A real-time syntax-validating editor for authoring multi-firmware macros.
 >
-> **CFG Generator & Boundary Checker** — A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
+> **CFG Generator & Boundary Checker**: A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
 >
-> **Gravity Hub (Beta)** — A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
+> **Gravity Hub (Beta)**: A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
 
 ---
 
@@ -63,15 +63,15 @@ M.end
 ```
 
 ### What this does
-1. Home – Moves the printer to its origin.
-2. Absolute – Uses absolute positioning so all coordinates are based on the printer’s origin.
-3. SetSpeed = 2000 – Sets a moderate movement speed for the macro (mm/min).
-4.  MoveTo x=100 y=100 z=0.2 – Moves to the starting point slightly above the bed.
-5.  MoveTo x=150 y=100 – Moves along the X axis.
-6.  MoveTo x=150 y=150 – Moves along the Y axis.
-7.   MoveTo x=100 y=150 – Moves along the X axis.
-8.   MoveTo x=100 y=100 – Returns to the starting point, completing a square path.
-9.   Home – Returns the printer to its origin.
+1. Home - Moves the printer to its origin.
+2. Absolute - Uses absolute positioning so all coordinates are based on the printer’s origin.
+3. SetSpeed = 2000 - Sets a moderate movement speed for the macro (mm/min).
+4.  MoveTo x=100 y=100 z=0.2 - Moves to the starting point slightly above the bed.
+5.  MoveTo x=150 y=100 - Moves along the X axis.
+6.  MoveTo x=150 y=150 - Moves along the Y axis.
+7.   MoveTo x=100 y=150 - Moves along the X axis.
+8.   MoveTo x=100 y=100 - Returns to the starting point, completing a square path.
+9.   Home - Returns the printer to its origin.
 
 ## Quick Start
 
