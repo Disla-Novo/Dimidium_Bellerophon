@@ -91,7 +91,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
         Double left = visit(ctx.expr(0));
         Double right = visit(ctx.expr(1));
-        System.out.println("MULDIV: left=" + left + ", right=" + right);
+       // System.out.println("MULDIV: left=" + left + ", right=" + right);
         if (left == null || right == null) {
             System.out.println("WARNING: left or right is null!");
             return 0.0;
@@ -143,7 +143,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         Double value = visitor.localVariables.containsKey(varName)
                 ? visitor.localVariables.get(varName)
                 : visitor.globalVariables.getOrDefault(varName, 0.0);
-        System.out.println("READ VAR: " + varName + " = " + value);
+        // System.out.println("READ VAR: " + varName + " = " + value);
         return value;
     }
 

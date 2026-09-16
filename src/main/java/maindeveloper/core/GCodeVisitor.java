@@ -99,15 +99,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected String sourceFilePath = null; // Track the .bph file being compiled
 
     public void setEnablePaging(boolean enable) {
-        System.out.println("VISITOR LOG: Paging has been set to: " + enable);
+       // System.out.println("VISITOR LOG: Paging has been set to: " + enable);
         this.enablePaging = enable;
     }
 
     public GCodeVisitor(PrinterProfile profile) {
-        System.out.println("=== DEBUG: GCodeVisitor constructor ===");
-        System.out.println("Profile maxX = " + profile.getMaxX());
-        System.out.println("Profile maxY = " + profile.getMaxY());
-        System.out.println("Profile maxZ = " + profile.getMaxZ());
+       // System.out.println("=== DEBUG: GCodeVisitor constructor ===");
+      //  System.out.println("Profile maxX = " + profile.getMaxX());
+      //  System.out.println("Profile maxY = " + profile.getMaxY());
+      //  System.out.println("Profile maxZ = " + profile.getMaxZ());
         this.limiter = new HardwareLimiter(profile.getMaxX(), profile.getMaxY(), profile.getMaxZ());
         this.settings.setNozzleDiameter(profile.getNozzleDiameter());
         this.settings.setFilamentDiameter(profile.getFilamentDiameter());
@@ -120,17 +120,17 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
 
         // DEBUG: print all children of the program node
-        System.out.println("=== visitProgram: " + ctx.getChildCount() + " children ===");
-        for (int i = 0; i < ctx.getChildCount(); i++) {
-            ParseTree child = ctx.getChild(i);
-            System.out.println("  child " + i + ": " + child.getClass().getSimpleName() + " -> " + child.getText());
-        }
+      //  System.out.println("=== visitProgram: " + ctx.getChildCount() + " children ===");
+       // for (int i = 0; i < ctx.getChildCount(); i++) {
+          //  ParseTree child = ctx.getChild(i);
+          //  System.out.println("  child " + i + ": " + child.getClass().getSimpleName() + " -> " + child.getText());
+    //    }
 
         if (this.enablePaging) {
             try {
                 // Create a temporary file to store long gcodes
                 File tempFile = File.createTempFile("bph_scratch_", ".gcode");
-                System.out.println("PAGING ACTIVE: Writing to " + tempFile.getAbsolutePath());
+              //  System.out.println("PAGING ACTIVE: Writing to " + tempFile.getAbsolutePath());
                 tempFile.deleteOnExit(); // JVM cleans up on exit
 
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -201,12 +201,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitStatement(JupitoreParser.StatementContext ctx) {
         // ---- 6/17/2026: handle assignments ----
         if (ctx.assignment() != null) {
-            System.out.println("DEBUG: Found assignment, calling visitAssignment");
+           // System.out.println("DEBUG: Found assignment, calling visitAssignment");
             return visit(ctx.assignment());
         }
 
         if (ctx.global_assignment() != null) {
-            System.out.println("DEBUG: Found global assignment, calling visitGlobal_assignment");
+            // System.out.println("DEBUG: Found global assignment, calling visitGlobal_assignment");
             return visit(ctx.global_assignment());
         }
 
@@ -393,7 +393,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setFilamentDiameter(val);
-            System.out.println("DEBUG: Filament diameter set to " + val);
+          //  System.out.println("DEBUG: Filament diameter set to " + val);
             return emitSetFilament(val);
         }
 
@@ -401,7 +401,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setLayerHeight(val);
-            System.out.println("DEBUG: Layer height set to " + val);
+          //  System.out.println("DEBUG: Layer height set to " + val);
             return emitSetLayerHeight(val);
         }
 
@@ -409,7 +409,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             settings.setExtrusionMultiplier(val);
-            System.out.println("DEBUG: Extrusion multiplier set to " + val);
+          //  System.out.println("DEBUG: Extrusion multiplier set to " + val);
             return emitSetExtrusionMultiplier(val);
         }
 
@@ -417,7 +417,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
             double val = compute.visit(ctx.expr());
             autoExtrudeEnabled = (val != 0.0);
-            System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
+          //  System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
             return emitEnableAutoExtrude(autoExtrudeEnabled);
         }
 
@@ -434,7 +434,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
         // -------------------------------------------
 
-        System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
+      //  System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
         return "";
     }
 
@@ -738,7 +738,7 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
     localVariables.put(varName, value);
-    System.out.println("ASSIGN: " + varName + " = " + value);
+   // System.out.println("ASSIGN: " + varName + " = " + value);
     return "";
 }
 
@@ -778,13 +778,13 @@ public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx
     Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
     double value = compute.visit(ctx.expr());
     globalVariables.put(varName, value);
-    System.out.println("ASSIGN (global): " + varName + " = " + value);
+  //  System.out.println("ASSIGN (global): " + varName + " = " + value);
     return "";
 }
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
     public void setSourceFilePath(String path) {
         this.sourceFilePath = path;
-        System.out.println("VISITOR LOG: Source file path set to: " + path);
+    //    System.out.println("VISITOR LOG: Source file path set to: " + path);
     }
 
     protected File resolveFilePath(String filePath) {
@@ -832,11 +832,11 @@ public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx
         if (!cleanPath.toLowerCase().endsWith(".gcode") &&
                 !cleanPath.toLowerCase().endsWith(".g") &&
                 !cleanPath.toLowerCase().endsWith(".gc")) {
-            System.out.println("WARNING: InsertGCode file doesn't have standard G-code extension: " + cleanPath);
+          //  System.out.println("WARNING: InsertGCode file doesn't have standard G-code extension: " + cleanPath);
         }
 
         if (gcodeFile.length() == 0) {
-            System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
+          //  System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
             return "";
         }
 
