@@ -1,14 +1,5 @@
 // persistence.js
 // Single source of truth for app state, backed by /state on the local server.
-//
-// Loaded SYNCHRONOUSLY at the top of every page that needs persistence.
-//  it's a local-first app talking to localhost, and the
-// alternative (making every consumer async) seems like a  much bigger refactor for
-// little benefit. subject to change. 
-//
-// Every script that previously used localStorage should now read/write
-// through Persistence.get("section.key") / Persistence.set("section.key", val).
-// Legacy localStorage keys are migrated on first load and then deleted.
 
 (function () {
   "use strict";
@@ -18,6 +9,15 @@
   const SCHEMA_VERSION = 1;
   const SAVE_DEBOUNCE_MS = 500;
   const LEGACY_MIGRATION_FLAG = "bellerophon_migrated_to_state";
+
+  
+  const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+  function isSafePath(parts) {
+    for (const p of parts) {
+      if (FORBIDDEN_KEYS.has(p)) return false;
+    }
+    return true;
+  }
 
   function emptyState() {
     return {
@@ -36,7 +36,6 @@
     };
   }
 
-  // Synchronous load which is much better. 
   let state = null;
   try {
     const xhr = new XMLHttpRequest();
@@ -53,14 +52,12 @@
   if (!state.data || typeof state.data !== "object") state.data = {};
   if (!state.version) state.version = SCHEMA_VERSION;
 
-  //  Legacy migration 
-  // Folds the old scattered localStorage keys into the new structure on
-  // first run, then deletes them once we've written successfully once.
   function migrateLegacyKeys() {
     if (localStorage.getItem(LEGACY_MIGRATION_FLAG) === "1") return;
 
     const setIfMissing = (section, key, value) => {
       if (value === null || value === undefined || value === "") return;
+      if (FORBIDDEN_KEYS.has(section) || FORBIDDEN_KEYS.has(key)) return;
       if (!state.data[section]) state.data[section] = {};
       if (state.data[section][key] === undefined) {
         state.data[section][key] = value;
@@ -68,23 +65,41 @@
     };
 
     try {
-      setIfMissing("editor", "content",
-        localStorage.getItem("bellerophon_editor_content"));
+      setIfMissing(
+        "editor",
+        "content",
+        localStorage.getItem("bellerophon_editor_content"),
+      );
 
       const profile = localStorage.getItem("dimidium_profile");
-      if (profile) try { setIfMissing("profile", "values", JSON.parse(profile)); } catch (e) {}
+      if (profile)
+        try {
+          setIfMissing("profile", "values", JSON.parse(profile));
+        } catch (e) {}
 
       const refs = localStorage.getItem("jupitoreRefs");
-      if (refs) try { setIfMissing("references", "saved", JSON.parse(refs)); } catch (e) {}
+      if (refs)
+        try {
+          setIfMissing("references", "saved", JSON.parse(refs));
+        } catch (e) {}
 
-      setIfMissing("gcode", "folder",
-        localStorage.getItem("bellerophon-gcode-folder"));
+      setIfMissing(
+        "gcode",
+        "folder",
+        localStorage.getItem("bellerophon-gcode-folder"),
+      );
 
       const files = localStorage.getItem("bellerophon-gcode-files");
-      if (files) try { setIfMissing("gcode", "files", JSON.parse(files)); } catch (e) {}
+      if (files)
+        try {
+          setIfMissing("gcode", "files", JSON.parse(files));
+        } catch (e) {}
 
       const groups = localStorage.getItem("gravity_groups");
-      if (groups) try { setIfMissing("gravity", "groups", JSON.parse(groups)); } catch (e) {}
+      if (groups)
+        try {
+          setIfMissing("gravity", "groups", JSON.parse(groups));
+        } catch (e) {}
 
       const height = localStorage.getItem("jupitore-console-height");
       if (height) {
@@ -92,14 +107,23 @@
         if (!isNaN(n)) setIfMissing("ui", "consoleHeight", n);
       }
 
-      setIfMissing("ui", "firmware",
-        sessionStorage.getItem("bellerophon_target"));
+      setIfMissing(
+        "ui",
+        "firmware",
+        sessionStorage.getItem("bellerophon_target"),
+      );
 
-      setIfMissing("theme", "current",
-        localStorage.getItem("bellerophon-theme"));
+      setIfMissing(
+        "theme",
+        "current",
+        localStorage.getItem("bellerophon-theme"),
+      );
 
       const cfgSession = localStorage.getItem("dimidium_session");
-      if (cfgSession) try { setIfMissing("cfgGenerator", "session", JSON.parse(cfgSession)); } catch (e) {}
+      if (cfgSession)
+        try {
+          setIfMissing("cfgGenerator", "session", JSON.parse(cfgSession));
+        } catch (e) {}
 
       console.log("[Persistence] Legacy state folded into state.json.");
       scheduleSave();
@@ -119,18 +143,20 @@
       "jupitore-console-height",
       "bellerophon-theme",
       "dimidium_session",
+      "bellerophon_demo_code",
     ].forEach((k) => localStorage.removeItem(k));
     sessionStorage.removeItem("bellerophon_target");
   }
 
-  // Public API 
   const Persistence = {
     get(path, fallback) {
       if (!path) return state.data;
       const parts = path.split(".");
+      if (!isSafePath(parts)) return fallback;
       let node = state.data;
       for (const part of parts) {
-        if (node == null) return fallback;
+        if (node == null || typeof node !== "object") return fallback;
+        if (!Object.prototype.hasOwnProperty.call(node, part)) return fallback;
         node = node[part];
       }
       return node === undefined ? fallback : node;
@@ -138,10 +164,20 @@
 
     set(path, value) {
       const parts = path.split(".");
+      if (!isSafePath(parts)) {
+        console.warn("[Persistence] Refused unsafe path:", path);
+        return;
+      }
       let node = state.data;
       for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
-        if (!node[part] || typeof node[part] !== "object") node[part] = {};
+        if (
+          !Object.prototype.hasOwnProperty.call(node, part) ||
+          !node[part] ||
+          typeof node[part] !== "object"
+        ) {
+          node[part] = {};
+        }
         node = node[part];
       }
       node[parts[parts.length - 1]] = value;
@@ -150,9 +186,13 @@
 
     remove(path) {
       const parts = path.split(".");
+      if (!isSafePath(parts)) {
+        console.warn("[Persistence] Refused unsafe path:", path);
+        return;
+      }
       let node = state.data;
       for (let i = 0; i < parts.length - 1; i++) {
-        if (!node[parts[i]]) return;
+        if (!Object.prototype.hasOwnProperty.call(node, parts[i])) return;
         node = node[parts[i]];
       }
       delete node[parts[parts.length - 1]];
@@ -178,10 +218,11 @@
       }
     },
 
-    flush() { return saveNow(); },
+    flush() {
+      return saveNow();
+    },
   };
 
-  // Save plumbing 
   let saveTimer = null;
   let saving = false;
   let pendingSave = false;
@@ -226,7 +267,6 @@
     }
   }
 
-  // Flush on unload via sendBeacon so a last-minute edit isn't lost
   window.addEventListener("beforeunload", () => {
     try {
       const blob = new Blob([JSON.stringify(state)], {
