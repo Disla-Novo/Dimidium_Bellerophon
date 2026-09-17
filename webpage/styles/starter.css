@@ -1168,3 +1168,48 @@ body {
 .save-folder-btn:hover {
   background: #528bff;
 }
+
+.profile-selector-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.profile-selector-row select,
+.profile-selector-row input[type="text"] {
+  flex: 1;
+}
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #3a3a4a;
+  border-radius: 4px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+}
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.profile-name-error {
+  color: #e06c75;
+  font-size: 12px;
+  margin: -6px 0 12px 0;
+}
+.icon-btn.confirming {
+  background: rgba(200, 60, 60, 0.25);
+  border-color: #e06c75;
+  color: #ff9999;
+}
+
+.icon-btn.confirming:hover {
+  background: rgba(200, 60, 60, 0.4);
+  color: #ffffff;
+}
