@@ -48,6 +48,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
+    // Reusable Compute instance. Constructing a fresh one per expression
+    // means thousands of allocations for a large Brepeat; a single instance
+    // whose iteration is updated on each call is much cheaper.
+    private final Compute sharedCompute;
+
   
     // ---- ABSTRACT FIRMWARE METHODS ----
     // NOTE: Some method names are Klipper-centric for historical reasons,
@@ -113,6 +118,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.settings.setFilamentDiameter(profile.getFilamentDiameter());
         this.settings.setLayerHeight(profile.getLayerHeight());
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
+        this.sharedCompute = new Compute(this, 0);
+    }
+
+    // Evaluate an expression with the current loop iteration, reusing the
+    // shared Compute instance.
+    protected double evalExpr(JupitoreParser.ExprContext ctx) {
+        sharedCompute.setIteration(iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        return sharedCompute.visit(ctx);
     }
 
     // 4/10/2026 adding paging support to the visitor! lets see if this actually works
@@ -336,28 +349,26 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return emitCooldown(t);
         }
 
-        if (ctx.DWELL() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double value = compute.visit(ctx.expr());
+       if (ctx.DWELL() != null && ctx.expr() != null) {
+    double value = evalExpr(ctx.expr());
 
-            String unit = "ms";
-            for (int i = 0; i < ctx.getChildCount(); i++) {
-                ParseTree child = ctx.getChild(i);
-                if (child instanceof TerminalNode) {
-                    String text = child.getText();
-                    if (text.equalsIgnoreCase("S") || text.equalsIgnoreCase("ms")) {
-                        unit = text.toLowerCase();
-                        break;
-                    }
-                }
-            }
-
-            if (unit.equals("s")) {
-                value *= 1000;
-            }
-
-            return emitDwell(value);
+    String unit = "ms";
+    if (ctx.ID() != null) {
+        String unitText = ctx.ID().getText().toLowerCase();
+        if (unitText.equals("s") || unitText.equals("ms")) {
+            unit = unitText;
+        } else {
+            throw new RuntimeException(
+                "ERROR: Dwell unit must be 's' or 'ms'. Got: '" + ctx.ID().getText() + "'");
         }
+    }
+
+    if (unit.equals("s")) {
+        value *= 1000;
+    }
+
+    return emitDwell(value);
+}
 
         if (ctx.SET_SPEED() != null && ctx.expr() != null) {
             Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
