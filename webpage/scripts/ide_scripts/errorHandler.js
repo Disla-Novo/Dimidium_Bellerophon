@@ -188,12 +188,13 @@ window.addEventListener("DOMContentLoaded", () => {
       if (data.success) {
         if (data.output.startsWith("SUCCESS_PAGED:")) {
           const filePath = data.output.replace("SUCCESS_PAGED:", "");
+          
           window.pagedFilePath = filePath;
           gcodeOutput.innerHTML = `<div class="paged-output-msg">
-                  <strong>Industrial Build Complete</strong><br>
-                  G-Code is too large for preview (~${(code.length / 1024).toFixed(0)} KB source).<br>
-                  Cached at: <code>${filePath}</code><br>
-                  <span style="display:inline-block; margin-top:8px;">Use <strong>Download ${TARGET_CONFIG[window.currentMode]?.ext || ".gcode"}</strong> below to save the file.</span>
+          <strong>Industrial Build Complete</strong><br>
+          G-Code is too large for preview (~${(code.length / 1024).toFixed(0)} KB source).<br>
+          Cached at: <code>${filePath}</code><br>
+          <span style="display:inline-block; margin-top:8px;">Use <strong>Download ${TARGET_CONFIG[window.currentMode]?.ext || ".gcode"}</strong> below to save the file.</span>
               </div>`;
           logMessage(
             log,
