@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bellerophon IDE | Macro Compiler</title>
     <script src="/scripts/data/persistence.js"></script>
+    <script src="/scripts/data/profiles.js"></script>
     <link rel="stylesheet" href="/styles/starter.css" />
   </head>
   <body>
@@ -111,8 +112,15 @@
         <span class="close-modal">&times;</span>
         <h2>Printer Profile</h2>
         <div class="modal-form">
-          <label>Profile Name:</label>
-          <input type="text" id="profileName" value="Default" />
+  <div class="profile-selector-row">
+    <select id="profileDropdown"></select>
+    <input type="text" id="profileNameInput" style="display:none;" />
+    <button type="button" id="renameProfileBtn" class="icon-btn" title="Rename">✎</button>
+    <button type="button" id="duplicateProfileBtn" class="icon-btn" title="Duplicate">⧉</button>
+    <button type="button" id="newProfileBtn" class="icon-btn" title="New">+</button>
+    <button type="button" id="deleteProfileBtn" class="icon-btn" title="Delete">❌</button>
+  </div>
+  <p id="profileNameError" class="profile-name-error" style="display:none;"></p>
 
           <label>Bed Width (X, mm):</label>
           <input type="number" id="profileMaxX" value="220" step="1" />
@@ -146,7 +154,7 @@
           />
 
           <div class="modal-buttons">
-            <button id="saveProfileBtn">Save Profile</button>
+            <button id="saveProfileBtn">Close</button>
             <button id="cancelProfileBtn">Cancel</button>
           </div>
         </div>
