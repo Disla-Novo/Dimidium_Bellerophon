@@ -656,9 +656,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extrusionMultiplier: 1.0,
       };
 
-      const savedProfile = Persistence.get("profile.values");
-      if (savedProfile) {
-        profile = savedProfile;
+      const active = Profiles.getActive();
+      if (active) {
+        profile = active;
       }
 
       const mode = cmd.mode || "klipper"; //  otherwise default to klipper

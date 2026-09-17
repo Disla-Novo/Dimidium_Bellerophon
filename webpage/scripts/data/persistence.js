@@ -276,6 +276,23 @@
     } catch (e) {}
   });
 
+
+  function migrateProfileShape() {
+  const profile = state.data.profile;
+  if (!profile) return;
+  if (profile.profiles && profile.activeId) return;
+  if (!profile.values) return;
+
+  const id = crypto.randomUUID();
+  profile.profiles = {};
+  profile.profiles[id] = profile.values;
+  profile.activeId = id;
+  delete profile.values;
+  scheduleSave();
+  console.log("[Persistence] Migrated profile.values → profile.profiles.");
+}
+
   migrateLegacyKeys();
+  migrateProfileShape();
   window.Persistence = Persistence;
 })();
