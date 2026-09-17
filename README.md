@@ -1,7 +1,7 @@
 <div align="center">
   <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/"><img width="1920" height="673" alt="2026-06-2421-59-46-ezgif com-crop" src="https://github.com/user-attachments/assets/c8ee376f-ee58-4ebb-901a-757a6417f868" /></a><br>
   <a href="Bellerophon%20Language%20_%20Documentation.pdf"><img src="https://img.shields.io/badge/Bellerophon-DSL-black?labelColor=0d9488&style=flat" alt="Bellerophon: DSL"></a><a href="https://github.com/Disla-Novo/Dimidium_Bellerophon"><img src="https://img.shields.io/badge/GravityHub-Beta-black?labelColor=0d9488&style=flat" alt="Gravity Hub: Beta"></a><br>
-  <a href="https://github.com/Klipper3d" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;"></a><a href="https://github.com/MarlinFirmware" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;"></a><br>
+  <a href="https://github.com/Klipper3d" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Klipper-Supported-black?labelColor=ff0000&style=flat" alt="Klipper" style="pointer-events: none;"></a><a href="https://github.com/MarlinFirmware" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Marlin-Supported-black?labelColor=orange&style=flat" alt="Marlin" style="pointer-events: none;"></a><a href="https://github.com/Duet3D/RepRapFirmware" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/RepRap-Supported-black?labelColor=2196F3&style=flat" alt="RepRapFirmware" style="pointer-events: none;"></a><br>
   <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon"><img src="https://img.shields.io/badge/OS-Windows%20|%20Linux%20|%20macOS-black?labelColor=0078D4&style=flat" alt="Platform"></a><a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL_3.0-blue.svg" alt="License" style="vertical-align: top;"></a><br>
   <a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/maven.yml"><img src="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/maven.yml/badge.svg?branch=main" alt="Java CI with Maven Build Status"></a><a href="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/github-code-scanning/codeql"><img src="https://github.com/Disla-Novo/Dimidium_Bellerophon/actions/workflows/github-code-scanning/codeql/badge.svg" alt="CodeQL Security Scan Status"></a>
 </div>
@@ -19,20 +19,20 @@ Bellerophon is a compiled domain-specific language (DSL) and IDE designed to rep
 
 ## What This Means for You
 
-- **Write Once, Deploy Anywhere** – One script, all firmware.
-- **Safety-First** – Simulate before you print. Prevent bed crashes.
-- **Parametric Power** – Variables, math, loops. No more hardcoding.
-- **100% Local** – All local network features are and will remain free.
+- **Write Once, Deploy Anywhere** - One script, all firmware.
+- **Safety-First** - Simulate before you print. Prevent bed crashes.
+- **Parametric Capabilities** - Variables, math, loops.
+- **100% Local** - All local network features are and will remain free.
 
 ---
 
 ## Key Components
 
-> **Bellerophon IDE** — A real-time syntax-validating editor for authoring multi-firmware macros.
+> **Bellerophon IDE**: A real-time syntax-validating editor for authoring multi-firmware macros.
 >
-> **CFG Generator & Boundary Checker** — A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
+> **CFG Generator & Boundary Checker**: A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
 >
-> **Gravity Hub (Beta)** — A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
+> **Gravity Hub (Beta)**: A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
 
 ---
 
@@ -63,15 +63,15 @@ M.end
 ```
 
 ### What this does
-1. Home – Moves the printer to its origin.
-2. Absolute – Uses absolute positioning so all coordinates are based on the printer’s origin.
-3. SetSpeed = 2000 – Sets a moderate movement speed for the macro (mm/min).
-4.  MoveTo x=100 y=100 z=0.2 – Moves to the starting point slightly above the bed.
-5.  MoveTo x=150 y=100 – Moves along the X axis.
-6.  MoveTo x=150 y=150 – Moves along the Y axis.
-7.   MoveTo x=100 y=150 – Moves along the X axis.
-8.   MoveTo x=100 y=100 – Returns to the starting point, completing a square path.
-9.   Home – Returns the printer to its origin.
+1. Home - Moves the printer to its origin.
+2. Absolute - Uses absolute positioning so all coordinates are based on the printer’s origin.
+3. SetSpeed = 2000 - Sets a moderate movement speed for the macro (mm/min).
+4.  MoveTo x=100 y=100 z=0.2 - Moves to the starting point slightly above the bed.
+5.  MoveTo x=150 y=100 - Moves along the X axis.
+6.  MoveTo x=150 y=150 - Moves along the Y axis.
+7.   MoveTo x=100 y=150 - Moves along the X axis.
+8.   MoveTo x=100 y=100 - Returns to the starting point, completing a square path.
+9.   Home - Returns the printer to its origin.
 
 ## Quick Start
 
