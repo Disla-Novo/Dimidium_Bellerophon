@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.Properties;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import com.google.gson.Gson;
@@ -41,11 +43,18 @@ public class WebServer {
     private static final Map<String, Function<PrinterProfile, GCodeVisitor>> VISITOR_FACTORIES = Map.of(
             "klipper", KlipperVisitor::new,
             "marlin", MarlinVisitor::new,
-            "reprap", RepRapVisitor::new  // added reprap to factory map
+            "reprap", RepRapVisitor::new // added reprap to factory map
     );
     private static final String CONFIG_FILE = "config.properties";
     private static final int DEFAULT_PORT = 4567;
     private static final int STATE_SCHEMA_VERSION = 1;
+    private static final int OUTPUT_PAGE_THRESHOLD_BYTES = 1_000_000;
+
+    // Tracks the most recently paged output file so we can delete it the
+    // next time we page a new one. Without this, temp files would pile up
+    // in %TEMP% until the OS cleaned them out. Not volatile: pageToFile is
+    // the only writer and it's synchronized on the class.
+    private static File lastPagedFile = null;
 
     // Resolves the persisted state.json to a fixed OS user-data directory,
     // NOT relative to the jar/install folder. Each release is unzipped to a
@@ -54,10 +63,10 @@ public class WebServer {
     // state survives across releases. See issue: localStorage -> JSON
     // persistence layer.
     //
-    //   Windows:  %APPDATA%\Dimidium\state.json
-    //   macOS:    ~/Library/Application Support/Dimidium/state.json
-    //   Linux:    $XDG_DATA_HOME/dimidium/state.json
-    //             (or ~/.local/share/dimidium/state.json if XDG_DATA_HOME is unset)
+    // Windows: %APPDATA%\Dimidium\state.json
+    // macOS: ~/Library/Application Support/Dimidium/state.json
+    // Linux: $XDG_DATA_HOME/dimidium/state.json
+    // (or ~/.local/share/dimidium/state.json if XDG_DATA_HOME is unset)
     private static Path getStateFilePath() {
         String userHome = System.getProperty("user.home");
         String os = System.getProperty("os.name", "").toLowerCase();
@@ -192,7 +201,8 @@ public class WebServer {
             }
             return port;
         } catch (NumberFormatException e) {
-            System.out.println("server.port=" + portValue + " is not a valid number, using default port " + DEFAULT_PORT);
+            System.out
+                    .println("server.port=" + portValue + " is not a valid number, using default port " + DEFAULT_PORT);
             return DEFAULT_PORT;
         }
     }
@@ -267,6 +277,18 @@ public class WebServer {
         public boolean success;
         public List<String> files;
         public String error;
+    }
+
+    private static synchronized String pageToFile(String gcode) throws IOException {
+        if (lastPagedFile != null && lastPagedFile.exists()) {
+            lastPagedFile.delete();
+        }
+        File tempFile = File.createTempFile("bph_scratch_", ".gcode");
+        lastPagedFile = tempFile;
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            writer.write(gcode);
+        }
+        return "SUCCESS_PAGED:" + tempFile.getAbsolutePath();
     }
 
     /**
@@ -418,6 +440,39 @@ public class WebServer {
             }
         });
 
+        // /paged endpoint: returns the contents of a paged G-code temp file
+        // so the download button can save the real output
+        // . Restricted to the system temp directory
+        // so a caller can't read arbitrary files off disk.
+        get("/paged", (req, res) -> {
+            String path = req.queryParams("path");
+            if (path == null || path.isBlank()) {
+                res.status(400);
+                return "Missing path parameter";
+            }
+
+            File file = new File(path);
+            if (!file.exists() || !file.isFile()) {
+                res.status(404);
+                return "Not found";
+            }
+
+            try {
+                String canonicalFile = file.getCanonicalPath();
+                String canonicalTemp = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                if (!canonicalFile.startsWith(canonicalTemp)) {
+                    res.status(403);
+                    return "Forbidden";
+                }
+            } catch (IOException e) {
+                res.status(500);
+                return "Cannot resolve path";
+            }
+
+            res.type("text/plain");
+            return Files.readString(file.toPath());
+        });
+
         // scan folder endpoint
         post("/scan-folder", (req, res) -> {
             ScanRequest request = gson.fromJson(req.body(), ScanRequest.class);
@@ -453,11 +508,12 @@ public class WebServer {
 
     }
 
-   /**
- * @param input the compilation request containing code, mode, and printer profile
- * @return String G-code output
- * @throws Exception if compilation fails
- */
+    /**
+     * @param input the compilation request containing code, mode, and printer
+     *              profile
+     * @return String G-code output
+     * @throws Exception if compilation fails
+     */
     // ---- Compile Jupitore to G-code ---- YES
     // using Pages method to circumvent the data issue where it crashes if we have
     // too many lines of output
@@ -488,7 +544,8 @@ public class WebServer {
         System.gc(); // suggest garbage collection before we check memory, to get a more accurate
                      // reading
 
-       // Standard ANTLR pipeline initialization: feeds raw string input into the target lexer token stream.
+        // Standard ANTLR pipeline initialization: feeds raw string input into the
+        // target lexer token stream.
         CharStream charStream = CharStreams.fromString(input.code);
         JupitoreLexer lexer = new JupitoreLexer(charStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -534,6 +591,14 @@ public class WebServer {
             visitor.setSourceFilePath(input.gcodeFolder);
             System.out.println("G-code folder set to: " + input.gcodeFolder);
         }
-        return visitor.visit(tree);
+
+        String result = visitor.visit(tree);
+
+        if (!pagingUse && result.length() > OUTPUT_PAGE_THRESHOLD_BYTES) {
+            System.out.println("Output is " + (result.length() / 1024) + " KB - paging to disk");
+            return pageToFile(result);
+        }
+
+        return result;
     }
 }

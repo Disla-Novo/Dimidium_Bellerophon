@@ -12,6 +12,10 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         this.iteration = iteration;
     }
 
+    public void setIteration(int i) {
+        this.iteration = i;
+    }
+
     /**
      * @param ctx
      * @return Double
@@ -51,7 +55,8 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     public Double visitParens(JupitoreParser.ParensContext ctx) {
         return visit(ctx.expr());
     }
-      // 7/21/26  unary minus for negative numbers in expressions
+
+    // 7/21/26 unary minus for negative numbers in expressions
     @Override
     public Double visitUnaryMinus(JupitoreParser.UnaryMinusContext ctx) {
         return -visit(ctx.expr());
@@ -91,7 +96,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     public Double visitMulDiv(JupitoreParser.MulDivContext ctx) {
         Double left = visit(ctx.expr(0));
         Double right = visit(ctx.expr(1));
-       // System.out.println("MULDIV: left=" + left + ", right=" + right);
+        // System.out.println("MULDIV: left=" + left + ", right=" + right);
         if (left == null || right == null) {
             System.out.println("WARNING: left or right is null!");
             return 0.0;
