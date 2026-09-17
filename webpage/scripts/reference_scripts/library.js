@@ -522,7 +522,7 @@ M.end`,
 M.end`,
   },
   // added VARIABLES 7/12/26
-var: {
+  var: {
     label: "var (Global)",
     description:
       "Declares a global variable that persists across the entire file. Any macro can read or modify it.",
@@ -540,9 +540,8 @@ M.end
 
 M.title "Move_global"
     MoveTo x=start_pos 
-M.end`
-
-},
+M.end`,
+  },
   assignment: {
     label: "Assignment (Local)",
     description:
@@ -657,11 +656,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extrusionMultiplier: 1.0,
       };
 
-      const savedProfile = localStorage.getItem("dimidium_profile");
+      const savedProfile = Persistence.get("profile.values");
       if (savedProfile) {
-        try {
-          profile = JSON.parse(savedProfile);
-        } catch (e) {}
+        profile = savedProfile;
       }
 
       const mode = cmd.mode || "klipper"; //  otherwise default to klipper
@@ -673,7 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
           code,
           mode: mode, //  dynamic per command now
           profile,
-          gcodeFolder: localStorage.getItem("bellerophon-gcode-folder") || "",
+          gcodeFolder: Persistence.get("gcode.folder", ""),
         }),
       });
 

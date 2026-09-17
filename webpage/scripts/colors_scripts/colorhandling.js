@@ -61,7 +61,8 @@ function resolveTokenColor(tokenName, fallbackColor) {
     ID: "variable",
   };
 
-  const semanticType = semanticFallbacks[normalized] || semanticFallbacks[tokenName];
+  const semanticType =
+    semanticFallbacks[normalized] || semanticFallbacks[tokenName];
   return getSemanticColor(semanticType) || fallbackColor;
 }
 
@@ -140,9 +141,9 @@ window.applyTheme = function (themeKey) {
   tokenColors = { ...theme.tokens };
 
   document.body.className = document.body.className
-    .split(' ')
-    .filter(cls => !cls.startsWith('theme-'))
-    .join(' ');
+    .split(" ")
+    .filter((cls) => !cls.startsWith("theme-"))
+    .join(" ");
 
   document.body.classList.add(`theme-${themeKey}`);
 
@@ -157,7 +158,8 @@ window.applyTheme = function (themeKey) {
 
   link.href = theme.css;
 
-  localStorage.setItem("bellerophon-theme", themeKey);
+  // localStorage.setItem("bellerophon-theme", themeKey);
+  Persistence.set("theme.current", themeKey);
 
   highlightCode();
 };
@@ -175,8 +177,8 @@ window.addEventListener("DOMContentLoaded", () => {
     overlay.scrollTop = input.scrollTop;
     overlay.scrollLeft = input.scrollLeft;
   });
-
-  const saved = localStorage.getItem("bellerophon-theme") || "starter";
+  // const saved = localStorage.getItem("bellerophon-theme") || "starter";
+  const saved = Persistence.get("theme.current") || "starter";
 
   const wait = setInterval(() => {
     if (window.THEME_MAP) {

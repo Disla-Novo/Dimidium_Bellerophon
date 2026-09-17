@@ -28,21 +28,22 @@ function positionGcodeSuggestionBox(textarea) {
   if (!gcodeSuggestionBox) return;
   const rect = textarea.getBoundingClientRect();
   const cursorPos = textarea.selectionStart;
-  
+
   const textBefore = textarea.value.substring(0, cursorPos);
-  const lines = textBefore.split('\n');
+  const lines = textBefore.split("\n");
   const currentLine = lines.length;
   const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
-  
-  gcodeSuggestionBox.style.left = (rect.left + 10) + 'px';
-  gcodeSuggestionBox.style.top = (rect.top + (currentLine * lineHeight) + 25) + 'px'; // changed to 25 from 10 for better spacing
+
+  gcodeSuggestionBox.style.left = rect.left + 10 + "px";
+  gcodeSuggestionBox.style.top =
+    rect.top + currentLine * lineHeight + 25 + "px"; // changed to 25 from 10 for better spacing
 }
 
 function showGcodeSuggestions(files, prefix) {
   createGcodeSuggestionBox();
-  
-  const matching = files.filter(f => 
-    f.toLowerCase().startsWith(prefix.toLowerCase())
+
+  const matching = files.filter((f) =>
+    f.toLowerCase().startsWith(prefix.toLowerCase()),
   );
 
   if (matching.length === 0 || prefix === "") {
@@ -50,17 +51,17 @@ function showGcodeSuggestions(files, prefix) {
     return;
   }
 
-  gcodeSuggestionBox.innerHTML = '';
-  matching.forEach(file => {
+  gcodeSuggestionBox.innerHTML = "";
+  matching.forEach((file) => {
     const item = document.createElement("div");
     item.className = "suggestion-item";
     item.textContent = file;
-    
+
     item.addEventListener("click", () => {
       insertGcodeFileName(file);
       gcodeSuggestionBox.style.display = "none";
     });
-    
+
     gcodeSuggestionBox.appendChild(item);
   });
 
@@ -72,7 +73,7 @@ function insertGcodeFileName(fileName) {
   const textarea = document.getElementById("code-input");
   const cursorPos = textarea.selectionStart;
   const text = textarea.value;
-  
+
   let quoteStart = -1;
   for (let i = cursorPos - 1; i >= 0; i--) {
     if (text[i] === '"') {
@@ -80,20 +81,20 @@ function insertGcodeFileName(fileName) {
       break;
     }
   }
-  
+
   if (quoteStart === -1) return;
-  
+
   let quoteEnd = text.indexOf('"', cursorPos);
   if (quoteEnd === -1) quoteEnd = cursorPos;
-  
+
   const beforeQuote = text.substring(0, quoteStart + 1);
   const afterQuote = text.substring(quoteEnd);
   textarea.value = beforeQuote + fileName + afterQuote;
-  
+
   const newPos = quoteStart + 1 + fileName.length;
   textarea.selectionStart = newPos;
   textarea.selectionEnd = newPos;
-  
+
   textarea.focus();
   updateLines();
   // adding event for textarea. this should fix the invisibility bug
@@ -104,40 +105,41 @@ function checkForGcodeAutocomplete() {
   const textarea = document.getElementById("code-input");
   const cursorPos = textarea.selectionStart;
   const text = textarea.value;
-  
-  const lines = text.substring(0, cursorPos).split('\n');
-  const currentLine = lines[lines.length - 1] || '';
-  
+
+  const lines = text.substring(0, cursorPos).split("\n");
+  const currentLine = lines[lines.length - 1] || "";
+
   const insertMatch = currentLine.match(/InsertGCode|insertGcode|INSERTGCODE/i);
   if (!insertMatch) {
     if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
     return;
   }
-  
+
   const lastQuote = currentLine.lastIndexOf('"');
   if (lastQuote === -1) {
     if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
     return;
   }
-  
+
   const remaining = text.substring(cursorPos);
   const hasClosingQuote = remaining.indexOf('"') !== -1;
   if (hasClosingQuote) {
     if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
     return;
   }
-  
+
   const prefix = currentLine.substring(lastQuote + 1);
   const files = window.gcodeFileList || [];
-  
+
   if (files.length === 0) {
     createGcodeSuggestionBox();
-    gcodeSuggestionBox.innerHTML = '<div class="suggestion-item no-files">No G-code files found. Set folder in Settings.</div>';
+    gcodeSuggestionBox.innerHTML =
+      '<div class="suggestion-item no-files">No G-code files found. Set folder in Settings.</div>';
     gcodeSuggestionBox.style.display = "block";
     positionGcodeSuggestionBox(textarea);
     return;
   }
-  
+
   showGcodeSuggestions(files, prefix);
 }
 
@@ -147,9 +149,9 @@ function checkForGcodeAutocomplete() {
 let currentProfile = null;
 
 function loadProfileFromStorage() {
-  const saved = localStorage.getItem("dimidium_profile");
+  const saved = Persistence.get("profile.values");
   if (saved) {
-    currentProfile = JSON.parse(saved);
+    currentProfile = saved;
   } else {
     currentProfile = {
       name: "Default",
@@ -168,7 +170,7 @@ function loadProfileFromStorage() {
 
 function saveProfileToStorage() {
   if (currentProfile) {
-    localStorage.setItem("dimidium_profile", JSON.stringify(currentProfile));
+    Persistence.set("profile.values", currentProfile);
     addLogMessage(`Profile "${currentProfile.name}" saved.`);
   }
 }
@@ -280,25 +282,26 @@ function syncScroll() {
 
 // Single set of listeners
 if (input) {
-  input.addEventListener("input", function(e) {
+  input.addEventListener("input", function (e) {
     updateLines();
     clearTimeout(gcodeAutocompleteTimeout);
     gcodeAutocompleteTimeout = setTimeout(checkForGcodeAutocomplete, 200);
   });
   input.addEventListener("scroll", syncScroll);
-  input.addEventListener("keydown", function(e) {
-    if (e.ctrlKey && e.key === ' ') {
+  input.addEventListener("keydown", function (e) {
+    if (e.ctrlKey && e.key === " ") {
       e.preventDefault();
       checkForGcodeAutocomplete();
     }
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       if (gcodeSuggestionBox) gcodeSuggestionBox.style.display = "none";
     }
     if (e.key === "Tab") {
       e.preventDefault();
       const start = this.selectionStart;
       const end = this.selectionEnd;
-      this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+      this.value =
+        this.value.substring(0, start) + "  " + this.value.substring(end);
       this.selectionStart = this.selectionEnd = start + 2;
       updateLines();
     }
@@ -306,19 +309,23 @@ if (input) {
 }
 
 // Click outside to close suggestion box
-document.addEventListener("click", function(e) {
+document.addEventListener("click", function (e) {
   const textarea = document.getElementById("code-input");
-  if (gcodeSuggestionBox && !gcodeSuggestionBox.contains(e.target) && e.target !== textarea) {
+  if (
+    gcodeSuggestionBox &&
+    !gcodeSuggestionBox.contains(e.target) &&
+    e.target !== textarea
+  ) {
     gcodeSuggestionBox.style.display = "none";
   }
 });
 
 // this is references
-let savedRefs = JSON.parse(localStorage.getItem("jupitoreRefs")) || [];
+let savedRefs = Persistence.get("references.saved", []);
 
 function updateLocalStorage() {
-  localStorage.setItem("jupitoreRefs", JSON.stringify(savedRefs));
-  renderReferences(); // live update on same page i hope
+  Persistence.set("references.saved", savedRefs);
+  renderReferences();
 }
 
 // --- Library.html: add + buttons
@@ -350,7 +357,7 @@ function renderReferences() {
   if (!savedReferencesDiv) return;
 
   savedReferencesDiv.innerHTML = "";
-  savedRefs = JSON.parse(localStorage.getItem("jupitoreRefs")) || [];
+  savedRefs = Persistence.get("references.saved", []);
 
   savedRefs.forEach((ref, idx) => {
     const div = document.createElement("div");
@@ -376,16 +383,7 @@ function renderReferences() {
 // Initial render on page load
 renderReferences();
 
-// ======== between pages thing========
-window.addEventListener("storage", (e) => {
-  if (e.key === "jupitoreRefs") {
-    savedRefs = JSON.parse(e.newValue) || [];
-    renderReferences();
-  }
-});
-
-//  Auto-save editor content
-const STORAGE_KEY = "bellerophon_editor_content";
+// editor content now lives in state.json under "editor.content"
 
 // Restore code when page loads
 // Also handles profile loading, mode toggles, and modal setup
@@ -394,7 +392,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadProfileFromStorage();
 
   // Restore saved editor content
-  const savedCode = localStorage.getItem(STORAGE_KEY);
+  const savedCode = Persistence.get("editor.content", "");
   if (savedCode && codeInput) {
     codeInput.value = savedCode;
     updateLines();
@@ -416,7 +414,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // Mode toggle dropdown logic
-  const savedTarget = sessionStorage.getItem("bellerophon_target") || "klipper";
+  const savedTarget = Persistence.get("ui.firmware", "klipper");
   if (targetSelect) {
     targetSelect.value = savedTarget;
     window.currentMode = savedTarget;
@@ -427,7 +425,7 @@ window.addEventListener("DOMContentLoaded", () => {
     targetSelect.addEventListener("change", () => {
       const mode = targetSelect.value;
       window.currentMode = mode;
-      sessionStorage.setItem("bellerophon_target", mode);
+      Persistence.set("ui.firmware", mode);
       updateDownloadButton();
 
       const config = TARGET_CONFIG[mode];
@@ -465,7 +463,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // Save whenever user types
 if (codeInput) {
   codeInput.addEventListener("input", () => {
-    localStorage.setItem(STORAGE_KEY, codeInput.value);
+    Persistence.set("editor.content", codeInput.value);
   });
 }
 
@@ -583,43 +581,45 @@ if (downloadBtn && gcodeOutput) {
 const loadBtn = document.getElementById("load-jup-btn");
 const loadInput = document.getElementById("load-jup-input");
 
-loadBtn.addEventListener("click", () => loadInput.click());
+if (loadBtn && loadInput) {
+  loadBtn.addEventListener("click", () => loadInput.click());
 
-loadInput.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  loadInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    codeInput.value = reader.result;
-    updateLines();
-    codeInput.dispatchEvent(new Event("input")); // overlay highlight
+    const reader = new FileReader();
+    reader.onload = () => {
+      codeInput.value = reader.result;
+      updateLines();
+      codeInput.dispatchEvent(new Event("input")); // overlay highlight
 
-    let fileName = file.name;
-    if (fileName.toLowerCase().endsWith(".bph")) {
-      fileName = fileName.slice(0, -4); // Remove .bph extension
-    }
-    const fileNameEditable = document.getElementById("file-name-editable");
-    if (fileNameEditable) {
-      // Clean the filename for display
-      fileName = fileName.replace(/\s+/g, "_").replace(/[^A-Za-z0-9_-]/g, "");
-      if (fileName.length > 20) fileName = fileName.slice(0, 20);
-      fileNameEditable.innerText = fileName;
+      let fileName = file.name;
+      if (fileName.toLowerCase().endsWith(".bph")) {
+        fileName = fileName.slice(0, -4); // Remove .bph extension
+      }
+      const fileNameEditable = document.getElementById("file-name-editable");
+      if (fileNameEditable) {
+        // Clean the filename for display
+        fileName = fileName.replace(/\s+/g, "_").replace(/[^A-Za-z0-9_-]/g, "");
+        if (fileName.length > 20) fileName = fileName.slice(0, 20);
+        fileNameEditable.innerText = fileName;
 
-      // Set cursor to end
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.selectNodeContents(fileNameEditable);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
+        // Set cursor to end
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(fileNameEditable);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
 
-    // FIX: Reset the file input so the same file can be loaded again...
-    loadInput.value = "";
-  };
-  reader.readAsText(file);
-});
+      // FIX: Reset the file input so the same file can be loaded again...
+      loadInput.value = "";
+    };
+    reader.readAsText(file);
+  });
+}
 
 // clear everything
 const clearBtn = document.getElementById("clear-btn");
@@ -639,7 +639,7 @@ if (clearBtn) {
 
     codeInput.value = "";
     gcodeOutput.textContent = "";
-    localStorage.removeItem(STORAGE_KEY);
+    Persistence.remove("editor.content");
 
     if (consoleLog) {
       consoleLog.innerHTML = ``;
@@ -657,24 +657,27 @@ if (clearLogBtn && consoleLog) {
   });
 }
 const consoleEl = document.querySelector(".console");
-const header = consoleEl.querySelector(".console-header");
-let isResizing = false;
 
-header.addEventListener("mousedown", (e) => {
-  isResizing = true;
-  document.body.style.cursor = "ns-resize";
-});
+if (consoleEl) {
+  const header = consoleEl.querySelector(".console-header");
+  let isResizing = false;
 
-document.addEventListener("mousemove", (e) => {
-  if (!isResizing) return;
-  const newHeight = window.innerHeight - e.clientY;
-  consoleEl.style.height = `${newHeight}px`;
-});
+  header.addEventListener("mousedown", (e) => {
+    isResizing = true;
+    document.body.style.cursor = "ns-resize";
+  });
 
-document.addEventListener("mouseup", () => {
-  isResizing = false;
-  document.body.style.cursor = "default";
-});
+  document.addEventListener("mousemove", (e) => {
+    if (!isResizing) return;
+    const newHeight = window.innerHeight - e.clientY;
+    consoleEl.style.height = `${newHeight}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+    isResizing = false;
+    document.body.style.cursor = "default";
+  });
+}
 
 // Im adding a better coloring system for the output. I think it would be nice
 window.highlightGCode = function (rawGcode) {

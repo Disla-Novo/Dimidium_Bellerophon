@@ -5,16 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeX = document.querySelector(".close-settings-modal");
 
   // GCODE FOLDER SETTINGS VARIABLES
-  let gcodeFolderPath = localStorage.getItem("bellerophon-gcode-folder") || "";
-  let gcodeFileList = [];
+  let gcodeFolderPath = Persistence.get("gcode.folder", "");
+  let gcodeFileList = Persistence.get("gcode.files", []);
   let fileListOpen = false;
 
-  // file list from storage on script load so autocomplete works immediately
-  const savedFilesOnLoad = localStorage.getItem("bellerophon-gcode-files");
-  if (savedFilesOnLoad) {
-    gcodeFileList = JSON.parse(savedFilesOnLoad);
-    window.gcodeFileList = gcodeFileList;
-  }
+  window.gcodeFileList = gcodeFileList;
 
   function escapeHtml(text) {
     if (text == null) return "";
@@ -56,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
           window.applyTheme(key);
         }
         setActiveTheme(key);
-        localStorage.setItem("bellerophon-theme", key);
+        Persistence.set("theme.current", key);
       });
 
       container.appendChild(div);
@@ -75,10 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderGcodeSettings() {
-    // from storage every render so the list survives page refresh
-    const savedFiles = localStorage.getItem("bellerophon-gcode-files");
-    if (savedFiles && gcodeFileList.length === 0) {
-      gcodeFileList = JSON.parse(savedFiles);
+    if (gcodeFileList.length === 0) {
+      gcodeFileList = Persistence.get("gcode.files", []);
       window.gcodeFileList = gcodeFileList;
     }
 
@@ -177,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const path = manualInput.value.trim();
         if (path) {
           gcodeFolderPath = path;
-          localStorage.setItem("bellerophon-gcode-folder", path);
+          Persistence.set("gcode.folder", path);
           scanFolderViaBackend(path);
           renderGcodeSettings();
           addLogMessage(`G-code folder set to: ${path}`);
@@ -196,8 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
     gcodeFileList = [];
     fileListOpen = false;
 
-    localStorage.removeItem("bellerophon-gcode-folder");
-    localStorage.removeItem("bellerophon-gcode-files");
+    Persistence.remove("gcode.folder");
+    Persistence.remove("gcode.files");
 
     window.gcodeFileList = [];
 
@@ -217,10 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((data) => {
         if (data.success) {
           gcodeFileList = data.files;
-          localStorage.setItem(
-            "bellerophon-gcode-files",
-            JSON.stringify(gcodeFileList),
-          );
+          Persistence.set("gcode.files", gcodeFileList);
           updateGcodeAutocomplete(gcodeFileList);
           renderGcodeSettings();
           addLogMessage(
@@ -243,15 +233,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function open() {
     modal.style.display = "block";
 
-    // folder path and file list from storage every time the modal opens
-    gcodeFolderPath = localStorage.getItem("bellerophon-gcode-folder") || "";
-    const savedFiles = localStorage.getItem("bellerophon-gcode-files");
-    if (savedFiles) {
-      gcodeFileList = JSON.parse(savedFiles);
-      window.gcodeFileList = gcodeFileList;
-    }
+    gcodeFolderPath = Persistence.get("gcode.folder", "");
+    gcodeFileList = Persistence.get("gcode.files", []);
+    window.gcodeFileList = gcodeFileList;
 
-    const current = localStorage.getItem("bellerophon-theme") || "starter";
+    const current = Persistence.get("theme.current", "starter");
     renderThemes();
     setActiveTheme(current);
     renderGcodeSettings();
