@@ -16,6 +16,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 
 import jupitore.gen.*;
 import maindeveloper.dialects.KlipperVisitor;
@@ -36,6 +45,126 @@ public class WebServer {
     );
     private static final String CONFIG_FILE = "config.properties";
     private static final int DEFAULT_PORT = 4567;
+    private static final int STATE_SCHEMA_VERSION = 1;
+
+    // Resolves the persisted state.json to a fixed OS user-data directory,
+    // NOT relative to the jar/install folder. Each release is unzipped to a
+    // fresh folder, so anything stored next to the jar gets silently
+    // orphaned on every upgrade. Resolving from user.home instead means
+    // state survives across releases. See issue: localStorage -> JSON
+    // persistence layer.
+    //
+    //   Windows:  %APPDATA%\Dimidium\state.json
+    //   macOS:    ~/Library/Application Support/Dimidium/state.json
+    //   Linux:    $XDG_DATA_HOME/dimidium/state.json
+    //             (or ~/.local/share/dimidium/state.json if XDG_DATA_HOME is unset)
+    private static Path getStateFilePath() {
+        String userHome = System.getProperty("user.home");
+        String os = System.getProperty("os.name", "").toLowerCase();
+
+        Path dataDir;
+        if (os.contains("win")) {
+            String appData = System.getenv("APPDATA");
+            dataDir = Paths.get(appData != null ? appData : userHome, "Dimidium");
+        } else if (os.contains("mac")) {
+            dataDir = Paths.get(userHome, "Library", "Application Support", "Dimidium");
+        } else {
+            String xdgData = System.getenv("XDG_DATA_HOME");
+            if (xdgData != null && !xdgData.isBlank()) {
+                dataDir = Paths.get(xdgData, "dimidium");
+            } else {
+                dataDir = Paths.get(userHome, ".local", "share", "dimidium");
+            }
+        }
+
+        try {
+            Files.createDirectories(dataDir);
+        } catch (IOException e) {
+            System.out.println("WARNING: Failed to create state directory " + dataDir + ": " + e.getMessage());
+        }
+
+        return dataDir.resolve("state.json");
+    }
+
+    // Default, empty state shape matching the schema in the persistence
+    // issue. Returned whenever state.json is missing, unreadable, or
+    // malformed, so the frontend always has something safe to work with
+    // instead of crashing on startup.
+    private static JsonObject defaultState() {
+        JsonObject root = new JsonObject();
+        root.addProperty("version", STATE_SCHEMA_VERSION);
+        root.addProperty("updatedAt", Instant.now().toString());
+
+        JsonObject data = new JsonObject();
+        data.add("editor", new JsonObject());
+        data.add("profile", new JsonObject());
+        data.add("references", new JsonObject());
+        data.add("gcode", new JsonObject());
+        data.add("gravity", new JsonObject());
+        data.add("ui", new JsonObject());
+        data.add("theme", new JsonObject());
+        root.add("data", data);
+
+        return root;
+    }
+
+    // Reads state.json, falling back to a fresh default state on any
+    // failure (missing file, malformed JSON, wrong schema version for now -
+    // migration logic slots in here later without changing the endpoint
+    // shape).
+    private static JsonObject readState(Gson gson) {
+        Path path = getStateFilePath();
+
+        if (!Files.exists(path)) {
+            return defaultState();
+        }
+
+        try {
+            String content = Files.readString(path);
+            if (content.isBlank()) {
+                return defaultState();
+            }
+            JsonObject state = gson.fromJson(content, JsonObject.class);
+            if (state == null || !state.has("data")) {
+                System.out.println("WARNING: state.json missing 'data' section, using default state");
+                return defaultState();
+            }
+            return state;
+        } catch (IOException | JsonSyntaxException e) {
+            System.out.println("WARNING: Failed to read state.json (" + e.getMessage() + "), using default state");
+            return defaultState();
+        }
+    }
+
+    // Atomic write: write to a temp file in the same directory, then rename
+    // over the real file. Rename is atomic on the same filesystem, so a
+    // crash or power loss mid-write can never leave a half-written
+    // state.json behind.
+    //
+    // ATOMIC_MOVE is not universally supported (network-redirected %APPDATA%
+    // on domain-joined Windows machines, some antivirus filesystem filters).
+    // On those systems we fall back to a plain REPLACE_EXISTING move, which
+    // is still safe for our purpose because the temp file is on the same
+    // directory - the worst case is a very brief window where the file is
+    // mid-rename, not a half-written file.
+    private static void writeState(Gson gson, JsonObject state) throws IOException {
+        Path path = getStateFilePath();
+        Path tempPath = path.resolveSibling(path.getFileName() + ".tmp");
+
+        state.addProperty("updatedAt", Instant.now().toString());
+        if (!state.has("version")) {
+            state.addProperty("version", STATE_SCHEMA_VERSION);
+        }
+
+        Files.writeString(tempPath, gson.toJson(state));
+
+        try {
+            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            System.out.println("NOTE: Atomic move not supported on this filesystem, falling back to standard move");
+            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
 
     // reads server.port from config.properties next to the jar; falls back to
     // DEFAULT_PORT if the file is missing, unreadable, or the value isn't a
@@ -225,6 +354,68 @@ public class WebServer {
 
             res.type("application/json");
             return gson.toJson(highlights);
+        });
+
+        // /state endpoints: single versioned JSON persistence file, stored
+        // in the OS user-data directory so it survives release upgrades.
+        // State is treated as an opaque blob here - the backend doesn't
+        // need to understand its contents, only read/write/reset it safely.
+        get("/state", (req, res) -> {
+            res.type("application/json");
+            return gson.toJson(readState(gson));
+        });
+
+        post("/state", (req, res) -> {
+            try {
+                JsonObject incoming = gson.fromJson(req.body(), JsonObject.class);
+                if (incoming == null || !incoming.has("data")) {
+                    res.status(400);
+                    JsonObject error = new JsonObject();
+                    error.addProperty("success", false);
+                    error.addProperty("error", "Request body must contain a 'data' section.");
+                    return gson.toJson(error);
+                }
+
+                writeState(gson, incoming);
+
+                res.type("application/json");
+                JsonObject ok = new JsonObject();
+                ok.addProperty("success", true);
+                return gson.toJson(ok);
+            } catch (JsonSyntaxException e) {
+                res.status(400);
+                JsonObject error = new JsonObject();
+                error.addProperty("success", false);
+                error.addProperty("error", "Malformed JSON: " + e.getMessage());
+                return gson.toJson(error);
+            } catch (IOException e) {
+                res.status(500);
+                JsonObject error = new JsonObject();
+                error.addProperty("success", false);
+                error.addProperty("error", "Failed to write state: " + e.getMessage());
+                return gson.toJson(error);
+            }
+        });
+
+        // Reset writes a fresh default state to disk, then returns a simple
+        // {success: true} ack - matching the /state POST shape. The frontend
+        // does its own empty-state reconstruction, so there's no reason to
+        // serialize the whole default object back over the wire.
+        post("/state/reset", (req, res) -> {
+            try {
+                JsonObject fresh = defaultState();
+                writeState(gson, fresh);
+                res.type("application/json");
+                JsonObject ok = new JsonObject();
+                ok.addProperty("success", true);
+                return gson.toJson(ok);
+            } catch (IOException e) {
+                res.status(500);
+                JsonObject error = new JsonObject();
+                error.addProperty("success", false);
+                error.addProperty("error", "Failed to reset state: " + e.getMessage());
+                return gson.toJson(error);
+            }
         });
 
         // scan folder endpoint
