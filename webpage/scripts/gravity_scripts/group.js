@@ -1,7 +1,7 @@
 // Data Retrieval
 const urlParams = new URLSearchParams(window.location.search);
 const groupId = urlParams.get("id");
-let groups = JSON.parse(localStorage.getItem("gravity_groups")) || [];
+let groups = Persistence.get("gravity.groups", []);
 let currentGroup = groups.find((group) => group.id === groupId);
 
 // Redirect if something goes wrong
@@ -12,7 +12,7 @@ if (!currentGroup) {
 function persistGroups() {
   const index = groups.findIndex((group) => group.id === groupId);
   groups[index] = currentGroup;
-  localStorage.setItem("gravity_groups", JSON.stringify(groups));
+  Persistence.set("gravity.groups", groups);
 }
 
 // UI Elements
@@ -97,7 +97,9 @@ function isValidPrinterAddress(value) {
   }
 
   const hostnameLabel = "(?!-)[A-Za-z0-9-]{1,63}(?<!-)";
-  const hostnamePattern = new RegExp(`^${hostnameLabel}(\\.${hostnameLabel})*$`);
+  const hostnamePattern = new RegExp(
+    `^${hostnameLabel}(\\.${hostnameLabel})*$`,
+  );
   return hostnamePattern.test(host);
 }
 
@@ -112,7 +114,9 @@ document.getElementById("save-printer-btn").onclick = () => {
   }
 
   if (!isValidPrinterAddress(pIp)) {
-    alert("Enter a valid IP address or URL (e.g. 192.168.1.50 or http://192.168.1.50).");
+    alert(
+      "Enter a valid IP address or URL (e.g. 192.168.1.50 or http://192.168.1.50).",
+    );
     return;
   }
 

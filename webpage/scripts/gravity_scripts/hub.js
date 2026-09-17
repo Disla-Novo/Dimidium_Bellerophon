@@ -1,4 +1,4 @@
-let groups = JSON.parse(localStorage.getItem("gravity_groups")) || [];
+let groups = Persistence.get("gravity.groups", []);
 
 // Groups used to be addressed by array index (group.html?id=<index>), which
 // silently pointed at the wrong group as soon as an earlier group was
@@ -13,7 +13,7 @@ groups.forEach((group) => {
   }
 });
 if (needsMigration) {
-  localStorage.setItem("gravity_groups", JSON.stringify(groups));
+  Persistence.set("gravity.groups", groups);
 }
 
 const dashboard = document.getElementById("hub-dashboard");
@@ -63,7 +63,7 @@ function renderGroups() {
 }
 
 function saveAndRender() {
-  localStorage.setItem("gravity_groups", JSON.stringify(groups));
+  Persistence.set("gravity.groups", groups);
   renderGroups();
 }
 

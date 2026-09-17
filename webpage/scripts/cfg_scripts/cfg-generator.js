@@ -300,9 +300,27 @@ function generateConfig() {
   // to the dictionary, not just the ones it was originally written for.
   if (driverType === "tmc2209") {
     if (board.uart_pin_x !== undefined) {
-      cfg += tmc2209Block("stepper_x", board.uart_pin_x, undefined, board.uart_addr_x, "0.580");
-      cfg += tmc2209Block("stepper_y", board.uart_pin_y, undefined, board.uart_addr_y, "0.580");
-      cfg += tmc2209Block("stepper_z", board.uart_pin_z, undefined, board.uart_addr_z, "0.580");
+      cfg += tmc2209Block(
+        "stepper_x",
+        board.uart_pin_x,
+        undefined,
+        board.uart_addr_x,
+        "0.580",
+      );
+      cfg += tmc2209Block(
+        "stepper_y",
+        board.uart_pin_y,
+        undefined,
+        board.uart_addr_y,
+        "0.580",
+      );
+      cfg += tmc2209Block(
+        "stepper_z",
+        board.uart_pin_z,
+        undefined,
+        board.uart_addr_z,
+        "0.580",
+      );
     } else if (board.has_uart_global) {
       const uartPin = board.uart_pin_global || "PC11";
       const txPin = board.tx_pin || "PC10";
@@ -330,7 +348,13 @@ function generateConfig() {
   // than guessing.
   if (driverType === "tmc2209") {
     if (board.uart_pin_e !== undefined) {
-      cfg += tmc2209Block("extruder", board.uart_pin_e, undefined, board.uart_addr_e, "0.650");
+      cfg += tmc2209Block(
+        "extruder",
+        board.uart_pin_e,
+        undefined,
+        board.uart_addr_e,
+        "0.650",
+      );
     } else if (board.has_uart_global) {
       cfg += tmc2209Block(
         "extruder",
@@ -392,14 +416,13 @@ function saveSession() {
     mcuSerial: document.getElementById("mcuSerial").value,
     outputCfg: document.getElementById("outputCfg").value,
   };
-  localStorage.setItem("dimidium_session", JSON.stringify(formData));
+  Persistence.set("cfgGenerator.session", formData);
 }
 
 function loadSession() {
-  const saved = localStorage.getItem("dimidium_session");
-  if (!saved) return false;
+  const data = Persistence.get("cfgGenerator.session");
+  if (!data) return false;
   try {
-    const data = JSON.parse(saved);
     if (data.board) document.getElementById("board").value = data.board;
     if (data.driver) document.getElementById("driver").value = data.driver;
     if (data.probe) document.getElementById("probe").value = data.probe;
@@ -422,12 +445,19 @@ function loadSession() {
 
 // Auto-save on any form input change
 function attachAutoSave() {
-  ["board", "driver", "probe", "kinematics", "bedX", "bedY", "bedZ", "mcuSerial"].forEach(
-    (id) => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener("input", saveSession);
-    },
-  );
+  [
+    "board",
+    "driver",
+    "probe",
+    "kinematics",
+    "bedX",
+    "bedY",
+    "bedZ",
+    "mcuSerial",
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", saveSession);
+  });
   const textarea = document.getElementById("outputCfg");
   if (textarea) textarea.addEventListener("input", saveSession);
 }

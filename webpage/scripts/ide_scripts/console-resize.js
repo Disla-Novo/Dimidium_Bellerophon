@@ -1,6 +1,9 @@
 // this program resizes the console section of the webpage
 // it was a bit of a pain but it works the way it's meant to. it should save to local storage so it remains persistant
 // helps with exception log clutter that i witnessed during development.
+
+// no longer saved via localstorage
+
 document.addEventListener("DOMContentLoaded", function () {
   const consoleHeader = document.querySelector(".console-header");
   const workspace = document.querySelector(".workspace");
@@ -15,18 +18,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const MIN_HEIGHT = 100;
   const MAX_HEIGHT = 600;
   const DEFAULT_HEIGHT = 150;
-  const STORAGE_KEY = "jupitore-console-height";
+  //const STORAGE_KEY = "jupitore-console-height";
 
-  // Initialize console height
+  /* Initialize console height
   const savedHeight = parseInt(localStorage.getItem(STORAGE_KEY), 10);
   setConsoleHeight(!isNaN(savedHeight) ? savedHeight : DEFAULT_HEIGHT);
+*/
+  // Initialize console height
+  const savedHeight = Persistence.get("ui.consoleHeight", DEFAULT_HEIGHT);
+  setConsoleHeight(savedHeight);
 
   function setConsoleHeight(height) {
     height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
     consoleSection.style.height = height + "px";
     workspace.style.gridTemplateRows = `50px 1fr ${height}px`;
     consoleLog.style.height = `calc(${height}px - ${consoleHeader.offsetHeight}px)`;
-    localStorage.setItem(STORAGE_KEY, height);
+    Persistence.set("ui.consoleHeight", height);
   }
 
   consoleHeader.addEventListener("mousedown", function (e) {
