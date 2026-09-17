@@ -28,7 +28,6 @@ function addLogMessage(message) {
 //let currentMode = "klipper";
 
 const keywords = new Set([
-
   "M.TITLE",
   "M.END",
   "M.CALL",
@@ -139,10 +138,10 @@ window.addEventListener("DOMContentLoaded", () => {
       console.log("Compiling with mode:", window.currentMode);
 
       let profile;
-const savedProfile = Persistence.get("profile.values");
-if (savedProfile) {
-  profile = savedProfile;
-} else {
+      const active = Profiles.getActive();
+      if (active) {
+        profile = active;
+      } else {
         const limitXInput = document.getElementById("limit-x");
         const limitYInput = document.getElementById("limit-y");
         const limitZInput = document.getElementById("limit-z");
@@ -167,7 +166,7 @@ if (savedProfile) {
 
       // ADDEDDDDDDD 4/8/2026
       // new 9/16/2026
-    const gcodeFolder = Persistence.get("gcode.folder", "");
+      const gcodeFolder = Persistence.get("gcode.folder", "");
 
       const payload = {
         code: code,
@@ -368,7 +367,8 @@ async function getSemanticErrors(code) {
           if (a[i - 1].toLowerCase() === b[j - 1].toLowerCase()) {
             dp[i][j] = dp[i - 1][j - 1];
           } else {
-            dp[i][j] = Math.min(dp[i - 1][j - 1], dp[i][j - 1], dp[i - 1][j]) + 1;
+            dp[i][j] =
+              Math.min(dp[i - 1][j - 1], dp[i][j - 1], dp[i - 1][j]) + 1;
           }
         }
       }
@@ -430,36 +430,40 @@ async function getSemanticErrors(code) {
 
         // changed the location
 
-if (t.name === "ID") {
-  const upperText = text.toUpperCase();
-  const trimmedLine = lines[lineNum - 1].trim();
-  const isAssignment = /^\w+\s*=\s*/.test(trimmedLine);
-  const lineHasEquals = trimmedLine.includes("=");
-  const tokenIsFirstWord = trimmedLine.startsWith(text);
+        if (t.name === "ID") {
+          const upperText = text.toUpperCase();
+          const trimmedLine = lines[lineNum - 1].trim();
+          const isAssignment = /^\w+\s*=\s*/.test(trimmedLine);
+          const lineHasEquals = trimmedLine.includes("=");
+          const tokenIsFirstWord = trimmedLine.startsWith(text);
 
-  if (["X", "Y", "Z", "E"].includes(upperText)) {
-    if (seenAxes.has(upperText)) {
-      errors.push({
-        line: lineNum,
-        message: `Duplicate axis in line: ${text}`,
-        type: "warning",
-      });
-    } else {
-      seenAxes.add(upperText);
-    }
-  } else if (!isAssignment && !(lineHasEquals && !tokenIsFirstWord) && !keywords.has(upperText)) {
-    const suggestion = findClosestKeyword(text);
-    let message = `Unknown command: ${text}`;
-    if (suggestion) {
-      message += ` → Did you mean "${suggestion}"?`;
-    }
-    errors.push({
-      line: lineNum,
-      message: message,
-      type: "error",
-    });
-  }
-}
+          if (["X", "Y", "Z", "E"].includes(upperText)) {
+            if (seenAxes.has(upperText)) {
+              errors.push({
+                line: lineNum,
+                message: `Duplicate axis in line: ${text}`,
+                type: "warning",
+              });
+            } else {
+              seenAxes.add(upperText);
+            }
+          } else if (
+            !isAssignment &&
+            !(lineHasEquals && !tokenIsFirstWord) &&
+            !keywords.has(upperText)
+          ) {
+            const suggestion = findClosestKeyword(text);
+            let message = `Unknown command: ${text}`;
+            if (suggestion) {
+              message += ` → Did you mean "${suggestion}"?`;
+            }
+            errors.push({
+              line: lineNum,
+              message: message,
+              type: "error",
+            });
+          }
+        }
       });
     });
 

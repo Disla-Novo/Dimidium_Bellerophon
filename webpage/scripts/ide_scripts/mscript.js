@@ -9,6 +9,7 @@ const compileBtn = document.getElementById("compile-btn");
 const log = document.getElementById("console-log");
 const gcodeOutput = document.getElementById("gcode-output");
 const codeInput = document.getElementById("code-input");
+window.currentProfile = null;
 // adding mode state here
 window.currentMode = "klipper";
 
@@ -148,46 +149,40 @@ function checkForGcodeAutocomplete() {
 // ---------- Profile Management ----------
 let currentProfile = null;
 
-function loadProfileFromStorage() {
-  const saved = Persistence.get("profile.values");
-  if (saved) {
-    currentProfile = saved;
-  } else {
-    currentProfile = {
-      name: "Default",
-      maxX: 220,
-      maxY: 220,
-      maxZ: 250,
-      nozzleDiameter: 0.4,
-      filamentDiameter: 1.75,
-      layerHeight: 0.2,
-      extrusionMultiplier: 1.0,
-    };
-    console.log("Using default profile:", currentProfile);
-  }
-  window.currentProfile = currentProfile; // make it global for errorHandler.js
+function renderProfileDropdown() {
+  const sel = document.getElementById("profileDropdown");
+  if (!sel) return;
+  const list = Profiles.list();
+  const activeId = Profiles.getActiveId();
+  sel.innerHTML = "";
+  list.forEach(function (p) {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === activeId) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
-function saveProfileToStorage() {
-  if (currentProfile) {
-    Persistence.set("profile.values", currentProfile);
-    addLogMessage(`Profile "${currentProfile.name}" saved.`);
-  }
+function loadActiveProfileIntoForm() {
+  const p = Profiles.getActive();
+  if (!p) return;
+  window.currentProfile = p;
+  document.getElementById("profileMaxX").value = p.maxX;
+  document.getElementById("profileMaxY").value = p.maxY;
+  document.getElementById("profileMaxZ").value = p.maxZ;
+  document.getElementById("profileNozzle").value = p.nozzleDiameter;
+  document.getElementById("profileFilament").value = p.filamentDiameter;
+  document.getElementById("profileLayerHeight").value = p.layerHeight;
+  document.getElementById("profileExtrusionMultiplier").value =
+    p.extrusionMultiplier;
 }
 
 function openProfileModal() {
-  document.getElementById("profileName").value = currentProfile.name;
-  document.getElementById("profileMaxX").value = currentProfile.maxX;
-  document.getElementById("profileMaxY").value = currentProfile.maxY;
-  document.getElementById("profileMaxZ").value = currentProfile.maxZ;
-  document.getElementById("profileNozzle").value =
-    currentProfile.nozzleDiameter;
-  document.getElementById("profileFilament").value =
-    currentProfile.filamentDiameter;
-  document.getElementById("profileLayerHeight").value =
-    currentProfile.layerHeight;
-  document.getElementById("profileExtrusionMultiplier").value =
-    currentProfile.extrusionMultiplier;
+  Profiles.ensureDefault();
+  renderProfileDropdown();
+  loadActiveProfileIntoForm();
+  hideRenameInput();
   document.getElementById("profileModal").style.display = "block";
 }
 
@@ -195,29 +190,84 @@ function closeProfileModal() {
   document.getElementById("profileModal").style.display = "none";
 }
 
-function saveProfileFromModal() {
-  currentProfile = {
-    name: document.getElementById("profileName").value,
+function saveProfileFromForm() {
+  const id = Profiles.getActiveId();
+  if (!id) return;
+  Profiles.update(id, {
     maxX: parseFloat(document.getElementById("profileMaxX").value),
     maxY: parseFloat(document.getElementById("profileMaxY").value),
     maxZ: parseFloat(document.getElementById("profileMaxZ").value),
     nozzleDiameter: parseFloat(document.getElementById("profileNozzle").value),
-    filamentDiameter: parseFloat(
-      document.getElementById("profileFilament").value,
-    ),
-    layerHeight: parseFloat(
-      document.getElementById("profileLayerHeight").value,
-    ),
+    filamentDiameter: parseFloat(document.getElementById("profileFilament").value),
+    layerHeight: parseFloat(document.getElementById("profileLayerHeight").value),
     extrusionMultiplier: parseFloat(
       document.getElementById("profileExtrusionMultiplier").value,
     ),
-  };
-  saveProfileToStorage();
-  window.currentProfile = currentProfile;
-  closeProfileModal();
-  addLogMessage("Profile updated.");
+  });
+  window.currentProfile = Profiles.getActive();
+}
+function hideRenameInput() {
+  const sel = document.getElementById("profileDropdown");
+  const inp = document.getElementById("profileNameInput");
+  const err = document.getElementById("profileNameError");
+  if (sel) sel.style.display = "";
+  if (inp) inp.style.display = "none";
+  if (err) err.style.display = "none";
 }
 
+function showRenameInput() {
+  const sel = document.getElementById("profileDropdown");
+  const inp = document.getElementById("profileNameInput");
+  const active = Profiles.getActive();
+  if (!sel || !inp || !active) return;
+  sel.style.display = "none";
+  inp.style.display = "";
+  inp.value = active.name;
+  validateRenameInput();
+  setTimeout(function () {
+    inp.focus();
+    inp.select();
+  }, 0);
+}
+
+function validateRenameInput() {
+  const inp = document.getElementById("profileNameInput");
+  const err = document.getElementById("profileNameError");
+  const activeId = Profiles.getActiveId();
+  if (!inp || !err) return false;
+  const name = inp.value.trim();
+  if (!name) {
+    err.textContent = "Name cannot be empty.";
+    err.style.display = "block";
+    return false;
+  }
+  const current = Profiles.getActive();
+  const sameAsSelf = current && current.name.toLowerCase() === name.toLowerCase();
+  if (!sameAsSelf && Profiles.existsByName(name, activeId)) {
+    err.textContent = "A profile with that name already exists.";
+    err.style.display = "block";
+    return false;
+  }
+  err.style.display = "none";
+  return true;
+}
+
+function commitRename() {
+  const inp = document.getElementById("profileNameInput");
+  const id = Profiles.getActiveId();
+  if (!inp || !id) return;
+  const name = inp.value.trim();
+  const current = Profiles.getActive();
+  if (!name || !current) {
+    hideRenameInput();
+    return;
+  }
+  const sameAsSelf = current.name.toLowerCase() === name.toLowerCase();
+  if (sameAsSelf || !Profiles.existsByName(name, id)) {
+    Profiles.rename(id, name);
+  }
+  hideRenameInput();
+}
 //-0- ---------- End Profile Management ----------
 
 // Update download button! added 3/26/2026
@@ -388,9 +438,6 @@ renderReferences();
 // Restore code when page loads
 // Also handles profile loading, mode toggles, and modal setup
 window.addEventListener("DOMContentLoaded", () => {
-  // Load profile from storage
-  loadProfileFromStorage();
-
   // Restore saved editor content
   const savedCode = Persistence.get("editor.content", "");
   if (savedCode && codeInput) {
@@ -447,8 +494,153 @@ window.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = document.getElementById("cancelProfileBtn");
   if (cancelBtn) cancelBtn.addEventListener("click", closeProfileModal);
 
-  const saveBtn = document.getElementById("saveProfileBtn");
-  if (saveBtn) saveBtn.addEventListener("click", saveProfileFromModal);
+const saveBtn = document.getElementById("saveProfileBtn");
+if (saveBtn) {
+  saveBtn.addEventListener("click", function () {
+    Persistence.flush();
+    closeProfileModal();
+  });
+}
+
+const profileDropdown = document.getElementById("profileDropdown");
+if (profileDropdown) {
+  profileDropdown.addEventListener("change", function () {
+    Profiles.setActive(profileDropdown.value);
+    loadActiveProfileIntoForm();
+  });
+}
+
+const renameProfileBtn = document.getElementById("renameProfileBtn");
+if (renameProfileBtn) {
+  renameProfileBtn.addEventListener("click", showRenameInput);
+}
+
+const profileNameInput = document.getElementById("profileNameInput");
+if (profileNameInput) {
+  profileNameInput.addEventListener("input", validateRenameInput);
+  profileNameInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitRename();
+      renderProfileDropdown();
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      hideRenameInput();
+      renderProfileDropdown();
+    }
+  });
+  profileNameInput.addEventListener("blur", function () {
+    setTimeout(function () {
+      if (document.activeElement === profileNameInput) return;
+      if (profileNameInput.style.display === "none") return;
+
+      const activeId = Profiles.getActiveId();
+      const current = Profiles.getActive();
+      const name = profileNameInput.value.trim();
+
+      if (name && current) {
+        const sameAsSelf =
+          current.name.toLowerCase() === name.toLowerCase();
+        if (sameAsSelf || !Profiles.existsByName(name, activeId)) {
+          Profiles.rename(activeId, name);
+        }
+      }
+      hideRenameInput();
+      renderProfileDropdown();
+    }, 120);
+  });
+}
+
+const newProfileBtn = document.getElementById("newProfileBtn");
+if (newProfileBtn) {
+  newProfileBtn.addEventListener("click", function () {
+    const id = Profiles.create("");
+    if (id) {
+      Profiles.setActive(id);
+      renderProfileDropdown();
+      loadActiveProfileIntoForm();
+      showRenameInput();
+    }
+  });
+}
+
+const duplicateProfileBtn = document.getElementById("duplicateProfileBtn");
+if (duplicateProfileBtn) {
+  duplicateProfileBtn.addEventListener("click", function () {
+    const id = Profiles.duplicate(Profiles.getActiveId());
+    if (id) {
+      Profiles.setActive(id);
+      renderProfileDropdown();
+      loadActiveProfileIntoForm();
+    }
+  });
+}
+
+// Two-click delete: first click, second click within 3s deletes.
+let deleteArmed = false;
+let deleteArmTimer = null;
+const deleteProfileBtn = document.getElementById("deleteProfileBtn");
+
+function disarmDelete() {
+  deleteArmed = false;
+  clearTimeout(deleteArmTimer);
+  if (deleteProfileBtn) {
+    deleteProfileBtn.classList.remove("confirming");
+    deleteProfileBtn.textContent = "❌";
+    deleteProfileBtn.title = "Delete";
+  }
+}
+
+if (deleteProfileBtn) {
+  deleteProfileBtn.addEventListener("click", function () {
+    const active = Profiles.getActive();
+    if (!active) return;
+
+    if (Profiles.list().length <= 1) {
+      showProfileNotice("Cannot delete the last profile.");
+      return;
+    }
+
+    if (!deleteArmed) {
+      deleteArmed = true;
+      deleteProfileBtn.classList.add("confirming");
+      deleteProfileBtn.textContent = "✓";
+      deleteProfileBtn.title = 'Click again to delete "' + active.name + '"';
+      deleteArmTimer = setTimeout(disarmDelete, 3000);
+      return;
+    }
+
+    disarmDelete();
+    if (Profiles.remove(active.id)) {
+      renderProfileDropdown();
+      loadActiveProfileIntoForm();
+    }
+  });
+}
+
+function showProfileNotice(msg) {
+  const err = document.getElementById("profileNameError");
+  if (!err) return;
+  err.textContent = msg;
+  err.style.display = "block";
+  setTimeout(function () {
+    if (err.textContent === msg) err.style.display = "none";
+  }, 3000);
+}
+
+[
+  "profileMaxX",
+  "profileMaxY",
+  "profileMaxZ",
+  "profileNozzle",
+  "profileFilament",
+  "profileLayerHeight",
+  "profileExtrusionMultiplier",
+].forEach(function (id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("input", saveProfileFromForm);
+});
 
   // Close modal if clicking outside
   window.addEventListener("click", (event) => {
