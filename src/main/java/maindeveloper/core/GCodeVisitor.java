@@ -56,7 +56,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     // Performance: cached number formatter. String.format re-parses its
     // format string on every call; DecimalFormat does not. Single-threaded
     // compiler, so a static instance is safe.
-    private static final DecimalFormat DF3 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+    private final DecimalFormat DF3 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
 
     // Performance: precompiled pattern for the "is 'i' referenced?" check.
     // String.matches() recompiles on every call.
