@@ -288,7 +288,7 @@ public class WebServer {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
             writer.write(gcode);
         }
-        return "SUCCESS_PAGED:" + tempFile.getAbsolutePath();
+        return "SUCCESS_PAGED:" + tempFile.getAbsolutePath() + ":" + gcode.length();
     }
 
     /**

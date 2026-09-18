@@ -53,9 +53,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
-    // Performance: cached number formatter. String.format re-parses its
-    // format string on every call; DecimalFormat does not. Single-threaded
-    // compiler, so a static instance is safe.
+   // Performance: cached number formatter. String.format re-parses its
+    // format string on every call; DecimalFormat does not. Per-instance
+    // because DecimalFormat is not thread-safe and Jetty serves /compile
+    // from a pool.
     private final DecimalFormat DF3 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
 
     // Performance: precompiled pattern for the "is 'i' referenced?" check.
@@ -208,7 +209,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                     }
                 }
 
-                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath();
+                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath() + ":" + new File(tempFile.getAbsolutePath()).length();
 
             } catch (IOException e) {
                 throw new RuntimeException("Memory Paging Failed: " + e.getMessage());
