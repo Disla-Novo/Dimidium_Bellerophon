@@ -340,7 +340,9 @@ public class WebServer {
                 out.error = message + hint;
                 out.errors = new ArrayList<>();
                 out.errors.add(new CompileError());
-                out.errors.get(0).line = inferLineNumberFromMessage(message, req.body());
+                               out.errors.get(0).line = (e instanceof BellerophonException be)
+                        ? be.line
+                        : inferLineNumberFromMessage(message, req.body());
                 out.errors.get(0).message = out.error;
                 out.errors.get(0).type = "error";
             }

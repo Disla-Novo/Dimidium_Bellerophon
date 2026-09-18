@@ -25,25 +25,20 @@ public class HardwareLimiter {
         this.globalZ = maxZ;
         resetToGlobal(); // Initializes limitX/Y/Z to the global values
     }
-
-    public void checkAndMove(String axis, double newValue) {
-        double limit = getLimitForAxis(axis);
-
-        // took this away -----> Used Math.abs(newValue) to treat negative positions as
-        // positive magnitude
-        if (newValue < 0 || newValue > limit) {
-            throw new RuntimeException(axis + " position " + newValue + " out of bounds (0-" + limit + ")");
-
-        }
-
-        if (axis.equals("X"))
-            x = newValue;
-        else if (axis.equals("Y"))
-            y = newValue;
-        else if (axis.equals("Z"))
-            z = newValue;
+        public void checkAndMove(String axis, double newValue) {
+        checkAndMove(axis, newValue, 1);
     }
 
+        public void checkAndMove(String axis, double newValue, int line) {
+        double limit = getLimitForAxis(axis);
+        if (newValue < 0 || newValue > limit) {
+            throw new BellerophonException(line,
+                    axis + " position " + newValue + " out of bounds (0-" + limit + ")");
+        }
+        if (axis.equals("X")) x = newValue;
+        else if (axis.equals("Y")) y = newValue;
+        else if (axis.equals("Z")) z = newValue;
+    }
     private double getLimitForAxis(String axis) {
         return axis.equals("X") ? limitX : (axis.equals("Y") ? limitY : limitZ);
     }
