@@ -372,7 +372,7 @@ M.end`,
   functions: {
     label: "Math Functions",
     description:
-      "Available anywhere an expression is expected: sin(), cos(), tan(), sqrt(), abs(), sign(). Evaluated at compile time.",
+            "Available anywhere an expression is expected: sin(), cos(), tan(), sinr(), cosr(), tanr(), sqrt(), abs(), sign(), deg(). sin/cos/tan take degrees, sinr/cosr/tanr take radians. Evaluated at compile time.",
     example: `M.title "Functions Example"
     Absolute
     Home

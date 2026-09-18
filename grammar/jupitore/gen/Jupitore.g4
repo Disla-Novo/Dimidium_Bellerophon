@@ -181,9 +181,13 @@ func
     : SIN
     | COS
     | TAN
+    | SINR
+    | COSR
+    | TANR
     | SQRT
     | ABS
     | SIGN
+    | DEG
     ;
 // 4/8/2026 we added abs and signum
  // added other operations on top here. it used to just be EQUALS 3/12/2026. adding expressions 3/14/26
@@ -219,6 +223,10 @@ COS        : 'cos';
 TAN        : 'tan';
 SQRT       : 'sqrt';
 PI         : 'pi';
+SINR       : 'sinr';
+COSR       : 'cosr';
+TANR       : 'tanr';
+DEG        : 'deg';
 // added new 4/8/2026
 ABS        : 'abs';
 SIGN       : 'sign';

@@ -267,10 +267,22 @@
                                     <code>/</code>, <code>^</code> (power)</li>
                                 <li><strong>Parentheses:</strong> <code>(base +
                                         offset) * 2</code></li>
-                                <li><strong>Functions:</strong>
+                                     <li><strong>Functions:</strong>
                                     <code>sin()</code>, <code>cos()</code>,
-                                    <code>tan()</code>, <code>sqrt()</code>,
-                                    <code>abs()</code>, <code>sign()</code></li>
+                                    <code>tan()</code>, <code>sinr()</code>,
+                                    <code>cosr()</code>, <code>tanr()</code>,
+                                    <code>sqrt()</code>, <code>abs()</code>,
+                                    <code>sign()</code>, <code>deg()</code>
+                                    &mdash; <code>sin</code>/<code>cos</code>/<code>tan</code>
+                                    take degrees, <code>sinr</code>/<code>cosr</code>/<code>tanr</code>
+                                    take radians, <code>deg()</code> converts
+                                    radians to degrees</li>
+                                    
+                                <li><strong>Radian functions:</strong>
+                                    <code>sinr()</code>, <code>cosr()</code>,
+                                    <code>tanr()</code> take radians instead of
+                                    degrees. <code>deg()</code> converts a
+                                    radian value back to degrees.</li>
                                 <li><strong>Constant:</strong>
                                     <code>pi</code></li>
                                 <li><strong>Variable references:</strong>
@@ -323,7 +335,7 @@ gcode:
                                             <span class="token-EQUALS">=</span>
                                             <span
                                                 class="token-NUMBER">150</span></td>
-                                        <td>Stores the expression result in a
+                                                                               <td>Stores the expression result in a
                                             local variable. Variables are scoped
                                             to the macro. Supports arithmetic
                                             operations: <code>+</code>,
@@ -333,9 +345,14 @@ gcode:
                                             <code>sin()</code>,
                                             <code>cos()</code>,
                                             <code>tan()</code>,
+                                            <code>sinr()</code>,
+                                            <code>cosr()</code>,
+                                            <code>tanr()</code>,
                                             <code>sqrt()</code>,
                                             <code>abs()</code>,
-                                            <code>sign()</code>, and constant
+                                            <code>sign()</code>,
+                                            <code>deg()</code> (radians to
+                                            degrees), and constant
                                             <code>pi</code>.</td>
                                     </tr>
 

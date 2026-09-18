@@ -16,9 +16,11 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     public void setIteration(int i) {
         this.iteration = i;
     }
+
     public void setLine(int l) {
         this.line = l;
     }
+
     /**
      * @param ctx
      * @return Double
@@ -115,25 +117,31 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     // adding Math.toRadians 4/3/2026
     @Override
     public Double visitFuncCall(JupitoreParser.FuncCallContext ctx) {
-        // 4/3/2026: Case-insensitive function matching
         double value = visit(ctx.expr());
         String funcName = ctx.func().getText().toLowerCase();
 
         switch (funcName) {
-
             case "sin":
                 return Math.sin(Math.toRadians(value));
-
             case "cos":
                 return Math.cos(Math.toRadians(value));
-
             case "tan":
                 return Math.tan(Math.toRadians(value));
-            // added safety check for sqrt of negative number 6/19/26
+
+            case "sinr":
+                return Math.sin(value);
+            case "cosr":
+                return Math.cos(value);
+            case "tanr":
+                return Math.tan(value);
+
+            case "deg":
+                return value * 180.0 / Math.PI;
+
             case "sqrt":
                 if (value < 0) {
                     throw new BellerophonException(line,
-                        "ERROR: Cannot calculate square root of a negative number: " + value);
+                            "ERROR: Cannot calculate square root of a negative number: " + value);
                 }
                 return Math.sqrt(value);
             case "abs":
@@ -145,19 +153,19 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         }
     }
 
-   @Override
-public Double visitVariable(JupitoreParser.VariableContext ctx) {
-    String varName = ctx.ID().getText();
-    if (visitor.localVariables.containsKey(varName)) {
-        return visitor.localVariables.get(varName);
+    @Override
+    public Double visitVariable(JupitoreParser.VariableContext ctx) {
+        String varName = ctx.ID().getText();
+        if (visitor.localVariables.containsKey(varName)) {
+            return visitor.localVariables.get(varName);
+        }
+        if (visitor.globalVariables.containsKey(varName)) {
+            return visitor.globalVariables.get(varName);
+        }
+        throw new BellerophonException(line,
+                "ERROR: Undefined variable: '" + varName + "'. " +
+                        "Variables must be assigned before they're used.");
     }
-    if (visitor.globalVariables.containsKey(varName)) {
-        return visitor.globalVariables.get(varName);
-    }
-     throw new BellerophonException(line,
-            "ERROR: Undefined variable: '" + varName + "'. " +
-            "Variables must be assigned before they're used.");
-}
 
     @Override
     protected Double defaultResult() {
