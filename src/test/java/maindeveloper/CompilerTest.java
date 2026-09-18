@@ -154,7 +154,7 @@ public class CompilerTest {
         assertDoesNotThrow(() -> visitor.visit(tree));
     }
 
-    @Test
+       @Test
     void plainAssignmentDoesNotLeakAcrossMacros() {
         String source = """
                 M.title "first"
@@ -169,12 +169,16 @@ public class CompilerTest {
 
         var tree = TestUtils.parse(source);
         var visitor = new KlipperVisitor(new PrinterProfile());
-        String output = visitor.visit(tree);
 
-        assertTrue(output.contains("M109 S3000"), "first macro should see its own local speed");
-        // second macro never set 'speed', so it should read as 0, not the first macro's 3000
-        assertTrue(output.contains("M109 S10"), "second macro should NOT inherit the first macro's local variable");
-        assertFalse(output.contains("M109 S3010"), "local variables must not leak between macros");
+        // second macro reads 'speed' without assigning it, so the compiler
+        // should reject it as undefined rather than silently defaulting to 0
+        // that silent default is exactly the "leak" the old version of this
+        // test was checking for indirectly
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> visitor.visit(tree));
+        assertTrue(ex.getMessage().contains("Undefined variable"),
+                "expected 'Undefined variable' for cross-macro read, got: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("speed"),
+                "error should name the missing variable, got: " + ex.getMessage());
     }
 
     @Test
