@@ -141,16 +141,19 @@ public class Compute extends JupitoreBaseVisitor<Double> {
         }
     }
 
-    @Override
-    public Double visitVariable(JupitoreParser.VariableContext ctx) {
-        String varName = ctx.ID().getText();
-        // a macro-local variable shadows a global one of the same name
-        Double value = visitor.localVariables.containsKey(varName)
-                ? visitor.localVariables.get(varName)
-                : visitor.globalVariables.getOrDefault(varName, 0.0);
-        // System.out.println("READ VAR: " + varName + " = " + value);
-        return value;
+   @Override
+public Double visitVariable(JupitoreParser.VariableContext ctx) {
+    String varName = ctx.ID().getText();
+    if (visitor.localVariables.containsKey(varName)) {
+        return visitor.localVariables.get(varName);
     }
+    if (visitor.globalVariables.containsKey(varName)) {
+        return visitor.globalVariables.get(varName);
+    }
+    throw new RuntimeException(
+        "ERROR: Undefined variable: '" + varName + "'. " +
+        "Variables must be assigned before they're used.");
+}
 
     @Override
     protected Double defaultResult() {

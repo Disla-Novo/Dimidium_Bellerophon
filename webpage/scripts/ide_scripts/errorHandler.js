@@ -443,6 +443,8 @@ async function getSemanticErrors(code) {
           const isAssignment = /^\w+\s*=\s*/.test(trimmedLine);
           const lineHasEquals = trimmedLine.includes("=");
           const tokenIsFirstWord = trimmedLine.startsWith(text);
+          const isDwellLine =
+          trimmedLine.split(/\s+/)[0].toUpperCase() === "DWELL";
 
           if (["X", "Y", "Z", "E"].includes(upperText)) {
             if (seenAxes.has(upperText)) {
@@ -457,7 +459,8 @@ async function getSemanticErrors(code) {
           } else if (
             !isAssignment &&
             !(lineHasEquals && !tokenIsFirstWord) &&
-            !keywords.has(upperText)
+            !keywords.has(upperText) &&
+            !isDwellLine
           ) {
             const suggestion = findClosestKeyword(text);
             let message = `Unknown command: ${text}`;

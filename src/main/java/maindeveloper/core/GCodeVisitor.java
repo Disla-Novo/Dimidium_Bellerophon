@@ -400,24 +400,23 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.DWELL() != null && ctx.expr() != null) {
             double value = evalExpr(ctx.expr());
 
-            String unit = "ms";
-            for (int i = 0; i < ctx.getChildCount(); i++) {
-                ParseTree child = ctx.getChild(i);
-                if (child instanceof TerminalNode) {
-                    String text = child.getText();
-                    if (text.equalsIgnoreCase("S") || text.equalsIgnoreCase("ms")) {
-                        unit = text.toLowerCase();
-                        break;
-                    }
-                }
-            }
-
-            if (unit.equals("s")) {
-                value *= 1000;
-            }
-
-            return emitDwell(value);
+    String unit = "ms";
+    if (ctx.ID() != null) {
+        String unitText = ctx.ID().getText().toLowerCase();
+        if (unitText.equals("s") || unitText.equals("ms")) {
+            unit = unitText;
+        } else {
+            throw new RuntimeException(
+                "ERROR: Dwell unit must be 's' or 'ms'. Got: '" + ctx.ID().getText() + "'");
         }
+    }
+
+    if (unit.equals("s")) {
+        value *= 1000;
+    }
+
+    return emitDwell(value);
+}
 
         if (ctx.SET_SPEED() != null && ctx.expr() != null) {
             double speed = evalExpr(ctx.expr());

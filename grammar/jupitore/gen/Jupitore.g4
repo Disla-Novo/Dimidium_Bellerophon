@@ -54,7 +54,7 @@ statement
     | LOAD_BED_MESH STRING? stmtTerm            // BED_MESH_PROFILE LOAD=default (optional profile) 7/31/2026
     | SET_PRESSURE_ADVANCE expr stmtTerm     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
     | RESET_EXTRUDER stmtTerm                  // G92 E0
-    | DWELL expr ( 'S' | 's' | 'MS' | 'ms' )? stmtTerm// new
+    | DWELL expr (ID)? stmtTerm// new
     | BED_MESH_CALIBRATE stmtTerm    // BED_MESH_CALIBRATE command
     | PROBE_CALIBRATE stmtTerm    // PROBE_CALIBRATE
        // Added - FIXED: lowercase 'cooldown' deleted cooldown.
