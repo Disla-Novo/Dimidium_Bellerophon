@@ -84,7 +84,7 @@ async function highlightCode() {
   let html = "";
   let lastIndex = 0;
 
-  tokens.forEach((t) => {
+  tokens.forEach((t, i) => { 
     if (t.start > lastIndex) {
       html += escapeHTML(codeInput.slice(lastIndex, t.start));
     }
@@ -112,7 +112,32 @@ async function highlightCode() {
         nextChar === "=" ||
         ["=", "+", "-", "*", "/", "(", ","].includes(prevChar);
 
-      if (isAssignmentTarget) {
+       const idText = t.text.trim().toLowerCase();
+      let isDwellUnit = false;
+      if (idText === "s" || idText === "ms") {
+        const lineStart = codeInput.lastIndexOf("\n", t.start - 1) + 1;
+        const lineBefore = codeInput.slice(lineStart, t.start);
+        if (/^\s*Dwell\b/i.test(lineBefore)) {
+          const nextTok = tokens[i + 1];
+          const atLineEnd =
+            !nextTok ||
+            nextTok.name === "NEWLINE" ||
+            nextTok.name === "SEMICOLON";
+          let prevTok = null;
+          for (let j = i - 1; j >= 0; j--) {
+            if (tokens[j].name === "NEWLINE") break;
+            prevTok = tokens[j];
+            break;
+          }
+          const afterExpr =
+            prevTok && (prevTok.name === "NUMBER" || prevTok.name === "ID");
+          if (atLineEnd && afterExpr) isDwellUnit = true;
+        }
+      }
+
+      if (isDwellUnit) {
+        color = resolveTokenColor("NUMBER", "#d19a66");
+      } else if (isAssignmentTarget) {
         color = getSemanticColor("variable") || "#9cdcfe";
       } else {
         color = resolveTokenColor("ID", "#abb2bf");
