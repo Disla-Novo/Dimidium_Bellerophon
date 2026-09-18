@@ -656,7 +656,7 @@ body {
 .paged-output-msg {
   background: #1a1a1a;
   border-left: 4px solid #00ff88;
-  padding: 15px;
+  padding: 3px;
   color: #efefef;
   font-family: "Courier New", Courier, monospace;
   border-radius: 4px;
@@ -666,6 +666,8 @@ body {
 .paged-output-msg code {
   color: #ff9d00; /* Path highlighting */
   word-break: break-all;
+  font-size: 0.95em;
+  margin: 1px;
 }
 
 /*profile*/

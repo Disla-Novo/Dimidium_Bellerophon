@@ -187,18 +187,25 @@ window.addEventListener("DOMContentLoaded", () => {
 
       if (data.success) {
         if (data.output.startsWith("SUCCESS_PAGED:")) {
-          const filePath = data.output.replace("SUCCESS_PAGED:", "");
-          gcodeOutput.innerHTML = `<div class="paged-output-msg">
-                        <strong>Industrial Build Complete</strong><br>
-                        G-Code is too large for preview (~${(code.length / 1024).toFixed(0)} KB source).<br>
-                        Cached at: <code>${filePath}</code>
-                    </div>`;
+  const payload = data.output.slice("SUCCESS_PAGED:".length);
+  const sep = payload.lastIndexOf(":");
+  const filePath = payload.slice(0, sep);
+  const bytes = parseInt(payload.slice(sep + 1), 10) || 0;
+
+  window.pagedFilePath = filePath;
+  gcodeOutput.innerHTML = `<div class="paged-output-msg">
+          <strong>Industrial Build Complete</strong><br>
+          G-Code is too large for preview (${(bytes / 1024 / 1024).toFixed(1)} MB output).<br>
+          Cached at: <code>${filePath}</code><br>
+          <span style="display:inline-block; margin-top:8px;">Use <strong>Download ${TARGET_CONFIG[window.currentMode]?.ext || ".gcode"}</strong> below to save the file.</span>
+              </div>`;
           logMessage(
             log,
             "Build finished. Memory Paging active: Streamed to local disk.",
             "system",
           );
         } else {
+          window.pagedFilePath = null;
           gcodeOutput.innerHTML = window.highlightGCode(data.output);
           logMessage(
             log,
