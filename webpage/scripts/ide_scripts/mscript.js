@@ -736,11 +736,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // added GCODE
 // download cfg/gcode file
+// added GCODE
+// download cfg/gcode file
 const downloadBtn = document.getElementById("download-cfg-btn");
 
 if (downloadBtn && gcodeOutput) {
-  downloadBtn.addEventListener("click", () => {
-    const content = gcodeOutput.textContent || gcodeOutput.innerText;
+  downloadBtn.addEventListener("click", async () => {
+    let content;
+
+    if (window.pagedFilePath) {
+      try {
+        const res = await fetch(
+          "/paged?path=" + encodeURIComponent(window.pagedFilePath),
+        );
+        if (!res.ok) {
+          alert("Failed to fetch paged G-code: HTTP " + res.status);
+          return;
+        }
+        content = await res.text();
+      } catch (err) {
+        alert("Network error fetching paged G-code: " + err.message);
+        return;
+      }
+    } else {
+      content = gcodeOutput.textContent || gcodeOutput.innerText;
+    }
 
     if (!content.trim()) {
       if (!confirm("The file is empty. Save anyway?")) return;

@@ -6,7 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Stack;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -48,89 +53,147 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
-  
+   // Performance: cached number formatter. String.format re-parses its
+    // format string on every call; DecimalFormat does not. Per-instance
+    // because DecimalFormat is not thread-safe and Jetty serves /compile
+    // from a pool.
+    private final DecimalFormat DF3 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+
+    // Performance: precompiled pattern for the "is 'i' referenced?" check.
+    // String.matches() recompiles on every call.
+    private static final Pattern I_ITER = Pattern.compile(".*\\bi\\b.*");
+
+    // Performance: one reusable Compute. Constructing a fresh visitor per
+    // expression is thousands of allocations for a large Brepeat.
+    private final Compute sharedCompute;
+
     // ---- ABSTRACT FIRMWARE METHODS ----
     // NOTE: Some method names are Klipper-centric for historical reasons,
-    // but their implementation intent is completely generic. They can be 
-    // mapped to emit the correct G-code syntax for any target dialect 
+    // but their implementation intent is completely generic. They can be
+    // mapped to emit the correct G-code syntax for any target dialect
     // (Marlin, RepRap, Klipper, etc.) without altering the core visitor logic.
     // -------------------------------------------------------------------
     protected abstract String emitMacroHeader(String macroName);
+
     protected abstract String emitHeat(String target, double value, boolean wait);
+
     protected abstract String emitSetHeater(String target, double value);
+
     protected abstract String emitCooldown(String target);
+
     protected abstract String emitWaitForTemp(String target);
+
     protected abstract String emitHome(String coordList);
+
     protected abstract String emitMove(String direction);
+
     protected abstract String emitMoveTo(String coordList);
+
     protected abstract String emitSetSpeed(double value);
+
     protected abstract String emitSetFan(double value);
+
     protected abstract String emitAbsolute();
+
     protected abstract String emitRelative();
+
     protected abstract String emitRelativeExtrusion();
+
     protected abstract String emitResetExtruder();
+
     protected abstract String emitPause();
+
     protected abstract String emitResume();
+
     protected abstract String emitDwell(double milliseconds);
+
     protected abstract String emitTimeoutSet(double seconds);
+
     protected abstract String emitRespond(String message);
+
     protected abstract String emitPrintFile(String filename);
+
     protected abstract String emitMacroCall(String macroName);
+
     protected abstract String emitBedMeshCalibrate();
+
     protected abstract String emitLoadBedMesh(String profile);
+
     protected abstract String emitProbeCalibrate();
+
     protected abstract String emitSetPressureAdvance(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetNozzle(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetFilament(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetLayerHeight(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitSetExtrusionMultiplier(double value);
+
     @SuppressWarnings("unused")
     protected abstract String emitEnableAutoExtrude(boolean enabled);
+
     protected abstract String emitIfStart(String condition);
+
     protected abstract String emitIfEnd();
+
     protected abstract String emitLayerStart(int layer);
+
     protected abstract String emitLayerEnd();
 
     // sourceFilePath for insert gcode
     protected String sourceFilePath = null; // Track the .bph file being compiled
 
     public void setEnablePaging(boolean enable) {
-       // System.out.println("VISITOR LOG: Paging has been set to: " + enable);
+        // System.out.println("VISITOR LOG: Paging has been set to: " + enable);
         this.enablePaging = enable;
     }
 
     public GCodeVisitor(PrinterProfile profile) {
-       // System.out.println("=== DEBUG: GCodeVisitor constructor ===");
-      //  System.out.println("Profile maxX = " + profile.getMaxX());
-      //  System.out.println("Profile maxY = " + profile.getMaxY());
-      //  System.out.println("Profile maxZ = " + profile.getMaxZ());
+        // System.out.println("=== DEBUG: GCodeVisitor constructor ===");
+        // System.out.println("Profile maxX = " + profile.getMaxX());
+        // System.out.println("Profile maxY = " + profile.getMaxY());
+        // System.out.println("Profile maxZ = " + profile.getMaxZ());
         this.limiter = new HardwareLimiter(profile.getMaxX(), profile.getMaxY(), profile.getMaxZ());
         this.settings.setNozzleDiameter(profile.getNozzleDiameter());
         this.settings.setFilamentDiameter(profile.getFilamentDiameter());
         this.settings.setLayerHeight(profile.getLayerHeight());
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
+        this.sharedCompute = new Compute(this, 0);
     }
 
-    // 4/10/2026 adding paging support to the visitor! lets see if this actually works
+    // Performance: single place that evaluates an expression with the
+    // current loop iteration, reusing the shared Compute instance.
+    protected double evalExpr(JupitoreParser.ExprContext ctx) {
+        sharedCompute.setIteration(iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        return sharedCompute.visit(ctx);
+    }
+
+    // 4/10/2026 adding paging support to the visitor! lets see if this actually
+    // works
     @Override
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
 
         // DEBUG: print all children of the program node
-      //  System.out.println("=== visitProgram: " + ctx.getChildCount() + " children ===");
-       // for (int i = 0; i < ctx.getChildCount(); i++) {
-          //  ParseTree child = ctx.getChild(i);
-          //  System.out.println("  child " + i + ": " + child.getClass().getSimpleName() + " -> " + child.getText());
-    //    }
+        // System.out.println("=== visitProgram: " + ctx.getChildCount() + " children
+        // ===");
+        // for (int i = 0; i < ctx.getChildCount(); i++) {
+        // ParseTree child = ctx.getChild(i);
+        // System.out.println(" child " + i + ": " + child.getClass().getSimpleName() +
+        // " -> " + child.getText());
+        // }
 
         if (this.enablePaging) {
             try {
                 // Create a temporary file to store long gcodes
                 File tempFile = File.createTempFile("bph_scratch_", ".gcode");
-              //  System.out.println("PAGING ACTIVE: Writing to " + tempFile.getAbsolutePath());
+                // System.out.println("PAGING ACTIVE: Writing to " +
+                // tempFile.getAbsolutePath());
                 tempFile.deleteOnExit(); // JVM cleans up on exit
 
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -146,7 +209,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                     }
                 }
 
-                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath();
+                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath() + ":" + new File(tempFile.getAbsolutePath()).length();
 
             } catch (IOException e) {
                 throw new RuntimeException("Memory Paging Failed: " + e.getMessage());
@@ -185,11 +248,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             for (JupitoreParser.StatementContext stmt : ctx.statement()) {
                 String stmtCode = visit(stmt);
                 if (stmtCode != null && !stmtCode.isEmpty()) {
-                    for (String line : stmtCode.split("\n")) {
-                        if (!line.isBlank()) {
-                            gcode.append("  ").append(line).append("\n");
-                        }
-                    }
+                    // Perf: was splitting into lines to re-indent each one.
+                    // Emitters already produce one "\n"-terminated line per
+                    // statement. Appending directly avoids allocating a
+                    // String[] and thousands of substrings per macro.
+                    gcode.append(stmtCode);
                 }
             }
         }
@@ -201,12 +264,13 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitStatement(JupitoreParser.StatementContext ctx) {
         // ---- 6/17/2026: handle assignments ----
         if (ctx.assignment() != null) {
-           // System.out.println("DEBUG: Found assignment, calling visitAssignment");
+            // System.out.println("DEBUG: Found assignment, calling visitAssignment");
             return visit(ctx.assignment());
         }
 
         if (ctx.global_assignment() != null) {
-            // System.out.println("DEBUG: Found global assignment, calling visitGlobal_assignment");
+            // System.out.println("DEBUG: Found global assignment, calling
+            // visitGlobal_assignment");
             return visit(ctx.global_assignment());
         }
 
@@ -242,8 +306,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.SET_HEATER() != null) {
             if (ctx.TARGET() != null && ctx.expr() != null) {
                 String target = ctx.TARGET().getText().toLowerCase();
-                Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-                double value = compute.visit(ctx.expr());
+                double value = evalExpr(ctx.expr());
                 return emitSetHeater(target, value);
             }
         }
@@ -251,8 +314,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.HEAT() != null) {
             if (ctx.TARGET() != null && ctx.expr() != null) {
                 String target = ctx.TARGET().getText().toLowerCase();
-                Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-                double value = compute.visit(ctx.expr());
+                double value = evalExpr(ctx.expr());
                 return emitHeat(target, value, true);
             }
         }
@@ -303,8 +365,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (ctx.TIMEOUT_SET() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double value = compute.visit(ctx.expr());
+            double value = evalExpr(ctx.expr());
             return emitTimeoutSet(value);
         }
 
@@ -337,8 +398,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (ctx.DWELL() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double value = compute.visit(ctx.expr());
+            double value = evalExpr(ctx.expr());
 
             String unit = "ms";
             for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -360,8 +420,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (ctx.SET_SPEED() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double speed = compute.visit(ctx.expr());
+            double speed = evalExpr(ctx.expr());
             return emitSetSpeed(speed);
         }
 
@@ -371,53 +430,46 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (ctx.SET_PRESSURE_ADVANCE() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double value = compute.visit(ctx.expr());
+            double value = evalExpr(ctx.expr());
             return emitSetPressureAdvance(value);
         }
 
         if (ctx.SET_FAN() != null && ctx.expr() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double value = compute.visit(ctx.expr());
+            double value = evalExpr(ctx.expr());
             return emitSetFan(value);
         }
 
         if (ctx.SET_NOZZLE() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double val = compute.visit(ctx.expr());
+            double val = evalExpr(ctx.expr());
             settings.setNozzleDiameter(val);
             return emitSetNozzle(val);
         }
 
         if (ctx.SET_FILAMENT() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double val = compute.visit(ctx.expr());
+            double val = evalExpr(ctx.expr());
             settings.setFilamentDiameter(val);
-          //  System.out.println("DEBUG: Filament diameter set to " + val);
+            // System.out.println("DEBUG: Filament diameter set to " + val);
             return emitSetFilament(val);
         }
 
         if (ctx.SET_LAYER_HEIGHT() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double val = compute.visit(ctx.expr());
+            double val = evalExpr(ctx.expr());
             settings.setLayerHeight(val);
-          //  System.out.println("DEBUG: Layer height set to " + val);
+            // System.out.println("DEBUG: Layer height set to " + val);
             return emitSetLayerHeight(val);
         }
 
         if (ctx.SET_EXTRUSION_MULTIPLIER() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double val = compute.visit(ctx.expr());
+            double val = evalExpr(ctx.expr());
             settings.setExtrusionMultiplier(val);
-          //  System.out.println("DEBUG: Extrusion multiplier set to " + val);
+            // System.out.println("DEBUG: Extrusion multiplier set to " + val);
             return emitSetExtrusionMultiplier(val);
         }
 
         if (ctx.ENABLE_AUTO_EXTRUDE() != null) {
-            Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-            double val = compute.visit(ctx.expr());
+            double val = evalExpr(ctx.expr());
             autoExtrudeEnabled = (val != 0.0);
-          //  System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
+            // System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
             return emitEnableAutoExtrude(autoExtrudeEnabled);
         }
 
@@ -434,20 +486,24 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
         // -------------------------------------------
 
-      //  System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
+        // System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
         return "";
     }
 
     @Override
     public String visitRepeat_statement(JupitoreParser.Repeat_statementContext ctx) {
-          int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
         StringBuilder sb = new StringBuilder();
 
         boolean oldInsideJrepeat = insideJrepeat;
         insideJrepeat = false;
 
+        // Perf: getRuleContexts() allocates a fresh ArrayList on every call.
+        // Hoist once, reuse for all iterations.
+        List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
+
         for (int iteration = 0; iteration < times; iteration++) {
-            for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+            for (JupitoreParser.StatementContext stmt : stmts) {
                 sb.append(visit(stmt));
             }
         }
@@ -458,21 +514,23 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
-          int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
         StringBuilder sb = new StringBuilder();
 
         double oldCenterX = centerX;
         double oldCenterY = centerY;
-        
 
         centerX = currentX;
         centerY = currentY;
+
+        // Perf: same as above - hoist the statement list.
+        List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
 
         for (int i = 0; i < times; i++) {
             iterationStack.push(i);
             insideJrepeat = true;
 
-            for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+            for (JupitoreParser.StatementContext stmt : stmts) {
                 String stmtCode = visit(stmt);
                 if (stmtCode != null && !stmtCode.isBlank()) {
                     sb.append(stmtCode);
@@ -493,7 +551,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         StringBuilder sb = new StringBuilder();
         sb.append(emitIfStart(condition));
 
-        for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+        // Perf: hoist the statement list.
+        List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
+
+        for (JupitoreParser.StatementContext stmt : stmts) {
             String inner = visit(stmt);
             if (inner != null && !inner.isBlank()) {
                 for (String line : inner.split("\n")) {
@@ -510,12 +571,15 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
-         int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
+        int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
         StringBuilder sb = new StringBuilder();
-         
+
+        // Perf: hoist the statement list.
+        List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
+
         for (int layer = 0; layer < layers; layer++) {
             sb.append(emitLayerStart(layer));
-            for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+            for (JupitoreParser.StatementContext stmt : stmts) {
                 String stmtCode = visit(stmt);
                 if (stmtCode != null && !stmtCode.isBlank()) {
                     sb.append(stmtCode);
@@ -523,7 +587,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             sb.append(emitLayerEnd());
         }
-         
+
         return sb.toString();
     }
 
@@ -560,32 +624,32 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
-         
-          if (!Double.isNaN(targetX)) {
+
+        if (!Double.isNaN(targetX)) {
             double emitX = relativeMode ? targetX - currentX : targetX;
-            sb.append(" X").append(String.format("%.3f", emitX));
+            sb.append(" X").append(DF3.format(emitX));
             isMove = true;
         }
         if (!Double.isNaN(targetY)) {
             double emitY = relativeMode ? targetY - currentY : targetY;
-            sb.append(" Y").append(String.format("%.3f", emitY));
+            sb.append(" Y").append(DF3.format(emitY));
             isMove = true;
         }
         if (!Double.isNaN(targetZ)) {
             double emitZ = relativeMode ? targetZ - currentZ : targetZ;
-            sb.append(" Z").append(String.format("%.3f", emitZ));
+            sb.append(" Z").append(DF3.format(emitZ));
             isMove = true;
         }
 
         if (hasManualE) {
-            sb.append(" E").append(String.format("%.3f", manualEValue));
+            sb.append(" E").append(DF3.format(manualEValue));
         } else if (autoExtrudeEnabled && isMove) {
             double dx = Double.isNaN(targetX) ? 0 : targetX - currentX;
             double dy = Double.isNaN(targetY) ? 0 : targetY - currentY;
             double dz = Double.isNaN(targetZ) ? 0 : targetZ - currentZ;
             double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             double autoE = settings.calculateExtrusion(distance);
-            sb.append(" E").append(String.format("%.3f", autoE));
+            sb.append(" E").append(DF3.format(autoE));
         }
 
         if (!Double.isNaN(targetX))
@@ -611,14 +675,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (axis.equals("E")) {
             if (ctx.expr() != null) {
-                String exprText = ctx.expr().getText();
                 boolean isInLoop = !iterationStack.isEmpty();
-                if (!isInLoop && exprText.matches(".*\\bi\\b.*")) {
-                    throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+                if (!isInLoop) {
+                    String exprText = ctx.expr().getText();
+                    if (I_ITER.matcher(exprText).matches()) {
+                        throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+                    }
                 }
-                int activeIteration = isInLoop ? iterationStack.peek() : 0;
-                Compute compute = new Compute(this, activeIteration);
-                double value = compute.visit(ctx.expr());
+                double value = evalExpr(ctx.expr());
                 double finalE = value * settings.getExtrusionMultiplier();
                 hasManualE = true;
                 manualEValue = finalE;
@@ -627,14 +691,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         String op = ctx.getChild(1).getText();
-        String exprText = ctx.expr().getText();
         boolean isInLoop = !iterationStack.isEmpty();
-        if (!isInLoop && exprText.matches(".*\\bi\\b.*")) {
-            throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+        if (!isInLoop) {
+            String exprText = ctx.expr().getText();
+            if (I_ITER.matcher(exprText).matches()) {
+                throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+            }
         }
-        int activeIteration = isInLoop ? iterationStack.peek() : 0;
-        Compute compute = new Compute(this, activeIteration);
-        double value = compute.visit(ctx.expr());
+        double value = evalExpr(ctx.expr());
 
         double currentPos = getCurrent(axis);
         double newPos;
@@ -727,20 +791,19 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     }
 
     // added to deal with variable errors 7/2/26
-   @Override
-public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
-    String varName = ctx.ID().getText();
-    if ("x y z e".contains(varName.toLowerCase())) {
-        throw new RuntimeException(
-            "ERROR: '" + varName + "' is a reserved axis name. " +
-            "Use a different variable name (e.g. pos_x, my_x).");
+    @Override
+    public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
+        String varName = ctx.ID().getText();
+        if ("x y z e".contains(varName.toLowerCase())) {
+            throw new RuntimeException(
+                    "ERROR: '" + varName + "' is a reserved axis name. " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        double value = evalExpr(ctx.expr());
+        localVariables.put(varName, value);
+        // System.out.println("ASSIGN: " + varName + " = " + value);
+        return "";
     }
-    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-    double value = compute.visit(ctx.expr());
-    localVariables.put(varName, value);
-   // System.out.println("ASSIGN: " + varName + " = " + value);
-    return "";
-}
 
     // x/y/z/e = expr - a plain assignment can never actually bind one of
     // these names (they tokenize as axis letters, not a generic ID), which
@@ -752,39 +815,39 @@ public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
     public String visitInvalid_assignment(JupitoreParser.Invalid_assignmentContext ctx) {
         String varName = ctx.getChild(0).getText();
         throw new RuntimeException(
-            "ERROR: '" + varName + "' is a reserved axis name. " +
-            "Use a different variable name (e.g. pos_x, my_x).");
+                "ERROR: '" + varName + "' is a reserved axis name. " +
+                        "Use a different variable name (e.g. pos_x, my_x).");
     }
 
     // var x = expr - same rules as a plain assignment, but stored in global
     // scope so it's visible from every macro in the file
-   @Override
-public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx) {
-    if (ctx.ID() == null) {
-        // x/y/z/e tokenize as axis letters rather than a generic ID, so they
-        // can never satisfy this rule - the parser leaves ID() unset instead
-        // of throwing, so surface it as the same reserved-name error rather
-        // than letting callers hit a NullPointerException
-        throw new RuntimeException(
-            "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
-            "Use a different variable name (e.g. pos_x, my_x).");
+    @Override
+    public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx) {
+        if (ctx.ID() == null) {
+            // x/y/z/e tokenize as axis letters rather than a generic ID, so they
+            // can never satisfy this rule - the parser leaves ID() unset instead
+            // of throwing, so surface it as the same reserved-name error rather
+            // than letting callers hit a NullPointerException
+            throw new RuntimeException(
+                    "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        String varName = ctx.ID().getText();
+        if ("x y z e".contains(varName.toLowerCase())) {
+            throw new RuntimeException(
+                    "ERROR: '" + varName + "' is a reserved axis name. " +
+                            "Use a different variable name (e.g. pos_x, my_x).");
+        }
+        double value = evalExpr(ctx.expr());
+        globalVariables.put(varName, value);
+        // System.out.println("ASSIGN (global): " + varName + " = " + value);
+        return "";
     }
-    String varName = ctx.ID().getText();
-    if ("x y z e".contains(varName.toLowerCase())) {
-        throw new RuntimeException(
-            "ERROR: '" + varName + "' is a reserved axis name. " +
-            "Use a different variable name (e.g. pos_x, my_x).");
-    }
-    Compute compute = new Compute(this, iterationStack.isEmpty() ? 0 : iterationStack.peek());
-    double value = compute.visit(ctx.expr());
-    globalVariables.put(varName, value);
-  //  System.out.println("ASSIGN (global): " + varName + " = " + value);
-    return "";
-}
+
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
     public void setSourceFilePath(String path) {
         this.sourceFilePath = path;
-    //    System.out.println("VISITOR LOG: Source file path set to: " + path);
+        // System.out.println("VISITOR LOG: Source file path set to: " + path);
     }
 
     protected File resolveFilePath(String filePath) {
@@ -832,11 +895,12 @@ public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx
         if (!cleanPath.toLowerCase().endsWith(".gcode") &&
                 !cleanPath.toLowerCase().endsWith(".g") &&
                 !cleanPath.toLowerCase().endsWith(".gc")) {
-          //  System.out.println("WARNING: InsertGCode file doesn't have standard G-code extension: " + cleanPath);
+            // System.out.println("WARNING: InsertGCode file doesn't have standard G-code
+            // extension: " + cleanPath);
         }
 
         if (gcodeFile.length() == 0) {
-          //  System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
+            // System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
             return "";
         }
 
@@ -853,13 +917,13 @@ public String visitGlobal_assignment(JupitoreParser.Global_assignmentContext ctx
         }
     }
 
-    // added helper method 
+    // added helper method
 
     private int parseIntSafe(String value, String context) {
-    try {
-        return Integer.parseInt(value);
-    } catch (NumberFormatException e) {
-        throw new RuntimeException("Invalid number at " + context + ": " + value);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid number at " + context + ": " + value);
+        }
     }
-}
 }
