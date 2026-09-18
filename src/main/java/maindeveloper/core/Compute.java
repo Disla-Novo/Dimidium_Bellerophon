@@ -5,6 +5,7 @@ import jupitore.gen.*;
 public class Compute extends JupitoreBaseVisitor<Double> {
 
     private int iteration;
+    private int line = 1;
     private GCodeVisitor visitor;
 
     public Compute(GCodeVisitor visitor, int iteration) {
@@ -15,7 +16,9 @@ public class Compute extends JupitoreBaseVisitor<Double> {
     public void setIteration(int i) {
         this.iteration = i;
     }
-
+    public void setLine(int l) {
+        this.line = l;
+    }
     /**
      * @param ctx
      * @return Double
@@ -129,7 +132,8 @@ public class Compute extends JupitoreBaseVisitor<Double> {
             // added safety check for sqrt of negative number 6/19/26
             case "sqrt":
                 if (value < 0) {
-                    throw new RuntimeException("ERROR: Cannot calculate square root of a negative number: " + value);
+                    throw new BellerophonException(line,
+                        "ERROR: Cannot calculate square root of a negative number: " + value);
                 }
                 return Math.sqrt(value);
             case "abs":
@@ -137,7 +141,7 @@ public class Compute extends JupitoreBaseVisitor<Double> {
             case "sign":
                 return Math.signum(value);
             default:
-                throw new RuntimeException("Unknown function: " + funcName);
+                throw new BellerophonException(line, "Unknown function: " + funcName);
         }
     }
 
@@ -150,9 +154,9 @@ public Double visitVariable(JupitoreParser.VariableContext ctx) {
     if (visitor.globalVariables.containsKey(varName)) {
         return visitor.globalVariables.get(varName);
     }
-    throw new RuntimeException(
-        "ERROR: Undefined variable: '" + varName + "'. " +
-        "Variables must be assigned before they're used.");
+     throw new BellerophonException(line,
+            "ERROR: Undefined variable: '" + varName + "'. " +
+            "Variables must be assigned before they're used.");
 }
 
     @Override
@@ -165,7 +169,7 @@ public Double visitVariable(JupitoreParser.VariableContext ctx) {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Invalid number at " + context + ": " + value);
+            throw new BellerophonException(line, "Invalid number at " + context + ": " + value);
         }
     }
 }

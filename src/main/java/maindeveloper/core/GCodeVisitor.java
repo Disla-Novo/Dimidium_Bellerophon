@@ -53,7 +53,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected double currentZ = 0;
     protected boolean insideJrepeat = false;
 
-   // Performance: cached number formatter. String.format re-parses its
+    // Performance: cached number formatter. String.format re-parses its
     // format string on every call; DecimalFormat does not. Per-instance
     // because DecimalFormat is not thread-safe and Jetty serves /compile
     // from a pool.
@@ -171,6 +171,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     // current loop iteration, reusing the shared Compute instance.
     protected double evalExpr(JupitoreParser.ExprContext ctx) {
         sharedCompute.setIteration(iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        sharedCompute.setLine(ctx.getStart().getLine());
         return sharedCompute.visit(ctx);
     }
 
@@ -179,21 +180,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     @Override
     public String visitProgram(JupitoreParser.ProgramContext ctx) {
 
-        // DEBUG: print all children of the program node
-        // System.out.println("=== visitProgram: " + ctx.getChildCount() + " children
-        // ===");
-        // for (int i = 0; i < ctx.getChildCount(); i++) {
-        // ParseTree child = ctx.getChild(i);
-        // System.out.println(" child " + i + ": " + child.getClass().getSimpleName() +
-        // " -> " + child.getText());
-        // }
-
         if (this.enablePaging) {
             try {
                 // Create a temporary file to store long gcodes
                 File tempFile = File.createTempFile("bph_scratch_", ".gcode");
-                // System.out.println("PAGING ACTIVE: Writing to " +
-                // tempFile.getAbsolutePath());
                 tempFile.deleteOnExit(); // JVM cleans up on exit
 
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -209,10 +199,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                     }
                 }
 
-                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath() + ":" + new File(tempFile.getAbsolutePath()).length();
+                return "SUCCESS_PAGED:" + tempFile.getAbsolutePath() + ":"
+                        + new File(tempFile.getAbsolutePath()).length();
 
             } catch (IOException e) {
-                throw new RuntimeException("Memory Paging Failed: " + e.getMessage());
+                throw new BellerophonException(1, "Memory Paging Failed: " + e.getMessage());
             }
         }
 
@@ -264,13 +255,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitStatement(JupitoreParser.StatementContext ctx) {
         // ---- 6/17/2026: handle assignments ----
         if (ctx.assignment() != null) {
-            // System.out.println("DEBUG: Found assignment, calling visitAssignment");
             return visit(ctx.assignment());
         }
 
         if (ctx.global_assignment() != null) {
-            // System.out.println("DEBUG: Found global assignment, calling
-            // visitGlobal_assignment");
             return visit(ctx.global_assignment());
         }
 
@@ -400,23 +388,23 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.DWELL() != null && ctx.expr() != null) {
             double value = evalExpr(ctx.expr());
 
-    String unit = "ms";
-    if (ctx.ID() != null) {
-        String unitText = ctx.ID().getText().toLowerCase();
-        if (unitText.equals("s") || unitText.equals("ms")) {
-            unit = unitText;
-        } else {
-            throw new RuntimeException(
-                "ERROR: Dwell unit must be 's' or 'ms'. Got: '" + ctx.ID().getText() + "'");
+            String unit = "ms";
+            if (ctx.ID() != null) {
+                String unitText = ctx.ID().getText().toLowerCase();
+                if (unitText.equals("s") || unitText.equals("ms")) {
+                    unit = unitText;
+                } else {
+                    throw new BellerophonException(ctx.getStart().getLine(),
+                            "ERROR: Dwell unit must be 's' or 'ms'. Got: '" + ctx.ID().getText() + "'");
+                }
+            }
+
+            if (unit.equals("s")) {
+                value *= 1000;
+            }
+
+            return emitDwell(value);
         }
-    }
-
-    if (unit.equals("s")) {
-        value *= 1000;
-    }
-
-    return emitDwell(value);
-}
 
         if (ctx.SET_SPEED() != null && ctx.expr() != null) {
             double speed = evalExpr(ctx.expr());
@@ -447,28 +435,24 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (ctx.SET_FILAMENT() != null) {
             double val = evalExpr(ctx.expr());
             settings.setFilamentDiameter(val);
-            // System.out.println("DEBUG: Filament diameter set to " + val);
             return emitSetFilament(val);
         }
 
         if (ctx.SET_LAYER_HEIGHT() != null) {
             double val = evalExpr(ctx.expr());
             settings.setLayerHeight(val);
-            // System.out.println("DEBUG: Layer height set to " + val);
             return emitSetLayerHeight(val);
         }
 
         if (ctx.SET_EXTRUSION_MULTIPLIER() != null) {
             double val = evalExpr(ctx.expr());
             settings.setExtrusionMultiplier(val);
-            // System.out.println("DEBUG: Extrusion multiplier set to " + val);
             return emitSetExtrusionMultiplier(val);
         }
 
         if (ctx.ENABLE_AUTO_EXTRUDE() != null) {
             double val = evalExpr(ctx.expr());
             autoExtrudeEnabled = (val != 0.0);
-            // System.out.println("DEBUG: Auto-extrude enabled: " + autoExtrudeEnabled);
             return emitEnableAutoExtrude(autoExtrudeEnabled);
         }
 
@@ -481,17 +465,16 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             JupitoreParser.Insert_gcode_statementContext insertCtx = ctx.insert_gcode_statement();
             String filePath = insertCtx.STRING().getText();
             boolean asReference = insertCtx.AS_REF() != null;
-            return visitInsertGCode(filePath, asReference);
+            return visitInsertGCode(filePath, asReference, insertCtx.getStart().getLine());
         }
         // -------------------------------------------
 
-        // System.out.println("DEBUG: Unhandled statement: " + ctx.getText());
         return "";
     }
 
     @Override
     public String visitRepeat_statement(JupitoreParser.Repeat_statementContext ctx) {
-        int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count", ctx.getStart().getLine());
         StringBuilder sb = new StringBuilder();
 
         boolean oldInsideJrepeat = insideJrepeat;
@@ -513,7 +496,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
-        int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count");
+        int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count", ctx.getStart().getLine());
         StringBuilder sb = new StringBuilder();
 
         double oldCenterX = centerX;
@@ -568,14 +551,17 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return sb.toString();
     }
 
-    @Override
-    public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
-        int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count");
-        StringBuilder sb = new StringBuilder();
+ @Override
+public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
+    int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count", ctx.getStart().getLine());
+    StringBuilder sb = new StringBuilder();
 
-        // Perf: hoist the statement list.
-        List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
+    boolean oldInsideLayer = insideLayer;
+    insideLayer = true;
 
+    List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
+
+    try {
         for (int layer = 0; layer < layers; layer++) {
             sb.append(emitLayerStart(layer));
             for (JupitoreParser.StatementContext stmt : stmts) {
@@ -586,9 +572,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             sb.append(emitLayerEnd());
         }
-
-        return sb.toString();
+    } finally {
+        insideLayer = oldInsideLayer;
     }
+
+    return sb.toString();
+}
 
     @Override
     public String visitCondition(JupitoreParser.ConditionContext ctx) {
@@ -666,8 +655,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         String axis = ctx.X() != null ? "X"
                 : ctx.Y() != null ? "Y" : ctx.Z() != null ? "Z" : ctx.E() != null ? "E" : "";
 
+        int line = ctx.getStart().getLine();
+
         if (insideLayer && axis.equals("Z")) {
-            throw new RuntimeException(
+            throw new BellerophonException(line,
                     "ERROR: Z-axis movement is not allowed inside Layer blocks. " +
                             "Layer automatically manages Z-height.");
         }
@@ -678,7 +669,8 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                 if (!isInLoop) {
                     String exprText = ctx.expr().getText();
                     if (I_ITER.matcher(exprText).matches()) {
-                        throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+                        throw new BellerophonException(line,
+                                "ERROR: 'i' iterator is only allowed inside Brepeat loops.");
                     }
                 }
                 double value = evalExpr(ctx.expr());
@@ -694,7 +686,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         if (!isInLoop) {
             String exprText = ctx.expr().getText();
             if (I_ITER.matcher(exprText).matches()) {
-                throw new RuntimeException("ERROR: 'i' iterator is only allowed inside Brepeat loops.");
+                throw new BellerophonException(line, "ERROR: 'i' iterator is only allowed inside Brepeat loops.");
             }
         }
         double value = evalExpr(ctx.expr());
@@ -735,11 +727,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (!Double.isNaN(targetX))
-            limiter.checkAndMove("X", targetX);
+            limiter.checkAndMove("X", targetX, line);
         if (!Double.isNaN(targetY))
-            limiter.checkAndMove("Y", targetY);
+            limiter.checkAndMove("Y", targetY, line);
         if (!Double.isNaN(targetZ))
-            limiter.checkAndMove("Z", targetZ);
+            limiter.checkAndMove("Z", targetZ, line);
 
         return "";
     }
@@ -794,13 +786,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     public String visitAssignment(JupitoreParser.AssignmentContext ctx) {
         String varName = ctx.ID().getText();
         if ("x y z e".contains(varName.toLowerCase())) {
-            throw new RuntimeException(
+            throw new BellerophonException(ctx.getStart().getLine(),
                     "ERROR: '" + varName + "' is a reserved axis name. " +
                             "Use a different variable name (e.g. pos_x, my_x).");
         }
         double value = evalExpr(ctx.expr());
         localVariables.put(varName, value);
-        // System.out.println("ASSIGN: " + varName + " = " + value);
         return "";
     }
 
@@ -813,7 +804,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     @Override
     public String visitInvalid_assignment(JupitoreParser.Invalid_assignmentContext ctx) {
         String varName = ctx.getChild(0).getText();
-        throw new RuntimeException(
+        throw new BellerophonException(ctx.getStart().getLine(),
                 "ERROR: '" + varName + "' is a reserved axis name. " +
                         "Use a different variable name (e.g. pos_x, my_x).");
     }
@@ -827,26 +818,24 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             // can never satisfy this rule - the parser leaves ID() unset instead
             // of throwing, so surface it as the same reserved-name error rather
             // than letting callers hit a NullPointerException
-            throw new RuntimeException(
+            throw new BellerophonException(ctx.getStart().getLine(),
                     "ERROR: 'var' needs a variable name that isn't a reserved axis letter (x, y, z, e). " +
                             "Use a different variable name (e.g. pos_x, my_x).");
         }
         String varName = ctx.ID().getText();
         if ("x y z e".contains(varName.toLowerCase())) {
-            throw new RuntimeException(
+            throw new BellerophonException(ctx.getStart().getLine(),
                     "ERROR: '" + varName + "' is a reserved axis name. " +
                             "Use a different variable name (e.g. pos_x, my_x).");
         }
         double value = evalExpr(ctx.expr());
         globalVariables.put(varName, value);
-        // System.out.println("ASSIGN (global): " + varName + " = " + value);
         return "";
     }
 
     // ---- 6/28/2026: INSERT G-CODE IMPLEMENTATION ----
     public void setSourceFilePath(String path) {
         this.sourceFilePath = path;
-        // System.out.println("VISITOR LOG: Source file path set to: " + path);
     }
 
     protected File resolveFilePath(String filePath) {
@@ -870,7 +859,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         return absoluteFile.exists() ? absoluteFile : new File(filePath);
     }
 
-    protected String visitInsertGCode(String filePath, boolean asReference) {
+    protected String visitInsertGCode(String filePath, boolean asReference, int line) {
         String cleanPath = filePath.replace("\"", "");
 
         if (asReference) {
@@ -880,26 +869,18 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         File gcodeFile = resolveFilePath(cleanPath);
 
         if (!gcodeFile.exists()) {
-            throw new RuntimeException(
+            throw new BellerophonException(line,
                     "InsertGCode ERROR: File not found: " + cleanPath + "\n" +
                             "  Tried: " + gcodeFile.getAbsolutePath() + "\n" +
                             "  Source file: " + (sourceFilePath != null ? sourceFilePath : "unknown"));
         }
 
         if (gcodeFile.isDirectory()) {
-            throw new RuntimeException(
+            throw new BellerophonException(line,
                     "InsertGCode ERROR: Path is a directory, not a file: " + cleanPath);
         }
 
-        if (!cleanPath.toLowerCase().endsWith(".gcode") &&
-                !cleanPath.toLowerCase().endsWith(".g") &&
-                !cleanPath.toLowerCase().endsWith(".gc")) {
-            // System.out.println("WARNING: InsertGCode file doesn't have standard G-code
-            // extension: " + cleanPath);
-        }
-
         if (gcodeFile.length() == 0) {
-            // System.out.println("WARNING: InsertGCode file is empty: " + cleanPath);
             return "";
         }
 
@@ -910,7 +891,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
             return content;
         } catch (IOException e) {
-            throw new RuntimeException(
+            throw new BellerophonException(line,
                     "InsertGCode ERROR: Failed to read file: " + cleanPath + "\n" +
                             "  " + e.getMessage());
         }
@@ -918,11 +899,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     // added helper method
 
-    private int parseIntSafe(String value, String context) {
+    private int parseIntSafe(String value, String context, int line) {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Invalid number at " + context + ": " + value);
+            throw new BellerophonException(line, "Invalid number at " + context + ": " + value);
         }
     }
 }
