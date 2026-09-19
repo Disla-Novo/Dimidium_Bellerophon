@@ -228,6 +228,7 @@ public class WebServer {
         public PrinterProfile profile; // added printer profile for the visitor to use when setting up the hardware
                                        // limiter and printer settings
         public String gcodeFolder; // insertGcode folder - the G-code library folder path from frontend
+        public boolean arcInterpolation = true; // this is marlin only: collapse circular Brepeat loops into G2/G3. Default true matches pre-toggle behavior.
     }
 
     static class CompileError {
@@ -576,17 +577,25 @@ public class WebServer {
             profile = new PrinterProfile(); // default values
         }
 
-        String mode = input.mode == null ? "" : input.mode.toLowerCase();
-        Function<PrinterProfile, GCodeVisitor> factory = VISITOR_FACTORIES.get(mode);
-        if (factory == null) {
-            String requested = (input.mode == null || input.mode.isBlank())
-                    ? "(none specified)"
-                    : "'" + input.mode + "'";
-            String supported = String.join(", ", VISITOR_FACTORIES.keySet());
-            throw new IllegalArgumentException(
-                    "Unsupported firmware mode: " + requested + ". Supported modes are: " + supported);
+               String mode = input.mode == null ? "" : input.mode.toLowerCase();
+
+        GCodeVisitor visitor;
+        if (mode.equals("marlin")) {
+            // Marlin is the only dialect with a compile-time toggle right now,
+            // so it bypasses the generic factory map to receive the flag.
+            visitor = new MarlinVisitor(profile, input.arcInterpolation);
+        } else {
+            Function<PrinterProfile, GCodeVisitor> factory = VISITOR_FACTORIES.get(mode);
+            if (factory == null) {
+                String requested = (input.mode == null || input.mode.isBlank())
+                        ? "(none specified)"
+                        : "'" + input.mode + "'";
+                String supported = "marlin, " + String.join(", ", VISITOR_FACTORIES.keySet());
+                throw new IllegalArgumentException(
+                        "Unsupported firmware mode: " + requested + ". Supported modes are: " + supported);
+            }
+            visitor = factory.apply(profile);
         }
-        GCodeVisitor visitor = factory.apply(profile);
 
         visitor.setEnablePaging(pagingUse);
         if (input.gcodeFolder != null && !input.gcodeFolder.isEmpty()) {
