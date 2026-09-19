@@ -23,14 +23,14 @@ jobs:
           BODY_LOWER=$(echo "$PR_BODY" | tr '[:upper:]' '[:lower:]')
           FAIL=0
 
-          # Check 1: CLA Agreement
-          if ! echo "$BODY_LOWER" | grep -qE -- "- [x].*agree.*(cla|contributor license agreement)"; then
+           # Check 1: CLA Agreement
+          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*agree.*(cla|contributor license agreement)"; then
             echo "::error::Missing CLA Agreement. You must check the box confirming you agree to the CLA."
             FAIL=1
           fi
 
           # Check 2: Original Work Confirmation (flexible phrasing)
-          if ! echo "$BODY_LOWER" | grep -qE -- "- [x].*(original work|my own work|my work)"; then
+          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*(original work|my own work|my work)"; then
             echo "::error::Missing Original Work confirmation. You must check the box confirming this is your own original work."
             FAIL=1
           fi
