@@ -52,7 +52,9 @@ jobs:
           @${{ github.event.pull_request.user.login }}, thanks for your pull request!
 
           Before we can review your contribution, please edit your pull request description to copy, paste, and check this box:
-          `- [x] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.`
+          ```
+          - [x] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.
+          ```
 
           > [!IMPORTANT]
           > **Our Commitment to Open Source:**
