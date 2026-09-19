@@ -15,6 +15,8 @@ By contributing to this repository, you agree to the Dimidium Contributor Licens
 The CLA grants permission for your contributions to be used in both:
 - the open-source Dimidium ecosystem (AGPL v3.0)
 - proprietary and commercial components of the Dimidium Ecosystem
+  
+## Our Commitment: The core offline desktop IDE and compiler are, and will always remain, 100% free and open source under AGPL v3.0. Commercial licensing only applies to optional business/cloud tooling.
 
 >*This CLA transfers copyright ownership of your contribution to the Project Owner, but you retain a perpetual license to use your own contribution outside the Dimidium Ecosystem. You are not giving up the right to use your work elsewhere.*
 
