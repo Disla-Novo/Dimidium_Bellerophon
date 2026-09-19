@@ -5,16 +5,17 @@ on:
     types: [opened, edited, synchronize]
 
 permissions:
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   verify-cla:
     name: Verify Legal Checklist
-    if: github.event.pull_request.head.repo.fork == true
+    if: always()                               # if: github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-latest
 
     steps:
       - name: Check PR Body for Checked Boxes
+        id: check-cla
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
@@ -23,13 +24,13 @@ jobs:
           FAIL=0
 
           # Check 1: CLA Agreement
-          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*agree.*(cla|contributor license agreement)"; then
+          if ! echo "$BODY_LOWER" | grep -qE -- "- [x].*agree.*(cla|contributor license agreement)"; then
             echo "::error::Missing CLA Agreement. You must check the box confirming you agree to the CLA."
             FAIL=1
           fi
 
           # Check 2: Original Work Confirmation (flexible phrasing)
-          if ! echo "$BODY_LOWER" | grep -qE -- "- \[x\].*(original work|my own work|my work)"; then
+          if ! echo "$BODY_LOWER" | grep -qE -- "- [x].*(original work|my own work|my work)"; then
             echo "::error::Missing Original Work confirmation. You must check the box confirming this is your own original work."
             FAIL=1
           fi
@@ -39,3 +40,28 @@ jobs:
           fi
 
           echo "All legal and CLA checkboxes are marked. Code is cleared for review."
+
+      - name: Post Failure Comment
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          COMMENT_BODY=$(cat <<'EOF'
+          @${{ github.event.pull_request.user.login }}, thanks for your pull request!
+
+          Before we can review your contribution, please edit your pull request description to copy, paste, and check this box:
+          `- [x] I have read and agree to the Contributor License Agreement (CLA.md), and this is my own original work.`
+
+          > [!IMPORTANT]
+          > **Our Commitment to Open Source:**
+          > The core offline desktop IDE, compiler, and language toolchain are, and will always remain, 100% free and open source under AGPL v3.0. 
+          >
+          > This CLA transfers copyright ownership of your contribution to the Project Owner solely to permit optional business, hosted cloud, or enterprise tooling without licensing deadlock. You retain a perpetual license to use your own contribution outside the Dimidium Ecosystem.
+
+          If you do not agree, you may pull the PR or maintain your changes in a personal fork under AGPL v3.0.
+          EOF
+          )
+
+          gh pr comment "$PR_URL" --body "$COMMENT_BODY"
