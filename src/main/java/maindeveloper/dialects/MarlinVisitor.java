@@ -12,8 +12,17 @@ import maindeveloper.core.PrinterProfile;
 // awaiting a few more, dont forget to add.
 
 public class MarlinVisitor extends GCodeVisitor {
+ private final boolean arcInterpolationEnabled;
+
+
+
+
     public MarlinVisitor(PrinterProfile profile) {
+      this(profile, true); // default on. 
+    }
+    public MarlinVisitor(PrinterProfile profile, boolean arcInterpolationEnabled) {
         super(profile); // calls the GCodeVisitor constructor above
+        this.arcInterpolationEnabled = arcInterpolationEnabled;
     }
 
     // ---- Arc interpolation (G2/G3) for Brepeat loops that trace a circle ----
@@ -45,8 +54,11 @@ public class MarlinVisitor extends GCodeVisitor {
     private static final int MIN_ARC_POINTS = 8;
     private static final double MIN_SWEEP_DEG = 15.0;
 
-    @Override
+       @Override
     public String visitBrepeat_statement(JupitoreParser.Brepeat_statementContext ctx) {
+        if (!arcInterpolationEnabled) {
+            return super.visitBrepeat_statement(ctx);
+        }
         String arcOutput = tryEmitArc(ctx);
         return arcOutput != null ? arcOutput : super.visitBrepeat_statement(ctx);
     }

@@ -173,6 +173,7 @@ window.addEventListener("DOMContentLoaded", () => {
         mode: window.currentMode,
         profile: profile,
         gcodeFolder: gcodeFolder,
+        arcInterpolation: Persistence.get("compiler.arcInterpolation", true),
       };
 
       const res = await fetch("/compile", {

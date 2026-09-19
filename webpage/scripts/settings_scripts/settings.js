@@ -4,7 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn = document.getElementById("closeSettingsBtn");
   const closeX = document.querySelector(".close-settings-modal");
 
-  // GCODE FOLDER SETTINGS VARIABLES
+  const mainView = document.getElementById("settingsMainView");
+  const compilerView = document.getElementById("settingsCompilerView");
+  const goToCompilerBtn = document.getElementById("goToCompilerViewBtn");
+  const backToMainBtn = document.getElementById("backToMainSettingsBtn");
+  const closeCompilerBtn = document.getElementById("closeCompilerSettingsBtn");
+  const arcToggle = document.getElementById("arcInterpolationToggle");
+
   let gcodeFolderPath = Persistence.get("gcode.folder", "");
   let gcodeFileList = Persistence.get("gcode.files", []);
   let fileListOpen = false;
@@ -99,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
         
-        <!-- Manual path input -->
         <div class="folder-manual-input">
           <input type="text" id="manualFolderPath" 
                  value="${escapedPath}" 
@@ -162,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Manual path save handler
     const saveManualBtn = document.getElementById("saveManualFolderBtn");
     const manualInput = document.getElementById("manualFolderPath");
     if (saveManualBtn && manualInput) {
@@ -199,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     addLogMessage("G-code folder removed.");
   }
 
-  // Backend scan for manual path
   function scanFolderViaBackend(folderPath) {
     fetch("/scan-folder", {
       method: "POST",
@@ -230,8 +233,22 @@ document.addEventListener("DOMContentLoaded", () => {
     window.gcodeFileList = files;
   }
 
+  function showMainPage() {
+    if (mainView) mainView.style.display = "block";
+    if (compilerView) compilerView.style.display = "none";
+  }
+
+  function showCompilerPage() {
+    if (mainView) mainView.style.display = "none";
+    if (compilerView) compilerView.style.display = "block";
+    if (arcToggle) {
+      arcToggle.checked = Persistence.get("compiler.arcInterpolation", true);
+    }
+  }
+
   function open() {
     modal.style.display = "block";
+    showMainPage();
 
     gcodeFolderPath = Persistence.get("gcode.folder", "");
     gcodeFileList = Persistence.get("gcode.files", []);
@@ -245,10 +262,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function close() {
     modal.style.display = "none";
+    showMainPage();
   }
+
+  goToCompilerBtn?.addEventListener("click", showCompilerPage);
+  backToMainBtn?.addEventListener("click", showMainPage);
+
+  arcToggle?.addEventListener("change", () => {
+    Persistence.set("compiler.arcInterpolation", arcToggle.checked);
+  });
 
   settingsBtn?.addEventListener("click", open);
   closeBtn?.addEventListener("click", close);
+  closeCompilerBtn?.addEventListener("click", close);
   closeX?.addEventListener("click", close);
 
   window.addEventListener("click", (e) => {
