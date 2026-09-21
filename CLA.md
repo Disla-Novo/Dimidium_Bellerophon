@@ -2,6 +2,12 @@
 
 This CLA clarifies the intellectual property rights of contributions to the Dimidium Ecosystem. It ensures that the Project Owner can safely manage the project, dual-license it, and protect the open-source community.
 
+> [!IMPORTANT]
+> ## Our Commitment to Open Source
+> **The core offline desktop IDE, compiler, and language toolchain are, and will always remain, 100% free and open-source software under the GNU Affero General Public License (AGPL v3.0).**
+>
+> Commercial licensing and copyright assignment exist solely to permit optional business, hosted cloud, or enterprise tooling without licensing deadlock.
+
 By submitting a contribution, you grant permission for your work to be used in both:
 - The open-source public distribution of the Dimidium Ecosystem (strictly governed by the AGPL v3.0).
 - Proprietary and commercial components or enterprise distributions managed by the Project Owner.
