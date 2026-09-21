@@ -558,7 +558,7 @@ public class WebServer {
         // im doing it here!
         // i want to see how much space we have. Runtime()
         Runtime runtime = Runtime.getRuntime();
-        long EmpRam = runtime.maxMemory() - runtime.totalMemory() - runtime.freeMemory();
+        long EmpRam = runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory());
         // added if its greater than 500kb or if we have less than 250mb of free memory.
         boolean pagingUse = (input.code.length() > 500000) || (EmpRam < 250 * 1024 * 1024);
         // now here 4/10/2026, im going to tell the visitor to please use .bin if needed

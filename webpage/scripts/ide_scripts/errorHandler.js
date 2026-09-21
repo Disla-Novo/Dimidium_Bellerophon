@@ -396,6 +396,20 @@ async function getSemanticErrors(code) {
       return closest;
     }
 
+    const tokensByLine = new Map();
+    {
+      let searchFrom = 0;
+      let currentLine = 1;
+      for (const t of tokens) {
+        while (searchFrom < t.start) {
+          if (code[searchFrom] === "\n") currentLine++;
+          searchFrom++;
+        }
+        if (!tokensByLine.has(currentLine)) tokensByLine.set(currentLine, []);
+        tokensByLine.get(currentLine).push(t);
+      }
+    }
+
     lines.forEach((line, idx) => {
       const lineNum = idx + 1;
       const seenAxes = new Set();
@@ -415,10 +429,8 @@ async function getSemanticErrors(code) {
         }
       }
 
-      tokens.forEach((t) => {
-        const tokenLine = code.slice(0, t.start).split("\n").length;
-        if (tokenLine !== lineNum) return;
-
+      const lineTokens = tokensByLine.get(lineNum) || [];
+      lineTokens.forEach((t) => {
         const text = t.text.trim();
 
         if (t.name === "UNRECOGNIZED") {
