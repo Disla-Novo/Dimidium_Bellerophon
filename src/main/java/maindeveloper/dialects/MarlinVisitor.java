@@ -71,10 +71,10 @@ public class MarlinVisitor extends GCodeVisitor {
             return null; // let the base class produce the real parse error
         }
 
-        double oldCenterX = centerX;
-        double oldCenterY = centerY;
-        centerX = currentX;
-        centerY = currentY;
+        double oldCenterX = state.centerX;
+        double oldCenterY = state.centerY;
+        state.centerX = state.currentX;
+        state.centerY = state.currentY;
 
         double[] xs = new double[times];
         double[] ys = new double[times];
@@ -86,50 +86,62 @@ public class MarlinVisitor extends GCodeVisitor {
         // the loop always runs to completion, exactly like the base
         // implementation - bailing out early on ineligibility would leave
         // currentX/currentY (and any variables the body sets) wrong for
-        // whatever comes after the loop
-        for (int i = 0; i < times; i++) {
-            iterationStack.push(i);
-            insideJrepeat = true;
+        // whatever comes after the loop.
+        //
+        // Nested try/finally, same shape as GCodeVisitor.visitBrepeat_statement:
+        // the inner one keeps iterationStack balanced even if a single
+        // iteration's body throws; the outer one guarantees centerX/Y and
+        // insideJrepeat get restored even if the exception propagates out
+        // of the whole loop, instead of leaving them corrupted for
+        // whatever compiles next.
+        try {
+            for (int i = 0; i < times; i++) {
+                state.iterationStack.push(i);
+                state.insideJrepeat = true;
 
-            StringBuilder iterationOutput = new StringBuilder();
-            for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
-                String stmtCode = visit(stmt);
-                if (stmtCode != null && !stmtCode.isBlank()) {
-                    iterationOutput.append(stmtCode);
+                StringBuilder iterationOutput = new StringBuilder();
+                try {
+                    for (JupitoreParser.StatementContext stmt : ctx.statement_block().statement()) {
+                        String stmtCode = visit(stmt);
+                        if (stmtCode != null && !stmtCode.isBlank()) {
+                            iterationOutput.append(stmtCode);
+                        }
+                    }
+                } finally {
+                    state.iterationStack.pop();
                 }
-            }
-            iterationStack.pop();
-            fallback.append(iterationOutput);
-            iterationLines[i] = iterationOutput.toString();
+                fallback.append(iterationOutput);
+                iterationLines[i] = iterationOutput.toString();
 
-            if (!eligible) {
-                continue;
-            }
-
-            Matcher m = ARC_CANDIDATE_LINE.matcher(iterationOutput.toString().trim());
-            if (!m.matches()) {
-                eligible = false; // not exactly one plain, non-extruding G1 XY(Z) move
-                continue;
-            }
-
-            String zGroup = m.group("z");
-            if (zGroup != null) {
-                double z = Double.parseDouble(zGroup);
-                if (fixedZ == null) {
-                    fixedZ = z;
-                } else if (Math.abs(fixedZ - z) > 1e-6) {
-                    eligible = false; // Z changes mid-loop - not a flat arc
+                if (!eligible) {
                     continue;
                 }
+
+                Matcher m = ARC_CANDIDATE_LINE.matcher(iterationOutput.toString().trim());
+                if (!m.matches()) {
+                    eligible = false; // not exactly one plain, non-extruding G1 XY(Z) move
+                    continue;
+                }
+
+                String zGroup = m.group("z");
+                if (zGroup != null) {
+                    double z = Double.parseDouble(zGroup);
+                    if (fixedZ == null) {
+                        fixedZ = z;
+                    } else if (Math.abs(fixedZ - z) > 1e-6) {
+                        eligible = false; // Z changes mid-loop - not a flat arc
+                        continue;
+                    }
+                }
+
+                xs[i] = state.currentX;
+                ys[i] = state.currentY;
             }
-
-            xs[i] = currentX;
-            ys[i] = currentY;
+        } finally {
+            state.insideJrepeat = !state.iterationStack.isEmpty();
+            state.centerX = oldCenterX;
+            state.centerY = oldCenterY;
         }
-
-        insideJrepeat = !iterationStack.isEmpty();
-        centerX = oldCenterX;
-        centerY = oldCenterY;
 
         if (!eligible) {
             return fallback.toString();

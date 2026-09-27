@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Stack;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -34,24 +33,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     // "var x = expr" assignments - persist for the whole compilation unit,
     // visible from every macro
     protected Map<String, Double> globalVariables = new HashMap<>();
-    // Temporary storage for a single move (used in visitCoordList)
-    private double targetX = Double.NaN;
-    private double targetY = Double.NaN;
-    private double targetZ = Double.NaN;
-    private boolean hasManualE = false;
-    private double manualEValue = 0.0;
-    private boolean hasAutoE = false; // user wrote "E" without value
-    protected double centerX = 0; // <-- Jrepeat center for X
-    protected double centerY = 0; // <-- Jrepeat center for Y
-    protected boolean insideLayer = false;
     // Hardware safety limiter: enforces axis bounds at compile time.
     protected HardwareLimiter limiter;
-    protected Stack<Integer> iterationStack = new Stack<>();
-    protected boolean relativeMode = false;
-    protected double currentX = 0;
-    protected double currentY = 0;
-    protected double currentZ = 0;
-    protected boolean insideJrepeat = false;
+    // Position, in-progress move target, mode, and DSL nesting scope -
+    // see MachineState for what's tracked and why it's split out.
+    protected final MachineState state = new MachineState();
 
     // Performance: cached number formatter. String.format re-parses its
     // format string on every call; DecimalFormat does not. Per-instance
@@ -170,7 +156,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     // Performance: single place that evaluates an expression with the
     // current loop iteration, reusing the shared Compute instance.
     protected double evalExpr(JupitoreParser.ExprContext ctx) {
-        sharedCompute.setIteration(iterationStack.isEmpty() ? 0 : iterationStack.peek());
+        sharedCompute.setIteration(state.iterationStack.isEmpty() ? 0 : state.iterationStack.peek());
         sharedCompute.setLine(ctx.getStart().getLine());
         return sharedCompute.visit(ctx);
     }
@@ -221,11 +207,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
     @Override
     public String visitMacro(JupitoreParser.MacroContext ctx) {
-        // Reset positions for independent macro execution
-        currentX = 0;
-        currentY = 0;
-        currentZ = 0;
-        relativeMode = false; // start in absolute by default
+        // Reset machine state for independent macro execution. Was
+        // previously four fields cleared by hand here (currentX/Y/Z,
+        // relativeMode); state.reset() also clears insideLayer,
+        // insideJrepeat, iterationStack, targetX/Y/Z, hasManualE,
+        // manualEValue, and centerX/Y, which used to carry over
+        // between macros by accident whenever a loop/layer body threw
+        // before it could restore them itself.
+        state.reset();
         localVariables.clear(); // local variables don't carry over between macros
 
         StringBuilder gcode = new StringBuilder();
@@ -329,12 +318,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         }
 
         if (ctx.ABSOLUTE() != null) {
-            relativeMode = false;
+            state.relativeMode = false;
             return emitAbsolute();
         }
 
         if (ctx.RELATIVE() != null) {
-            relativeMode = true;
+            state.relativeMode = true;
             return emitRelative();
         }
 
@@ -477,20 +466,23 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         int times = parseIntSafe(ctx.NUMBER().getText(), "repeat count", ctx.getStart().getLine());
         StringBuilder sb = new StringBuilder();
 
-        boolean oldInsideJrepeat = insideJrepeat;
-        insideJrepeat = false;
+        boolean oldInsideJrepeat = state.insideJrepeat;
+        state.insideJrepeat = false;
 
         // Perf: getRuleContexts() allocates a fresh ArrayList on every call.
         // Hoist once, reuse for all iterations.
         List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
 
-        for (int iteration = 0; iteration < times; iteration++) {
-            for (JupitoreParser.StatementContext stmt : stmts) {
-                sb.append(visit(stmt));
+        try {
+            for (int iteration = 0; iteration < times; iteration++) {
+                for (JupitoreParser.StatementContext stmt : stmts) {
+                    sb.append(visit(stmt));
+                }
             }
+        } finally {
+            state.insideJrepeat = oldInsideJrepeat;
         }
 
-        insideJrepeat = oldInsideJrepeat;
         return sb.toString();
     }
 
@@ -499,31 +491,45 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         int times = parseIntSafe(ctx.NUMBER().getText(), "brepeat count", ctx.getStart().getLine());
         StringBuilder sb = new StringBuilder();
 
-        double oldCenterX = centerX;
-        double oldCenterY = centerY;
+        double oldCenterX = state.centerX;
+        double oldCenterY = state.centerY;
 
-        centerX = currentX;
-        centerY = currentY;
+        state.centerX = state.currentX;
+        state.centerY = state.currentY;
 
         // Perf: same as above - hoist the statement list.
         List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
 
-        for (int i = 0; i < times; i++) {
-            iterationStack.push(i);
-            insideJrepeat = true;
+        // Two nested try/finally blocks, matching visitLayer_statement's
+        // pattern one level deeper because Brepeat restores state at both
+        // the per-iteration level (iterationStack) and the whole-loop
+        // level (centerX/Y, insideJrepeat). Previously neither was
+        // guaranteed: an exception partway through an iteration's body
+        // left iterationStack unbalanced AND skipped the centerX/Y and
+        // insideJrepeat restoration below the loop entirely, corrupting
+        // state for whatever the caller does next.
+        try {
+            for (int i = 0; i < times; i++) {
+                state.iterationStack.push(i);
+                state.insideJrepeat = true;
 
-            for (JupitoreParser.StatementContext stmt : stmts) {
-                String stmtCode = visit(stmt);
-                if (stmtCode != null && !stmtCode.isBlank()) {
-                    sb.append(stmtCode);
+                try {
+                    for (JupitoreParser.StatementContext stmt : stmts) {
+                        String stmtCode = visit(stmt);
+                        if (stmtCode != null && !stmtCode.isBlank()) {
+                            sb.append(stmtCode);
+                        }
+                    }
+                } finally {
+                    state.iterationStack.pop();
                 }
             }
-            iterationStack.pop();
+        } finally {
+            state.insideJrepeat = !state.iterationStack.isEmpty();
+            state.centerX = oldCenterX;
+            state.centerY = oldCenterY;
         }
 
-        insideJrepeat = !iterationStack.isEmpty();
-        centerX = oldCenterX;
-        centerY = oldCenterY;
         return sb.toString();
     }
 
@@ -556,8 +562,8 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
     int layers = parseIntSafe(ctx.NUMBER().getText(), "layer count", ctx.getStart().getLine());
     StringBuilder sb = new StringBuilder();
 
-    boolean oldInsideLayer = insideLayer;
-    insideLayer = true;
+    boolean oldInsideLayer = state.insideLayer;
+    state.insideLayer = true;
 
     List<JupitoreParser.StatementContext> stmts = ctx.statement_block().statement();
 
@@ -573,7 +579,7 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
             sb.append(emitLayerEnd());
         }
     } finally {
-        insideLayer = oldInsideLayer;
+        state.insideLayer = oldInsideLayer;
     }
 
     return sb.toString();
@@ -600,11 +606,7 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
 
     @Override
     public String visitCoordList(JupitoreParser.CoordListContext ctx) {
-        targetX = Double.NaN;
-        targetY = Double.NaN;
-        targetZ = Double.NaN;
-        hasManualE = false;
-        manualEValue = 0.0;
+        state.resetTargets();
 
         for (JupitoreParser.CoordContext coordCtx : ctx.coord()) {
             visit(coordCtx);
@@ -613,39 +615,39 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
         StringBuilder sb = new StringBuilder();
         boolean isMove = false;
 
-        if (!Double.isNaN(targetX)) {
-            double emitX = relativeMode ? targetX - currentX : targetX;
+        if (!Double.isNaN(state.targetX)) {
+            double emitX = state.relativeMode ? state.targetX - state.currentX : state.targetX;
             sb.append(" X").append(DF3.format(emitX));
             isMove = true;
         }
-        if (!Double.isNaN(targetY)) {
-            double emitY = relativeMode ? targetY - currentY : targetY;
+        if (!Double.isNaN(state.targetY)) {
+            double emitY = state.relativeMode ? state.targetY - state.currentY : state.targetY;
             sb.append(" Y").append(DF3.format(emitY));
             isMove = true;
         }
-        if (!Double.isNaN(targetZ)) {
-            double emitZ = relativeMode ? targetZ - currentZ : targetZ;
+        if (!Double.isNaN(state.targetZ)) {
+            double emitZ = state.relativeMode ? state.targetZ - state.currentZ : state.targetZ;
             sb.append(" Z").append(DF3.format(emitZ));
             isMove = true;
         }
 
-        if (hasManualE) {
-            sb.append(" E").append(DF3.format(manualEValue));
+        if (state.hasManualE) {
+            sb.append(" E").append(DF3.format(state.manualEValue));
         } else if (autoExtrudeEnabled && isMove) {
-            double dx = Double.isNaN(targetX) ? 0 : targetX - currentX;
-            double dy = Double.isNaN(targetY) ? 0 : targetY - currentY;
-            double dz = Double.isNaN(targetZ) ? 0 : targetZ - currentZ;
+            double dx = Double.isNaN(state.targetX) ? 0 : state.targetX - state.currentX;
+            double dy = Double.isNaN(state.targetY) ? 0 : state.targetY - state.currentY;
+            double dz = Double.isNaN(state.targetZ) ? 0 : state.targetZ - state.currentZ;
             double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             double autoE = settings.calculateExtrusion(distance);
             sb.append(" E").append(DF3.format(autoE));
         }
 
-        if (!Double.isNaN(targetX))
-            currentX = targetX;
-        if (!Double.isNaN(targetY))
-            currentY = targetY;
-        if (!Double.isNaN(targetZ))
-            currentZ = targetZ;
+        if (!Double.isNaN(state.targetX))
+            state.currentX = state.targetX;
+        if (!Double.isNaN(state.targetY))
+            state.currentY = state.targetY;
+        if (!Double.isNaN(state.targetZ))
+            state.currentZ = state.targetZ;
 
         return sb.toString().trim();
     }
@@ -657,7 +659,7 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
 
         int line = ctx.getStart().getLine();
 
-        if (insideLayer && axis.equals("Z")) {
+        if (state.insideLayer && axis.equals("Z")) {
             throw new BellerophonException(line,
                     "ERROR: Z-axis movement is not allowed inside Layer blocks. " +
                             "Layer automatically manages Z-height.");
@@ -665,7 +667,7 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
 
         if (axis.equals("E")) {
             if (ctx.expr() != null) {
-                boolean isInLoop = !iterationStack.isEmpty();
+                boolean isInLoop = !state.iterationStack.isEmpty();
                 if (!isInLoop) {
                     String exprText = ctx.expr().getText();
                     if (I_ITER.matcher(exprText).matches()) {
@@ -675,14 +677,14 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
                 }
                 double value = evalExpr(ctx.expr());
                 double finalE = value * settings.getExtrusionMultiplier();
-                hasManualE = true;
-                manualEValue = finalE;
+                state.hasManualE = true;
+                state.manualEValue = finalE;
             }
             return "";
         }
 
         String op = ctx.getChild(1).getText();
-        boolean isInLoop = !iterationStack.isEmpty();
+        boolean isInLoop = !state.iterationStack.isEmpty();
         if (!isInLoop) {
             String exprText = ctx.expr().getText();
             if (I_ITER.matcher(exprText).matches()) {
@@ -694,7 +696,7 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
         double currentPos = getCurrent(axis);
         double newPos;
 
-        if (relativeMode) {
+        if (state.relativeMode) {
             double delta = value;
             switch (op) {
                 case "=":
@@ -716,22 +718,22 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
 
         switch (axis) {
             case "X":
-                targetX = newPos;
+                state.targetX = newPos;
                 break;
             case "Y":
-                targetY = newPos;
+                state.targetY = newPos;
                 break;
             case "Z":
-                targetZ = newPos;
+                state.targetZ = newPos;
                 break;
         }
 
-        if (!Double.isNaN(targetX))
-            limiter.checkAndMove("X", targetX, line);
-        if (!Double.isNaN(targetY))
-            limiter.checkAndMove("Y", targetY, line);
-        if (!Double.isNaN(targetZ))
-            limiter.checkAndMove("Z", targetZ, line);
+        if (!Double.isNaN(state.targetX))
+            limiter.checkAndMove("X", state.targetX, line);
+        if (!Double.isNaN(state.targetY))
+            limiter.checkAndMove("Y", state.targetY, line);
+        if (!Double.isNaN(state.targetZ))
+            limiter.checkAndMove("Z", state.targetZ, line);
 
         return "";
     }
@@ -739,11 +741,11 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
     private double getCurrent(String axis) {
         switch (axis) {
             case "X":
-                return currentX;
+                return state.currentX;
             case "Y":
-                return currentY;
+                return state.currentY;
             case "Z":
-                return currentZ;
+                return state.currentZ;
             case "E":
                 return 0;
         }
