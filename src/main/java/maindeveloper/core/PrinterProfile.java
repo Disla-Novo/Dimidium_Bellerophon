@@ -9,6 +9,9 @@ public class PrinterProfile {
     private double filamentDiameter = 1.75;
     private double layerHeight = 0.2;
     private double extrusionMultiplier = 1.0;
+    private double retractionDistance = 1.5;
+    private double retractionSpeed = 40;
+    private double minTravelForRetract = 1.0;
 
     // Default constructor
     public PrinterProfile() {
@@ -91,5 +94,29 @@ public class PrinterProfile {
 
     public void setExtrusionMultiplier(double extrusionMultiplier) {
         this.extrusionMultiplier = extrusionMultiplier;
+    }
+
+    public double getRetractionDistance() {
+        return retractionDistance;
+    }
+
+    public void setRetractionDistance(double retractionDistance) {
+        this.retractionDistance = retractionDistance;
+    }
+
+    public double getRetractionSpeed() {
+        return retractionSpeed;
+    }
+
+    public void setRetractionSpeed(double retractionSpeed) {
+        this.retractionSpeed = retractionSpeed;
+    }
+
+    public double getMinTravelForRetract() {
+        return minTravelForRetract;
+    }
+
+    public void setMinTravelForRetract(double minTravelForRetract) {
+        this.minTravelForRetract = minTravelForRetract;
     }
 }

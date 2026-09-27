@@ -15,8 +15,10 @@
     filamentDiameter: 1.75,
     layerHeight: 0.2,
     extrusionMultiplier: 1.0,
+    retractionDistance: 1.5,
+    retractionSpeed: 40,
+    minTravelForRetract: 1.0,
   };
-
   function allProfiles() {
     return Persistence.get(PROFILES_KEY, {});
   }
@@ -81,11 +83,12 @@
     return null;
   }
 
-  function getActive() {
+    function getActive() {
     const id = getActiveId();
     if (!id) return null;
     const p = allProfiles()[id];
-    return p ? Object.assign({ id: id }, p) : null;
+    if (!p) return null;
+    return Object.assign({}, DEFAULT_PROFILE, p, { id: id });
   }
 
   function setActive(id) {

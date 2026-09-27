@@ -54,6 +54,8 @@ statement
     | LOAD_BED_MESH STRING? stmtTerm            // BED_MESH_PROFILE LOAD=default (optional profile) 7/31/2026
     | SET_PRESSURE_ADVANCE expr stmtTerm     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
     | RESET_EXTRUDER stmtTerm                  // G92 E0
+    | RETRACT stmtTerm                          // G10 - explicit retraction
+    | UNRETRACT stmtTerm                        // G11 - explicit unretraction
     | DWELL expr (ID)? stmtTerm// new
     | BED_MESH_CALIBRATE stmtTerm    // BED_MESH_CALIBRATE command
     | PROBE_CALIBRATE stmtTerm    // PROBE_CALIBRATE
@@ -248,6 +250,8 @@ RELATIVEEXTRUSION : 'RelativeExtrusion';
 LOAD_BED_MESH       : 'LoadBedMesh'| 'LOAD_BED_MESH';
 SET_PRESSURE_ADVANCE : 'SetPressureAdvance'| 'SET_PRESSURE_ADVANCE';
 RESET_EXTRUDER       : 'ResetExtruder';
+RETRACT              : 'Retract';
+UNRETRACT            : 'Unretract';
 BED_MESH_CALIBRATE : 'BedMeshCalibrate'| 'BED_MESH_CALIBRATE';
 PROBE_CALIBRATE : 'ProbeCalibrate'| 'PROBE_CALIBRATE';
 COOLDOWN    : 'cooldown'| 'Cooldown' | 'COOLDOWN';

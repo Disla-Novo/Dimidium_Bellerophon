@@ -26,6 +26,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected PrinterSettings settings = new PrinterSettings();
     protected boolean enablePaging = false;
     protected boolean autoExtrudeEnabled = false;
+    protected double retractionDistance;
+    protected double retractionSpeed;
+    protected double minTravelForRetract;
     // 6/17/26
     // plain "x = expr" assignments - reset at the start of every macro, so a
     // variable set in one macro doesn't leak into the next
@@ -86,6 +89,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     protected abstract String emitRelativeExtrusion();
 
     protected abstract String emitResetExtruder();
+
+    protected abstract String emitRetract(double distance, double speed);
+
+    protected abstract String emitUnretract(double distance, double speed);
 
     protected abstract String emitPause();
 
@@ -150,6 +157,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.settings.setFilamentDiameter(profile.getFilamentDiameter());
         this.settings.setLayerHeight(profile.getLayerHeight());
         this.settings.setExtrusionMultiplier(profile.getExtrusionMultiplier());
+        this.retractionDistance = profile.getRetractionDistance();
+        this.retractionSpeed = profile.getRetractionSpeed();
+        this.minTravelForRetract = profile.getMinTravelForRetract();
         this.sharedCompute = new Compute(this, 0);
     }
 
@@ -360,6 +370,14 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (ctx.RESET_EXTRUDER() != null) {
             return emitResetExtruder();
+        }
+
+        if (ctx.RETRACT() != null) {
+            return emitRetract(retractionDistance, retractionSpeed);
+        }
+
+        if (ctx.UNRETRACT() != null) {
+            return emitUnretract(retractionDistance, retractionSpeed);
         }
 
         if (ctx.PROBE_CALIBRATE() != null) {

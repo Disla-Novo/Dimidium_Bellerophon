@@ -306,4 +306,14 @@ protected String emitLoadBedMesh(String profile) {
     protected String emitLayerEnd() {
         return "";
     }
+
+       @Override
+    protected String emitRetract(double distance, double speed) {
+        return "G1 E-" + String.format("%.3f", distance) + " F" + (int) (speed * 60) + "\n";
+    }
+
+    @Override
+    protected String emitUnretract(double distance, double speed) {
+        return "G1 E" + String.format("%.3f", distance) + " F" + (int) (speed * 60) + "\n";
+    }
 }
