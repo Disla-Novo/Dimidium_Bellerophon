@@ -17,6 +17,15 @@
 
     <div class="docs-container">
       <aside class="docs-sidebar">
+<div class="docs-notice">
+  <strong>Firmware Note</strong>
+  The compiler resets positioning at the start of every
+  <code>M.title</code> block. Klipper treats each block as an independent
+  macro, so that matches the printer. Marlin and RepRap have no macro
+  system; the whole file runs as one continuous stream, so position
+  carries across blocks at the printer. For those targets, compile one
+  macro per file.
+</div>
         <h3>Grammar Reference</h3>
         <div id="grammar-list">
           <div class="grammar-category">
