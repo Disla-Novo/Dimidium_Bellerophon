@@ -545,3 +545,34 @@ body {
     font-size: 18px;
   }
 }
+.docs-notice {
+  background-color: rgba(255, 191, 96, 0.06);
+  border: 1px solid rgba(255, 191, 96, 0.18);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 24px;
+  font-family: "Consolas", monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.docs-notice strong {
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+  font-family: "Orbitron", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.75rem;
+}
+
+.docs-notice code {
+  color: var(--editor-text);
+  font-family: "Consolas", monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
