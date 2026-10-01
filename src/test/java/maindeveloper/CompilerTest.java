@@ -1,13 +1,18 @@
 package maindeveloper;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import org.junit.jupiter.api.Test;
 
 import maindeveloper.core.PrinterProfile;
+import maindeveloper.core.BellerophonException;
 import maindeveloper.dialects.KlipperVisitor;
 import maindeveloper.dialects.MarlinVisitor;
 import maindeveloper.dialects.RepRapVisitor;
@@ -271,6 +276,168 @@ void relativeModeOutputsRelativeCoordinatesForRepRap() {
             "RepRap: Relative move should output X20.000 Y20.000 (offset)");
     assertFalse(output.contains("G1 X70.000 Y70.000"),
             "RepRap: Should NOT output absolute coordinate X70.000 Y70.000 in relative mode");
+}
+
+@Test
+void autoRetractUsesXYTravelDistanceAndSkipsExtrudingMoves() {
+    String source = """
+            M.title "auto_retract"
+            RelativeExtrusion
+            EnableAutoRetract = 1
+            MoveTo x=3 y=4
+            MoveTo x=3 y=5
+            MoveTo x=3 y=5 z=10
+            MoveTo x=5 y=5 e=1
+            MoveTo x=8 y=9
+            MoveTo x=13 y=14
+            EnableAutoRetract = 0
+            MoveTo x=20 y=20
+            M.end
+            """;
+
+    PrinterProfile profile = new PrinterProfile();
+    profile.setRetractionDistance(2.4);
+    profile.setRetractionSpeed(25);
+    profile.setMinTravelForRetract(2.0);
+    var visitor = new KlipperVisitor(profile);
+    String output = visitor.visit(TestUtils.parse(source));
+
+    long retracts = output.lines().filter(line -> line.equals("G1 E-2.400 F1500")).count();
+    long unretracts = output.lines().filter(line -> line.equals("G1 E2.400 F1500")).count();
+    assertTrue(retracts == 2, "only the two XY travels at least 2mm should retract: " + output);
+    assertTrue(unretracts == 2, "each automatic retract should be paired with an unretract: " + output);
+        assertTrue(output.indexOf("G1 X3.000 Y4.000") < output.indexOf("G1 E-2.400 F1500"),
+                        "the initial move before any extrusion must not retract: " + output);
+}
+
+@Test
+void autoRetractSkipsMovesWithNoXYTravelWhenThresholdIsZero() {
+        String source = """
+                        M.title "zero_xy_travel"
+                        RelativeExtrusion
+                        EnableAutoRetract = 1
+                        MoveTo z=1
+                        M.end
+                        """;
+
+        PrinterProfile profile = new PrinterProfile();
+        profile.setMinTravelForRetract(0.0);
+        var visitor = new KlipperVisitor(profile);
+        String output = visitor.visit(TestUtils.parse(source));
+
+        assertFalse(output.contains("G1 E-"), "a Z-only move has no XY travel to trigger a retract: " + output);
+}
+
+@Test
+void autoRetractWithoutRelativeExtrusionFailsAtEnableLine() {
+    String source = """
+            M.title "no_rel"
+            Absolute
+            EnableAutoRetract = 1
+            MoveTo x=50 y=50 z=0.2
+            MoveTo x=200 y=200
+            M.end
+            """;
+
+    var visitor = new KlipperVisitor(new PrinterProfile());
+    BellerophonException ex = assertThrows(BellerophonException.class,
+            () -> visitor.visit(TestUtils.parse(source)));
+
+    assertEquals(3, ex.line);
+    assertTrue(ex.getMessage().contains("requires RelativeExtrusion"));
+}
+
+@Test
+void autoRetractAllowsRelativeExtrusionAfterEnableStatement() {
+    String source = """
+            M.title "relative_after_enable"
+            Absolute
+            EnableAutoRetract = 1
+            RelativeExtrusion
+            MoveTo x=50 y=50 z=0.2
+            MoveTo x=200 y=200
+            M.end
+            """;
+
+    var visitor = new KlipperVisitor(new PrinterProfile());
+    assertDoesNotThrow(() -> visitor.visit(TestUtils.parse(source)));
+}
+
+@Test
+void manualRetractUsesProfileDefaultsAndOptionalDistanceOverrides() {
+    String source = """
+            M.title "manual_retract"
+            RelativeExtrusion
+            Retract
+            Unretract
+            Retract 5
+            Unretract 5
+            M.end
+            """;
+
+    PrinterProfile profile = new PrinterProfile();
+    profile.setRetractionDistance(2.4);
+    profile.setRetractionSpeed(25);
+    var visitor = new KlipperVisitor(profile);
+    String output = visitor.visit(TestUtils.parse(source));
+
+    assertTrue(output.contains("G1 E-2.400 F1500"), "bare Retract should use profile distance and speed: " + output);
+    assertTrue(output.contains("G1 E2.400 F1500"), "bare Unretract should use profile distance and speed: " + output);
+    assertTrue(output.contains("G1 E-5.000 F1500"), "Retract override should retain profile speed: " + output);
+    assertTrue(output.contains("G1 E5.000 F1500"), "Unretract override should retain profile speed: " + output);
+}
+
+@Test
+void manualRetractWithoutRelativeExtrusionWarnsAndContinues() {
+    String source = """
+            M.title "manual_retract_without_m83"
+            Retract
+                        Unretract
+            M.end
+            """;
+
+        var visitor = new KlipperVisitor(new PrinterProfile());
+        String output = visitor.visit(TestUtils.parse(source));
+        var warnings = visitor.getWarnings();
+
+        assertTrue(output.contains("G1 E-1.500 F2400"), "Retract should still emit G-code: " + output);
+        assertTrue(output.contains("G1 E1.500 F2400"), "Unretract should still emit G-code: " + output);
+        assertEquals(2, warnings.size());
+        assertEquals(2, warnings.get(0).line);
+        assertEquals(3, warnings.get(1).line);
+        assertTrue(warnings.get(0).message.contains("sets absolute extruder position"));
+}
+
+@Test
+void manualRetractRejectsZeroDistanceOverride() {
+    String source = """
+            M.title "zero_retract"
+            RelativeExtrusion
+            Retract 0
+            M.end
+            """;
+
+    var visitor = new KlipperVisitor(new PrinterProfile());
+    BellerophonException ex = assertThrows(BellerophonException.class,
+            () -> visitor.visit(TestUtils.parse(source)));
+
+    assertTrue(ex.getMessage().contains("distance must be greater than zero"));
+}
+
+@Test
+void manualRetractRejectsEqualsSyntaxInsteadOfUsingProfileDefault() {
+    String source = """
+            M.title "invalid_retract_syntax"
+            RelativeExtrusion
+            Retract = 5
+            M.end
+            """;
+
+    var visitor = new KlipperVisitor(new PrinterProfile());
+    BellerophonException ex = assertThrows(BellerophonException.class,
+            () -> visitor.visit(TestUtils.parse(source)));
+
+    assertTrue(ex.getMessage().contains("without '='"));
 }
 
 @Test

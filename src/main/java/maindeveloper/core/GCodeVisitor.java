@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -22,10 +23,19 @@ import java.nio.file.Path;
 import jupitore.gen.*;
 
 public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
+    public static final class CompileWarning {
+        public int line;
+        public String message;
+
+        public CompileWarning(int line, String message) {
+            this.line = line;
+            this.message = message;
+        }
+    }
+
     // ADDED 4/10/2026
     protected PrinterSettings settings = new PrinterSettings();
     protected boolean enablePaging = false;
-    protected boolean autoExtrudeEnabled = false;
     protected double retractionDistance;
     protected double retractionSpeed;
     protected double minTravelForRetract;
@@ -41,6 +51,7 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
     // Position, in-progress move target, mode, and DSL nesting scope -
     // see MachineState for what's tracked and why it's split out.
     protected final MachineState state = new MachineState();
+    private final List<CompileWarning> warnings = new ArrayList<>();
 
     // Performance: cached number formatter. String.format re-parses its
     // format string on every call; DecimalFormat does not. Per-instance
@@ -163,6 +174,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         this.sharedCompute = new Compute(this, 0);
     }
 
+    public List<CompileWarning> getWarnings() {
+        return List.copyOf(warnings);
+    }
+
     // Performance: single place that evaluates an expression with the
     // current loop iteration, reusing the shared Compute instance.
     protected double evalExpr(JupitoreParser.ExprContext ctx) {
@@ -246,6 +261,11 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
                 }
             }
         }
+            if (state.autoRetractEnabled && !state.relativeExtrusionActive) {
+                throw new BellerophonException(state.autoRetractEnableLine,
+                    "ERROR: EnableAutoRetract requires RelativeExtrusion in the same macro. "
+                        + "Add 'RelativeExtrusion' anywhere in the macro, or turn EnableAutoRetract off.");
+            }
         limiter.resetToGlobal(); // Reset limits after each macro to ensure safety for the next macro
         return gcode.toString();
     }
@@ -263,6 +283,10 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (ctx.invalid_assignment() != null) {
             return visit(ctx.invalid_assignment());
+        }
+
+        if (ctx.retract_statement() != null) {
+            return visit(ctx.retract_statement());
         }
 
         if (ctx.HOME() != null) {
@@ -306,9 +330,12 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             }
         }
 
-        if (ctx.MOVEEX() != null) {
+                if (ctx.MOVEEX() != null) {
             if (ctx.coordList() != null) {
-                return emitMoveTo(visit(ctx.coordList()));
+                double prevX = state.currentX;
+                double prevY = state.currentY;
+                String coordString = visit(ctx.coordList());
+                return applyAutoRetractIfNeeded(coordString, ctx.coordList(), prevX, prevY);
             }
         }
 
@@ -356,7 +383,8 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return emitTimeoutSet(value);
         }
 
-        if (ctx.RELATIVEEXTRUSION() != null) {
+               if (ctx.RELATIVEEXTRUSION() != null) {
+            state.relativeExtrusionActive = true;
             return emitRelativeExtrusion();
         }
 
@@ -370,14 +398,6 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (ctx.RESET_EXTRUDER() != null) {
             return emitResetExtruder();
-        }
-
-        if (ctx.RETRACT() != null) {
-            return emitRetract(retractionDistance, retractionSpeed);
-        }
-
-        if (ctx.UNRETRACT() != null) {
-            return emitUnretract(retractionDistance, retractionSpeed);
         }
 
         if (ctx.PROBE_CALIBRATE() != null) {
@@ -413,8 +433,9 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
             return emitDwell(value);
         }
 
-        if (ctx.SET_SPEED() != null && ctx.expr() != null) {
+               if (ctx.SET_SPEED() != null && ctx.expr() != null) {
             double speed = evalExpr(ctx.expr());
+            state.currentFeedrate = speed;
             return emitSetSpeed(speed);
         }
 
@@ -459,9 +480,16 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
 
         if (ctx.ENABLE_AUTO_EXTRUDE() != null) {
             double val = evalExpr(ctx.expr());
-            autoExtrudeEnabled = (val != 0.0);
-            return emitEnableAutoExtrude(autoExtrudeEnabled);
+            state.autoExtrudeEnabled = (val != 0.0);
+            return emitEnableAutoExtrude(state.autoExtrudeEnabled);
         }
+                if (ctx.ENABLE_AUTO_RETRACT() != null) {
+            double val = evalExpr(ctx.expr());
+            state.autoRetractEnabled = (val != 0.0);
+                    state.autoRetractEnableLine = state.autoRetractEnabled ? ctx.getStart().getLine() : 0;
+            return "";
+        }
+
 
         if (ctx.layer_statement() != null) {
             return visit(ctx.layer_statement());
@@ -477,6 +505,39 @@ public abstract class GCodeVisitor extends JupitoreBaseVisitor<String> {
         // -------------------------------------------
 
         return "";
+    }
+
+      @Override
+    public String visitRetract_statement(JupitoreParser.Retract_statementContext ctx) {
+        int line = ctx.getStart().getLine();
+
+        if (ctx.EQUALS() != null) {
+            throw new BellerophonException(line,
+                    "ERROR: Use 'Retract [distance]' or 'Unretract [distance]' without '='.");
+        }
+
+        boolean isRetract = ctx.RETRACT() != null;
+        String statementName = isRetract ? "Retract" : "Unretract";
+
+        double distance = retractionDistance;
+        if (ctx.expr() != null) {
+            distance = evalExpr(ctx.expr());
+            if (!Double.isFinite(distance) || distance <= 0) {
+                throw new BellerophonException(line,
+                        "ERROR: " + statementName + " distance must be greater than zero.");
+            }
+        }
+
+        if (!state.relativeExtrusionActive) {
+            warnings.add(new CompileWarning(line, statementName
+                    + " emitted without RelativeExtrusion. "
+                    + (isRetract ? "E-" : "E") + DF3.format(distance)
+                + " in absolute mode sets absolute extruder position, not a retraction."));
+        }
+
+        return isRetract
+                ? emitRetract(distance, retractionSpeed)
+                : emitUnretract(distance, retractionSpeed);
     }
 
     @Override
@@ -651,13 +712,19 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
 
         if (state.hasManualE) {
             sb.append(" E").append(DF3.format(state.manualEValue));
-        } else if (autoExtrudeEnabled && isMove) {
+            if (state.manualEValue > 0) {
+                state.hasEverExtruded = true;
+            }
+        } else if (state.autoExtrudeEnabled && isMove) {
             double dx = Double.isNaN(state.targetX) ? 0 : state.targetX - state.currentX;
             double dy = Double.isNaN(state.targetY) ? 0 : state.targetY - state.currentY;
             double dz = Double.isNaN(state.targetZ) ? 0 : state.targetZ - state.currentZ;
             double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             double autoE = settings.calculateExtrusion(distance);
             sb.append(" E").append(DF3.format(autoE));
+            if (autoE > 0) {
+                state.hasEverExtruded = true;
+            }
         }
 
         if (!Double.isNaN(state.targetX))
@@ -754,6 +821,52 @@ public String visitLayer_statement(JupitoreParser.Layer_statementContext ctx) {
             limiter.checkAndMove("Z", state.targetZ, line);
 
         return "";
+    }
+
+    // Ensures that relative extrusion (M83) is active before performing any retract/unretract operations.
+    private void requireRelativeExtrusionActive(int line, String statementName) {
+        if (!state.relativeExtrusionActive) {
+            throw new BellerophonException(line,
+                    "ERROR: " + statementName + " needs RelativeExtrusion (M83) to be active first - "
+                    + "without it, the retract/unretract E value will be read as an absolute target, "
+                    + "not a relative move. Add 'RelativeExtrusion' before this statement.");
+        }
+    }
+
+     private String applyAutoRetractIfNeeded(String coordString,
+            JupitoreParser.CoordListContext ctx, double prevX, double prevY) {
+        boolean isMove = !Double.isNaN(state.targetX)
+                || !Double.isNaN(state.targetY)
+                || !Double.isNaN(state.targetZ);
+        boolean autoExtrudeEmitted = state.autoExtrudeEnabled && isMove && !state.hasManualE;
+        boolean isTravel = isMove && !state.hasManualE && !autoExtrudeEmitted
+            && state.hasEverExtruded;
+
+        if (!state.autoRetractEnabled || !isTravel) {
+            return emitMoveTo(coordString);
+        }
+
+        double dx = Double.isNaN(state.targetX) ? 0 : state.targetX - prevX;
+        double dy = Double.isNaN(state.targetY) ? 0 : state.targetY - prevY;
+        double travelDist = Math.sqrt(dx * dx + dy * dy);
+
+        if (travelDist == 0.0 || travelDist < minTravelForRetract) {
+            return emitMoveTo(coordString);
+        }
+
+        requireRelativeExtrusionActive(ctx.getStart().getLine(), "auto-retract");
+
+        StringBuilder wrapped = new StringBuilder();
+        wrapped.append(emitRetract(retractionDistance, retractionSpeed));
+        if (state.currentFeedrate > 0) {
+            wrapped.append("G1 F").append((int) state.currentFeedrate).append("\n");
+        }
+        wrapped.append(emitMoveTo(coordString));
+        wrapped.append(emitUnretract(retractionDistance, retractionSpeed));
+        if (state.currentFeedrate > 0) {
+            wrapped.append("G1 F").append((int) state.currentFeedrate).append("\n");
+        }
+        return wrapped.toString();
     }
 
     private double getCurrent(String axis) {

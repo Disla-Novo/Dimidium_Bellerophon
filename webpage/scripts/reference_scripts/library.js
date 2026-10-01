@@ -101,6 +101,28 @@ M.end`,
     RelativeExtrusion
 M.end`,
   },
+  retract: {
+    label: "Retract",
+    description:
+      "Retracts the profile distance, or an optional positive distance in mm. Retraction speed always comes from the printer profile. Requires RelativeExtrusion.",
+    example: `M.title "Retract Example"
+    RelativeExtrusion
+    Retract
+    Retract 5
+M.end`,
+    canCompile: false,
+  },
+  unretract: {
+    label: "Unretract",
+    description:
+      "Unretracts the profile distance, or an optional positive distance in mm. Retraction speed always comes from the printer profile. Requires RelativeExtrusion.",
+    example: `M.title "Unretract Example"
+    RelativeExtrusion
+    Unretract
+    Unretract 5
+M.end`,
+    canCompile: false,
+  },
   resetextruder: {
     label: "ResetExtruder",
     description: "Resets the extruder position to zero (G92 E0).",
@@ -461,6 +483,19 @@ M.end`,
       "Enables (1) or disables (0) automatic extrusion calculation. Compile-time only.",
     example: `M.title "EnableAutoExtrude Example"
     EnableAutoExtrude = 1
+M.end`,
+    canCompile: false,
+  },
+  enableautoretract: {
+    label: "EnableAutoRetract",
+    description:
+      "Enables (1) or disables (0) automatic retraction on XY travel moves. Uses the printer profile travel threshold and requires RelativeExtrusion. Compile-time only.",
+    example: `M.title "EnableAutoRetract Example"
+    RelativeExtrusion
+    EnableAutoRetract = 1
+    MoveTo x=100 y=100
+    MoveTo x=150 y=100
+    EnableAutoRetract = 0
 M.end`,
     canCompile: false,
   },

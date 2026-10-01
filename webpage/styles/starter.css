@@ -11,6 +11,7 @@
   --editor-text: #15cc61;
   --line-number-color: #888756;
   --output-color: #caaa40;
+   --modal-label-color: #73e9a8;
 }
 
 body {
@@ -448,6 +449,9 @@ body {
 .error {
   color: var(--error-color);
 }
+.warning {
+  color: #ff9900;
+}
 
 .download-btn {
   background-color: var(--accent);
@@ -684,12 +688,14 @@ body {
 .modal-content {
   background-color: rgba(54, 54, 56, 0.2);
   backdrop-filter: blur(45px);
-  margin: 10% auto;
+  margin: 5% auto;
   padding: 20px;
   border: 1px solid #6affa34f;
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
+  max-height: 85vh;
+  /*overflow-y: auto;*/
   color: #eee;
 }
 .close-modal {
@@ -702,11 +708,12 @@ body {
 .close-modal:hover {
   color: #ff6a6a;
 }
+
 .modal-form label {
   display: block;
   margin-top: 10px;
   margin-bottom: 4px;
-  color: #73e9a8;
+   color: var(--modal-label-color);
 }
 .modal-form input {
   width: 100%;

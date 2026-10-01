@@ -4,7 +4,9 @@ body.theme-dark {
   background-color: #0f1115;
   color: #d6d6d6;
 }
-
+body.theme-dark .modal-form label {
+  color: #d6d6d6;
+}
 body.theme-dark #jupitore-app {
   background: #0f1115;
 }

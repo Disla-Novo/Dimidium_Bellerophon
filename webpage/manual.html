@@ -679,6 +679,21 @@ gcode:
                                     </tr>
 
                                     <tr>
+                                        <td><code>EnableAutoRetract</code></td>
+                                        <td><code>EnableAutoRetract = 1 | 0</code></td>
+                                        <td><code>EnableAutoRetract = 1</code></td>
+                                        <td>Enables (<code>1</code>) or disables
+                                            (<code>0</code>) automatic retraction
+                                            on qualifying XY travel moves. Uses
+                                            retraction distance, speed, and
+                                            minimum travel from the printer
+                                            profile. Requires
+                                            <code>RelativeExtrusion</code> in
+                                            the macro before a move that triggers
+                                            retraction. Compile-time only.</td>
+                                    </tr>
+
+                                    <tr>
                                         <td><span
                                                 class="inline-code token-SET_FILAMENT">SetFilament</span></td>
                                         <td><span
@@ -884,6 +899,32 @@ gcode:
                                             from the current extruder position.
                                             This is useful for consistent
                                             extrusion in repeated patterns.</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><code>Retract</code></td>
+                                        <td><code>Retract [distance]</code></td>
+                                        <td><code>Retract</code><br>
+                                            <code>Retract 5</code></td>
+                                        <td>Retracts the printer-profile distance,
+                                            or the optional positive distance in
+                                            millimeters. Retraction speed always
+                                            comes from the printer profile.
+                                            Requires <code>RelativeExtrusion</code>
+                                            in the macro.</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><code>Unretract</code></td>
+                                        <td><code>Unretract [distance]</code></td>
+                                        <td><code>Unretract</code><br>
+                                            <code>Unretract 5</code></td>
+                                        <td>Unretracts the profile distance, or
+                                            the optional positive distance in
+                                            millimeters. Retraction speed always
+                                            comes from the printer profile.
+                                            Requires <code>RelativeExtrusion</code>
+                                            in the macro.</td>
                                     </tr>
 
                                     <tr>
@@ -1112,7 +1153,43 @@ gcode:
                                 <code>SetLayerHeight</code>, and
                                 <code>SetExtrusionMultiplier</code>.</p>
 
-                            <h3>3. Procedural Layering (<span
+                            <h3>3. Retraction</h3>
+                            <p><code>EnableAutoRetract = 1</code> enables
+                                compile-time retraction around eligible travel
+                                moves. Retraction values come from the active
+                                printer profile: retraction distance (mm),
+                                retraction speed (mm/s), and minimum travel
+                                distance (mm).</p>
+                            <ul>
+                                <li>The threshold uses XY Euclidean distance:
+                                    <code>sqrt(dx^2 + dy^2)</code>. Z movement
+                                    does not contribute.</li>
+                                <li>A retract is considered only after a
+                                    positive extrusion has occurred in the
+                                    macro. This prevents retracting on the
+                                    initial positioning move.</li>
+                                <li>Moves with an explicit <code>e</code>
+                                    value or automatic extrusion are not treated
+                                    as travel moves.</li>
+                                <li>Each qualifying travel is wrapped with a
+                                    profile-distance retract before the move
+                                    and a matching unretract after it.</li>
+                            </ul>
+                            <p>Automatic and manual retraction require
+                                <code>RelativeExtrusion</code>
+                                in the macro. For automatic retraction, it
+                                must appear before the first travel move that
+                                triggers a retract. If it is missing entirely,
+                                compilation reports an error at the
+                                <code>EnableAutoRetract</code> setting. Manual
+                                <code>Retract</code> and
+                                <code>Unretract</code> use the profile distance
+                                by default; an optional positive distance
+                                overrides that value while retaining profile
+                                speed, for example <code>Retract 5</code>.
+                                Zero and negative overrides are rejected.</p>
+
+                            <h3>4. Procedural Layering (<span
                                     class="inline-code token-LAYER">Layer</span>)</h3>
                             <p>The <span
                                     class="inline-code token-LAYER">Layer</span>
@@ -1135,7 +1212,7 @@ gcode:
                                 allowing you to build up volume automatically
                                 without manually managing Z-heights.</p>
 
-                            <h3>4. Compile-Time vs Run-Time</h3>
+                            <h3>5. Compile-Time vs Run-Time</h3>
                             <p>Understanding when things happen is crucial:</p>
                             <ul>
                                 <li><strong>Compile-Time (Bellerophon
@@ -1159,7 +1236,7 @@ gcode:
                                 only receives pre-calculated movement commands.
                             </div>
 
-                            <h3>5. Thermal Management (Cooldown)</h3>
+                            <h3>6. Thermal Management (Cooldown)</h3>
                             <p>The <span
                                     class="inline-code token-COOLDOWN">Cooldown</span>
                                 command provides flexible temperature
@@ -1181,7 +1258,7 @@ gcode:
                                     turns off that specific heater</li>
                             </ul>
 
-                           <h3>6. Variable Scoping</h3>
+                           <h3>7. Variable Scoping</h3>
 <p>Bellerophon supports two types of variables with different scope rules:</p>
 <ul>
     <li><strong>Local variables</strong> (defined without <code>var</code>) are scoped to the macro they are defined in. They are created when the macro starts and discarded when the macro ends. This prevents name collisions across different macros.</li>
@@ -1201,7 +1278,7 @@ gcode:
     </ul>
 </div>
 
-                            <h3>7. Assignment Operators</h3>
+                            <h3>8. Assignment Operators</h3>
                             <p>Operators allow for precise control during
                                 movement and variable assignment:</p>
                             <ul>

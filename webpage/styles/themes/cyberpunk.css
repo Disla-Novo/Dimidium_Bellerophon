@@ -6,7 +6,9 @@ body.theme-cyberpunk {
   padding: 0;
   position: relative;
 }
-
+body.theme-cyberpunk .modal-form label {
+  color: #66ddff;
+}
 body.theme-cyberpunk::before {
   content: '';
   position: fixed;

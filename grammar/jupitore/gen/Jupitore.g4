@@ -35,8 +35,9 @@ statement
     | SET_FILAMENT EQUALS expr stmtTerm
     | SET_LAYER_HEIGHT EQUALS expr stmtTerm
     | SET_EXTRUSION_MULTIPLIER EQUALS expr stmtTerm
-    | layer_statement   // new
     | ENABLE_AUTO_EXTRUDE EQUALS expr stmtTerm
+    | ENABLE_AUTO_RETRACT EQUALS expr stmtTerm
+    | layer_statement   // new
     | repeat_statement    // testing
     | if_statement        // testing
     | brepeat_statement  // testing
@@ -54,8 +55,7 @@ statement
     | LOAD_BED_MESH STRING? stmtTerm            // BED_MESH_PROFILE LOAD=default (optional profile) 7/31/2026
     | SET_PRESSURE_ADVANCE expr stmtTerm     //exm:  SET_PRESSURE_ADVANCE ADVANCE=0.04
     | RESET_EXTRUDER stmtTerm                  // G92 E0
-    | RETRACT stmtTerm                          // G10 - explicit retraction
-    | UNRETRACT stmtTerm                        // G11 - explicit unretraction
+    | retract_statement                         // G10/G11 - profile-based or distance override
     | DWELL expr (ID)? stmtTerm// new
     | BED_MESH_CALIBRATE stmtTerm    // BED_MESH_CALIBRATE command
     | PROBE_CALIBRATE stmtTerm    // PROBE_CALIBRATE
@@ -69,6 +69,9 @@ statement
     | insert_gcode_statement  // NEW: separate rule for InsertGCode
     ;
 
+retract_statement
+    : (RETRACT | UNRETRACT) EQUALS? expr? stmtTerm
+    ;
 // a statement ends either with a newline (as before) or a semicolon -
 // the semicolon lets another statement start right after on the same line
 stmtTerm
@@ -265,6 +268,7 @@ SET_LAYER_HEIGHT : 'SetLayerHeight';
 SET_EXTRUSION_MULTIPLIER : 'SetExtrusionMultiplier';
 LAYER            : 'Layer';
 ENABLE_AUTO_EXTRUDE : 'EnableAutoExtrude';
+ENABLE_AUTO_RETRACT : 'EnableAutoRetract';
 
 // Operators —  BEFORE NUMBER and ID
 PLUSEQ     : '+='; 

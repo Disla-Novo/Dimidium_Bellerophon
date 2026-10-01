@@ -176,6 +176,11 @@ function loadActiveProfileIntoForm() {
   document.getElementById("profileLayerHeight").value = p.layerHeight;
   document.getElementById("profileExtrusionMultiplier").value =
     p.extrusionMultiplier;
+  document.getElementById("profileRetractionDistance").value =
+    p.retractionDistance;
+  document.getElementById("profileRetractionSpeed").value = p.retractionSpeed;
+  document.getElementById("profileMinTravelForRetract").value =
+    p.minTravelForRetract;
 }
 
 function openProfileModal() {
@@ -202,6 +207,15 @@ function saveProfileFromForm() {
     layerHeight: parseFloat(document.getElementById("profileLayerHeight").value),
     extrusionMultiplier: parseFloat(
       document.getElementById("profileExtrusionMultiplier").value,
+    ),
+    retractionDistance: parseFloat(
+      document.getElementById("profileRetractionDistance").value,
+    ),
+    retractionSpeed: parseFloat(
+      document.getElementById("profileRetractionSpeed").value,
+    ),
+    minTravelForRetract: parseFloat(
+      document.getElementById("profileMinTravelForRetract").value,
     ),
   });
   window.currentProfile = Profiles.getActive();
@@ -637,6 +651,9 @@ function showProfileNotice(msg) {
   "profileFilament",
   "profileLayerHeight",
   "profileExtrusionMultiplier",
+  "profileRetractionDistance",
+  "profileRetractionSpeed",
+  "profileMinTravelForRetract",
 ].forEach(function (id) {
   const el = document.getElementById(id);
   if (el) el.addEventListener("input", saveProfileFromForm);
