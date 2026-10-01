@@ -2,7 +2,9 @@
   background-color: #121212;
   color: #d0d0d0;
 }
-
+.theme-mono .modal-form label {
+  color: #aaaaaa;
+}
 .theme-mono #jupitore-app {
   background: #121212;
 }

@@ -242,6 +242,7 @@ public class WebServer {
         public String output;
         public String error;
         public List<CompileError> errors;
+        public List<GCodeVisitor.CompileWarning> warnings = new ArrayList<>();
     }
 
     private static int inferLineNumberFromMessage(String message, String requestBody) {
@@ -318,7 +319,7 @@ public class WebServer {
 
             try {
                 // out.output = compileJupitore(input.code);
-                out.output = compileJupitore(input);
+                out.output = compileJupitore(input, out);
                 out.success = true;
             } catch (Exception e) {
                 out.success = false;
@@ -523,7 +524,7 @@ public class WebServer {
     // i was recommended to do paging. we will use a hybrid approach between memory
     // and .bin temp storage. this may help with the issue while giving us better
     // performance.
-    private static String compileJupitore(CompileRequest input) throws Exception {
+    private static String compileJupitore(CompileRequest input, CompileResponse response) throws Exception {
 
         // added null check to prevent NPE when input.code is missing
         if (input == null || input.code == null) {
@@ -603,7 +604,12 @@ public class WebServer {
             System.out.println("G-code folder set to: " + input.gcodeFolder);
         }
 
-        String result = visitor.visit(tree);
+        String result;
+        try {
+            result = visitor.visit(tree);
+        } finally {
+            response.warnings = visitor.getWarnings();
+        }
 
         if (!pagingUse && result.length() > OUTPUT_PAGE_THRESHOLD_BYTES) {
             System.out.println("Output is " + (result.length() / 1024) + " KB - paging to disk");

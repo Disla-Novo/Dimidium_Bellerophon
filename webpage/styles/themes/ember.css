@@ -2,6 +2,9 @@
   background-color: #1a0e0a;
   color: #f5e6d3;
 }
+.theme-ember .modal-form label {
+  color: #ff6b35;
+}
 
 .theme-ember #jupitore-app {
   background: #1a0e0a;

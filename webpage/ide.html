@@ -186,6 +186,33 @@
             step="0.1"
           />
 
+          <label>Retraction Length (mm):</label>
+          <input
+            type="number"
+            id="profileRetractionDistance"
+            value="1.5"
+            min="0"
+            step="0.1"
+          />
+
+          <label>Retraction Speed (mm/s):</label>
+          <input
+            type="number"
+            id="profileRetractionSpeed"
+            value="40"
+            min="0"
+            step="1"
+          />
+
+          <label>Minimum XY Travel for Retraction (mm):</label>
+          <input
+            type="number"
+            id="profileMinTravelForRetract"
+            value="1.0"
+            min="0"
+            step="0.1"
+          />
+
           <div class="modal-buttons">
             <button id="saveProfileBtn">Close</button>
             <button id="cancelProfileBtn">Cancel</button>

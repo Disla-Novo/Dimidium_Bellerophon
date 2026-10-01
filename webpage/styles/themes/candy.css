@@ -2,7 +2,9 @@
   background-color: #1a1420;
   color: #e0c8e8;
 }
-
+.theme-candy .modal-form label {
+  color: #ff6b9d;
+}
 .theme-candy #jupitore-app {
   background: #1a1420;
 }

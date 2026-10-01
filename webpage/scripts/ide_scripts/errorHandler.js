@@ -64,6 +64,7 @@ const keywords = new Set([
   "SETLAYERHEIGHT",
   "SETEXTRUSIONMULTIPLIER",
   "ENABLEAUTOEXTRUDE",
+  "ENABLEAUTORETRACT",
   "LAYER",
   "PRINTFILE",
   "INSERTGCODE",
@@ -154,6 +155,9 @@ window.addEventListener("DOMContentLoaded", () => {
           filamentDiameter: 1.75,
           layerHeight: 0.2,
           extrusionMultiplier: 1.0,
+          retractionDistance: 1.5,
+          retractionSpeed: 40,
+          minTravelForRetract: 1.0,
         };
       }
 
@@ -185,6 +189,12 @@ window.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error(`Compiler returned HTTP ${res.status}`);
 
       const data = await res.json();
+
+      if (Array.isArray(data.warnings)) {
+        data.warnings.forEach((warning) => {
+          logMessage(log, `Line ${warning.line}: ${warning.message}`, "warning");
+        });
+      }
 
       if (data.success) {
         if (data.output.startsWith("SUCCESS_PAGED:")) {
