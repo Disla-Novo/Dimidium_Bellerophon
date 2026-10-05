@@ -8,7 +8,12 @@
 
 # Bellerophon: The Parametric DSL for Additive Manufacturing
 
-Bellerophon is a compiled domain-specific language (DSL) and IDE designed to replace rigid G-code scripts with structured, parametric macros. By acting as a universal abstraction layer, it allows you to write complex procedural geometry and machine control logic once, and compile it directly into target-specific formats like Klipper, Marlin, or other types of firmware.
+Bellerophon is a compiled domain-specific language (DSL) and IDE that acts as a universal abstraction layer for 3D printer automation. 
+
+**It is not a replacement for G-code, nor is it a custom firmware.** Instead, it is a higher-level source language. It allows you to define complex procedural geometry and machine control logic once, and then compile it directly into the exact G-code, macros, or instructions required by Klipper, Marlin, RepRap or other firmware targets as we increase reach. 
+
+**The Core Idea:** Write once. Compile anywhere. 
+Rather than hand-writing and maintaining equivalent automation logic across multiple printer stacks, you write one source definition and let the compiler translate it for each specific target machine.
 
 ---
 
@@ -17,22 +22,31 @@ Bellerophon is a compiled domain-specific language (DSL) and IDE designed to rep
 
 ---
 
+## Who Should Use Bellerophon?
+
+- Firmware developers managing multiple printer stacks
+- Printer manufacturers needing multi-platform support
+- Advanced users automating complex printer behavior
+- Research teams iterating on control algorithms
+
+If you're maintaining equivalent automation logic across Klipper, Marlin, and RepRap, this is for you.
+
 ## What This Means for You
 
-- **Write Once, Deploy Anywhere** - One script, all firmware.
-- **Safety-First** - Simulate before you print. Prevent bed crashes.
-- **Parametric Capabilities** - Variables, math, loops.
-- **100% Local** - All local network features are and will remain free.
+- **Cross-Platform Deployment** - Write your logic once and let the compiler translate it to your target of choice.
+- **Safety-First Simulation** - Boundary checking validates hardware pins and visualizes G-code paths before you print to prevent hardware crashes.
+- **Parametric Capabilities** - Define macros with variables, loops, and conditional logic instead of static G-code sequences
+- **100% Local & Free** - Zero cloud dependency. Everything runs securely on your own machine.
 
 ---
 
 ## Key Components
 
 > **Bellerophon IDE**: A real-time syntax-validating editor for authoring multi-firmware macros.
->
-> **CFG Generator & Boundary Checker**: A visual configuration app that validates hardware pins and simulates G-code paths to prevent physical bed crashes.
->
-> **Gravity Hub (Beta)**: A dynamic fleet deployment layer for managing and syncing compiled scripts across local network printers.
+
+> **CFG Generator & Boundary Checker**: A visual configuration app that validates hardware and simulates G-code paths to prevent physical bed crashes.
+
+> **Gravity Hub (Beta)**: A dynamic management system to sync and deploy your compiled automation across multiple printers on your local network.  
 
 ---
 
