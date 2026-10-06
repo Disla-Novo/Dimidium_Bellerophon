@@ -53,7 +53,7 @@ To generate them, run:
 | `LayerHandler.java` | Helper for layer-specific macro generation and per-layer state management. |
 | `PrinterSettings.java` | Backend model capturing printer, extruder, and temperature settings. |
 | `PrinterProfile.java` | Printer profile model for build volume, nozzle characteristics, and motion limits. |
-| `WebServer.java` | Spark Java server startup, HTTP routing, compile/highlight endpoints, and static file hosting. |
+| `WebServer.java` | Spark Java server startup, HTTP routing, compile/highlight and `/state` endpoints, static file hosting, and JSON state persistence. |
 
 ---
 
@@ -63,6 +63,7 @@ To generate them, run:
 | :--- | :--- |
 | `KlipperVisitor.java` | Klipper firmware adapter. Implements Bellerophon emission rules for Klipper macros and command syntax. |
 | `MarlinVisitor.java` | Marlin firmware adapter. Implements Bellerophon emission rules for Marlin-compatible G-code and macros. |
+| `RepRapVisitor.java` | RepRapFirmware (RRF) firmware adapter. |
 
 ---
 
@@ -72,12 +73,16 @@ The Bellerophon compiler uses a decoupled firmware adapter architecture:
 
 1. Source files are parsed by the ANTLR grammar into an AST.
 2. The compiler engine walks the tree using `GCodeVisitor`.
-3. Firmware-specific adapters (`KlipperVisitor`, `MarlinVisitor`) implement the abstract emission hooks.
+3. Firmware-specific adapters (`KlipperVisitor`, `MarlinVisitor`, and `RepRapVisitor`) implement the abstract emission hooks.
 
 ### Adding a New Firmware Target
 
 | Step | Location | Action |
 | :--- | :--- | :--- |
 | 1 | `src/main/java/maindeveloper/dialects/` | Create a new Java class (e.g., `RepRapVisitor.java`) that extends `GCodeVisitor`. |
-| 2 | `src/main/java/maindeveloper/core/WebServer.java` | Register the new visitor as a compilation target. |
-| 3 | `webpage/scripts/ide_scripts/firmware.js` | Add the new firmware option to the target dropdown. |
+| 2 | `src/main/java/maindeveloper/core/WebServer.java` | Register the new visitor in `VISITOR_FACTORIES`. |
+| 3 | `webpage/scripts/ide_scripts/firmware.js` | Add the new firmware option to `TARGET_CONFIG`, which populates the IDE target dropdown. |
+
+### Frontend State Persistence
+
+Frontend state is accessed through `window.Persistence` in `webpage/scripts/data/persistence.js`. It loads and saves state through the server's `/state` endpoint; the server stores `state.json` in the operating system's user-data directory so the state is not tied to the application install folder. On first use, the frontend imports recognized legacy browser-storage values and removes those old keys after a successful save. Browser storage is therefore used for one-time migration bookkeeping, not as the ongoing store for application state.

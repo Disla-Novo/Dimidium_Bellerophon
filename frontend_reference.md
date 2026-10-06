@@ -67,6 +67,10 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 | `webpage/group.html` | Group details page. Shows printers in a group and allows adding new printers by name and IP/URL. |
 | `webpage/dash.html` | Printer dashboard. Embeds a printer's web interface (Mainsail/Fluidd) via iframe using the `ip` query parameter. |
 
+### Shared State Persistence
+
+Pages that use persistent application state load `webpage/scripts/data/persistence.js`. Its `window.Persistence` API reads and writes state through the local server's `/state` endpoint; the server stores it in a platform-specific user-data `state.json` file. The frontend imports supported legacy `localStorage`/`sessionStorage` values once and clears those legacy keys after the state has been saved successfully. Ongoing application state is not stored directly in browser storage.
+
 ---
 
 ## Styles (`webpage/styles/`)
@@ -97,6 +101,13 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 
 ## Scripts (`webpage/scripts/`)
 
+### Shared Data Scripts (`data/`)
+
+| File | Description |
+| :--- | :--- |
+| `persistence.js` | Shared `window.Persistence` API for application state, loaded from and saved to the server's `/state` endpoint. Imports supported legacy browser-storage values during one-time migration. |
+| `profiles.js` | Printer profile management backed by `Persistence`, including profile selection and CRUD operations. |
+
 ### CFG Generator Scripts (`cfg_scripts/`)
 
 | File | Description |
@@ -107,7 +118,7 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 
 | File | Description |
 | :--- | :--- |
-| `colorhandling.js` | Core syntax highlighting engine and theme manager. Handles token color mapping, semantic variable detection, and applies CSS themes with `localStorage` persistence. |
+| `colorhandling.js` | Core syntax highlighting engine and theme manager. Handles token color mapping, semantic variable detection, and applies CSS themes; the selected theme is stored through `Persistence`. |
 | `themes.js` | Theme registry (`window.THEME_MAP`) with labels, CSS paths, preview colors, and token definitions for syntax highlighting. |
 
 ### Gravity Hub Scripts (`gravity_scripts/`)
@@ -122,18 +133,18 @@ Bellerophon uses a modular, data-driven theming system. Adding a new theme does 
 
 | File | Description |
 | :--- | :--- |
-| `console-resize.js` | Enables drag-to-resize functionality for the console panel. Saves the current height to `localStorage` for persistence across sessions. |
+| `console-resize.js` | Enables drag-to-resize functionality for the console panel. Saves the current height through `Persistence`. |
 | `errorHandler.js` | Frontend compiler orchestrator. Handles semantic validation, macro boundary checking, keyword spell-checking, half-statement detection, and compile orchestration with backend communication (`/compile`). Displays errors, warnings, and hints in the console with line-number highlighting. |
-| `firmware.js` | Firmware selection and target switcher logic in the IDE. |
+| `firmware.js` | Defines the Klipper, Marlin, and RepRap target labels and output extensions used by the IDE firmware selector. |
 | `mscript.js` | Main IDE orchestration script. Handles profile management, reference storage, file operations (load/save/download), mode switching, console resizing, line number synchronization, auto-save, and G-code output highlighting. |
 
 ### Settings Scripts (`settings_scripts/`)
 
 | File | Description |
 | :--- | :--- |
-| `settings.js` | Settings manager handling theme switching, persistence (`localStorage`), and modal UI. |
+| `settings.js` | Settings manager handling theme switching, persisted preferences and configuration, and modal UI. |
 
-> **How themes work:** `settings.js` reads `window.THEME_MAP` from `themes.js` to render theme options. When a user selects a theme, it calls `window.applyTheme()` to load the CSS and token colors, then saves the preference to `localStorage`.
+> **How themes work:** `settings.js` reads `window.THEME_MAP` from `themes.js` to render theme options. When a user selects a theme, it calls `window.applyTheme()` to load the CSS and token colors, then saves the preference through `Persistence`.
 
 ---
 

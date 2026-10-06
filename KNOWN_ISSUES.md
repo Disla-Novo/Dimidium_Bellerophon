@@ -1,91 +1,36 @@
-# Known Limitations & Workarounds
+# Known Issues & Limitations
+
+This document tracks current, unresolved limitations and known issues in
+Bellerophon. It is updated with each release. If something here is out of
+date, please open an issue or a PR.
+
+---
 
 ## Current Limitations
 
 ### Firmware Support
-- **Supported**: Klipper, Marlin
-- **Planned**: RepRap firmware, Smoothieware
-- Currently, only these two adapters are implemented. New firmware targets require extending `GCodeVisitor` (see [CONTRIBUTING.md](CONTRIBUTING.md#adding-firmware-support)).
+- **Supported:** Klipper, Marlin, RepRap
 
-### Macro & Loop Constraints
-- **Variable scope**: A plain `name = expr` assignment is local to its macro and does not carry over to the next one. Use `var name = expr` to declare a variable in global scope, visible from every macro in the file; a local variable shadows a global one of the same name.
-- **Macro recursion**: Calling a macro from itself is not supported.
+New firmware targets require extending `GCodeVisitor`. See
+[CONTRIBUTING.md](CONTRIBUTING.md#adding-firmware-support).
 
-### Geometry & Hardware
-- **Circular interpolation**: G-code generation uses linear moves only. Arcs must be decomposed manually.
-- **Coordinate limits**: All moves are validated against `PrinterProfile` bounds at compile time. Out-of-bounds moves throw errors (intentional safety feature).
+### Language & Compiler
+- **Macro recursion:** Calling a macro from itself is not supported.
+- **Circular interpolation:** G-code generation uses linear moves only.
+
+### Geometry & Safety
+- **Coordinate limits:** All moves are validated against `PrinterProfile`
+  bounds at compile time. Out-of-bounds moves throw an error.
+  This is intentional; it prevents physical crashes.
+
 
 ### Gravity Hub (Beta)
-- **Single network only**: No WAN/cloud routing yet. All connected printers must be on same local network.
-- **No job queuing**: Jobs execute immediately. Sequential printing requires external orchestration.
-- **No failure recovery**: If a print fails mid-job, manual intervention is required to resume.
+- **Single network only:** All connected printers must be on the same
+  local network. No WAN/cloud routing yet.
+- **No job queuing:** Jobs execute immediately. Sequential printing
+  requires external orchestration.
+- **No failure recovery:** If a print fails mid-job, manual intervention
+  is required to resume.
 
----
-
-## Common Error Messages & Solutions
-
-### "ERROR: 'i' iterator is only allowed inside Brepeat loops"
-**Cause**: You used the loop variable `i` outside a `Brepeat` block.
-
-**Solution**: Move the expression using `i` inside a `Brepeat` block.
-```bellerophon
-M.title "Wrong"
-Absolute
-MoveTo x=i  # ERROR! 'i' is undefined here
-M.end
-
-M.title "Correct"
-Absolute
-Brepeat 10
-  MoveTo x=i*2
-end
-M.end
-```
-
-### "X position 250 out of bounds (0-200)"
-**Cause**: Your move exceeds the printer's axis limits.
-
-**Solution**: Check your `PrinterProfile` settings in the CFG Generator and verify coordinate values.
-```bellerophon
-M.title "Example"
-Absolute
-SetSpeed = 3000
-; Assuming printer max is X=200
-MoveTo x=250  ; ERROR! Exceeds limit
-MoveTo x=150  ; OK
-M.end
-```
-
-### "Compilation hangs / takes too long"
-**Cause**: Very large `Brepeat` counts or deeply nested loops.
-
-**Solution**: 
-- Check repeat counts (avoid > 10,000 iterations for complex bodies)
-- Profile with smaller repeat counts first:
-```bellerophon
-M.title "Test"
-Absolute
-SetSpeed = 3000
-Brepeat 100  ; Start here, test output
-  MoveTo x=10 y=10
-end
-M.end
-
-; Once working, increase to 1000, 10000, etc.
-```
-
----
-
-## Planned Improvements
-
-- [x] Local variable scoping, plus `var` for global/unit-scoped variables
-- [ ] Macro recursion safety checks 
-- [ ] RepRap firmware support
-- [ ] Gravity Hub job queuing 
-- [ ] Multi-network WAN support 
-
----
-
-## Found a bug? 
 
 See [CONTRIBUTING.md](CONTRIBUTING.md#getting-help) for how to report issues and ask for help. If bugs were documented, please add them here!
