@@ -41,16 +41,6 @@ firmware behavior.
 - **Support honesty:** Distinguish implemented, tested, and
   device-validated capabilities from planned or experimental work.
 
-## Outside the core scope: Predictive print-failure model
-
-A future research project could evaluate a predictive model that analyzes
-G-code (and, if evidence supports it, machine profiles or print data) to
-estimate the likelihood of print failure, such as spaghetti. This means a
-trained or otherwise empirically evaluated model—not an LLM, conversational
-assistant, or G-code generation feature. It is outside Gravity Hub's core
-printer-management scope and delivery roadmap; see
-[FUTURE_INVESTIGATIONS.md](./FUTURE_INVESTIGATIONS.md).
-
 ## What Gravity Hub is today
 
 The current Hub is an early local UI for printer groups and links to printer

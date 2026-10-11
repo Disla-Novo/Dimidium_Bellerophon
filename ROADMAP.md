@@ -1,92 +1,57 @@
 # Gravity Hub Roadmap
 
-This roadmap describes outcomes, not promised release dates. Work should move
-forward when each phase's exit criteria are met. Reorder or split phases as
-technical discovery and user feedback provide evidence.
+No release dates are promised here. The next step is to prove a complete
+workflow on a real printer, then expand from there.
 
-## Phase 0: Define the first complete workflow
+## 1. Pick a printer and map the workflow
 
-**Outcome:** One supported path is specified end to end, from a user's `.bph`
-source to a print on a selected machine.
+Choose the first printer ecosystem and device to support. Confirm how it
+connects, handles credentials, accepts files, starts jobs, and reports status
+or errors. Write down the user's path from choosing a `.bph` file through
+reviewing and submitting the compiled output.
 
-- Choose the first printer ecosystem and a real target device for validation.
-- Document the user's flow: source selection, printer/profile selection,
-  compile, output review, submission, and job status.
-- Inventory that ecosystem's connection, authentication, upload, start,
-  status, pause/resume, cancel, and error-reporting capabilities.
-- Decide what the app does when compilation or printer communication fails.
-- Keep credentials local and out of source files and logs.
+Before implementation, verify the printer's API and agree on what happens when
+compilation or printer communication fails. Keep credentials out of source
+files and logs.
 
-**Exit criteria:** The workflow has acceptance criteria and the target's API
-and device-validation requirements are understood well enough that
-implementation does not assume behaviors the target has not verified.
+## 2. Support one complete print workflow
 
-## Phase 1: First end-to-end printer workflow
+Let users select a `.bph` file, printer, and profile; compile for the target;
+review or download the output; and submit it if the printer supports it. Show
+compiler, connection, and printer errors clearly. Only offer job controls
+that have been tested on the chosen device.
 
-**Outcome:** A user can complete one useful Bellerophon-to-printer workflow
-without leaving Gravity Hub for the core steps.
+The workflow should be tested on that device, including compile, connection,
+and submission failures.
 
-- Organize or select a `.bph` source file.
-- Select a concrete printer and profile.
-- Compile for that printer's target, report compiler errors clearly, and
-  preserve the source.
-- Review or download the generated output before submission.
-- Connect to one selected printer on the local network and submit a job if its
-  supported interface permits it.
-- Show job status and surface communication or printer errors; only expose
-  controls that have been implemented and tested for the target.
+## 3. Make local printer management reliable
 
-**Exit criteria:** The workflow passes on the chosen device, including
-connection failure, compile failure, and job-submission failure cases.
+- Add and edit printer connections, and show whether each is reachable.
+- Keep printer settings and capabilities separate from firmware output
+  dialects.
+- Add job history and details when the printer makes them available.
+- Support pause, resume, or cancel only when their behavior is verified.
+- Improve reconnection, error recovery, and diagnostics.
+- Test credential storage, permissions, and local-network security.
 
-## Phase 2: Reliable local printer management
+Document which devices and operations are supported, and make unsupported
+features clear.
 
-**Outcome:** Users can manage multiple supported printers and jobs with
-predictable behavior.
+## 4. Add more printer ecosystems
 
-- Add and edit printer connections, verify reachability, and report connection
-  state.
-- Store per-printer identity, capabilities, profiles, and connection settings
-  separately from firmware output dialects.
-- Add job history and useful job details where the integration exposes them.
-- Add pause, resume, cancel, and related controls only where their semantics
-  are verified for that ecosystem.
-- Improve error recovery, reconnection behavior, and actionable diagnostics.
-- Test permission boundaries, credential storage, and local-network threat
-  assumptions.
+Investigate Klipper via Moonraker (including Mainsail and Fluidd), Prusa,
+Bambu, and OctoPrint. Prioritize based on user demand, API access, available
+test hardware, and maintenance effort. Add and test one ecosystem at a time,
+recording model, firmware, authentication, and feature compatibility.
 
-**Exit criteria:** Supported operations have automated coverage where
-possible, documented device coverage, and clear unsupported-operation behavior.
+Keep printer integrations separate from firmware compilation targets: support
+for one does not guarantee support for the other. Maintain a support matrix
+and test each integration on representative hardware or a documented test
+environment.
 
-## Phase 3: Expand ecosystem coverage
+## Ongoing
 
-**Outcome:** Additional printer ecosystems are integrated without coupling
-their behavior to the first integration.
-
-Candidate investigations include Klipper via Moonraker (including Mainsail or
-Fluidd installations), Prusa connectivity, Bambu connectivity, and
-OctoPrint. Prioritize based on user need, supported API access, test hardware
-availability, and maintenance cost.
-
-- Define a shared integration boundary for printer discovery/connection,
-  capabilities, file transfer, and job operations.
-- Implement and validate one ecosystem at a time.
-- Record model, firmware, API, authentication, and feature compatibility.
-- Keep firmware compilation targets distinct from printer-management
-  integrations: they overlap, but neither implies the other.
-
-**Exit criteria:** Each integration has an explicit support matrix and has
-been tested against representative hardware or a documented test environment.
-
-## Ongoing work
-
-- Improve Bellerophon compiler and firmware-target correctness independently
-  of Hub connectivity.
-- Maintain a capability and compatibility matrix in
-  [PRINTER_CAPABILITIES.md](./PRINTER_CAPABILITIES.md).
-- Gather user feedback and update priorities based on real workflows.
-- Keep local-first operation and safe handling of printer actions as
-  requirements throughout every phase.
-- Keep speculative ideas that are outside the core printer-management scope
-  separate from committed roadmap phases; see
-  [FUTURE_INVESTIGATIONS.md](./FUTURE_INVESTIGATIONS.md).
+- Improve Bellerophon compiler and firmware-target correctness.
+- Maintain [PRINTER_CAPABILITIES.md](./PRINTER_CAPABILITIES.md).
+- Use feedback from real workflows to set priorities.
+- Keep local-first operation and safe printer actions in mind throughout.
