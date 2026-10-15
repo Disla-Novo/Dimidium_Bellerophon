@@ -121,6 +121,12 @@ M.end
 
 For local development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md#local-development).
 
+## Product direction
+
+For the long-term Gravity Hub vision, staged roadmap, and printer ecosystem
+capability matrix, see [VISION.md](VISION.md), [ROADMAP.md](ROADMAP.md), and
+[PRINTER_CAPABILITIES.md](PRINTER_CAPABILITIES.md).
+
 ## Full documentation
 See [Official_Bellerophon Language _ Documentation.pdf](Bellerophon%20Language%20_%20Documentation.pdf)
 for the complete command reference, examples, and limitations.
